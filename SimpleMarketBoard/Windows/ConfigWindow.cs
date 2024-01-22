@@ -149,6 +149,17 @@ namespace SimpleMarketBoard
             }
             ImGuiComponents.HelpMarker("you hover over an item > [wait this time in ms] > start to check and show the market data");
 
+            // MaxCacheItems
+            ImGui.Text("Max cached items");
+            ImGui.SameLine();
+            var MaxCacheItems = plugin.Config.MaxCacheItems;
+            ImGui.SetNextItemWidth(150 * scale);
+            if (ImGui.InputInt($"{suffix}MaxCacheItems", ref MaxCacheItems))
+            {
+                plugin.Config.MaxCacheItems = MaxCacheItems;
+                plugin.Config.Save();
+            }
+
             // EnableRecentHistory
             var EnableRecentHistory = plugin.Config.EnableRecentHistory;
             if (ImGui.Checkbox($"Show recent history entries{suffix}EnableRecentHistory", ref EnableRecentHistory))
@@ -314,8 +325,8 @@ namespace SimpleMarketBoard
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 
 
-            // ----------------- API & cache -----------------
-            ImGui.TextColored(titleColour, "API & cache settings");
+            // ----------------- API -----------------
+            ImGui.TextColored(titleColour, "API settings");
             ImGui.Separator();
 
 
@@ -330,28 +341,6 @@ namespace SimpleMarketBoard
                 plugin.Config.Save();
             }
 
-
-            // MaxCacheItems
-            ImGui.Text("Max cached items");
-            ImGui.SameLine();
-            var MaxCacheItems = plugin.Config.MaxCacheItems;
-            ImGui.SetNextItemWidth(150 * scale);
-            if (ImGui.InputInt($"{suffix}MaxCacheItems", ref MaxCacheItems))
-            {
-                plugin.Config.MaxCacheItems = MaxCacheItems;
-                plugin.Config.Save();
-            }
-
-
-            // selectedWorld
-            ImGui.Text("Currently selected world");
-            ImGui.SameLine();
-            var selectedWorld = plugin.Config.selectedWorld;
-            ImGui.SetNextItemWidth(150 * scale);
-            if (ImGui.InputText($"{suffix}selectedWorld", ref selectedWorld, 100, ImGuiInputTextFlags.ReadOnly))
-            {
-                selectedWorld = plugin.Config.selectedWorld;
-            }
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 
 
@@ -362,7 +351,7 @@ namespace SimpleMarketBoard
 
             // EnableChatLog
             var EnableChatLog = plugin.Config.EnableChatLog;
-            if (ImGui.Checkbox($"Enable keybinding{suffix}EnableChatLog", ref EnableChatLog))
+            if (ImGui.Checkbox($"Print to Chat{suffix}EnableChatLog", ref EnableChatLog))
             {
                 plugin.Config.EnableChatLog = EnableChatLog;
                 plugin.Config.Save();
@@ -375,7 +364,7 @@ namespace SimpleMarketBoard
 
             // EnableToastLog
             var EnableToastLog = plugin.Config.EnableToastLog;
-            if (ImGui.Checkbox($"Enable keybinding{suffix}EnableToastLog", ref EnableToastLog))
+            if (ImGui.Checkbox($"Print to Toast{suffix}EnableToastLog", ref EnableToastLog))
             {
                 plugin.Config.EnableToastLog = EnableToastLog;
                 plugin.Config.Save();
@@ -387,7 +376,7 @@ namespace SimpleMarketBoard
 
 
             // ChatLogChannel
-            ImGui.Text("Chat channel");
+            ImGui.Text("Channel");
             ImGui.SameLine();
             var ChatLogChannel = plugin.Config.ChatLogChannel;
             // ImGui.SetNextItemWidth(ImGui.GetWindowSize().X / 3);
@@ -415,15 +404,14 @@ namespace SimpleMarketBoard
             ImGui.Separator();
 
 
-            // SearchHistory
-            ImGui.Text("Search history");
+            // selectedWorld
+            ImGui.Text("Currently selected world");
             ImGui.SameLine();
-            // convert the list to string
-            var SearchHistory = string.Join(", ", plugin.Config.SearchHistoryId);
+            var selectedWorld = plugin.Config.selectedWorld;
             ImGui.SetNextItemWidth(150 * scale);
-            if (ImGui.InputText($"{suffix}SearchHistory", ref SearchHistory, 100, ImGuiInputTextFlags.ReadOnly))
+            if (ImGui.InputText($"{suffix}selectedWorld", ref selectedWorld, 100, ImGuiInputTextFlags.ReadOnly))
             {
-                SearchHistory = string.Join(", ", plugin.Config.SearchHistoryId);
+                selectedWorld = plugin.Config.selectedWorld;
             }
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 

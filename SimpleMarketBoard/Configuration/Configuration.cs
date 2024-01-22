@@ -15,6 +15,8 @@ namespace SimpleMarketBoard
 
         // ----------------- General -----------------
         public int HoverDelayMS { get; set; } = 1000;
+        public int MaxCacheItems { get; set; } = 30;
+
         public bool EnableRecentHistory { get; set; } = true;
         public bool TotalIncludeTax { get; set; } = true;
         public bool CleanCacheAsYouGo { get; set; } = true;
@@ -24,10 +26,8 @@ namespace SimpleMarketBoard
         public bool AllowKeybindingAfterHover { get; set; } = true;
         public VirtualKey[] BindingHotkey { get; set; } = new VirtualKey[] { VirtualKey.CONTROL, VirtualKey.X };
 
-        // ----------------- API & cache -----------------
+        // ----------------- API -----------------
         public int RequestTimeoutMS { get; set; } = 10000;
-        public int MaxCacheItems { get; set; } = 30;
-        public string selectedWorld { get; set; } = "";
 
 
         // ----------------- Message -----------------
@@ -37,6 +37,8 @@ namespace SimpleMarketBoard
 
         // ----------------- Cache -----------------
         public List<ulong> SearchHistoryId { get; set; } = new List<ulong>();
+        public string selectedWorld { get; set; } = "";
+
         public bool FilterHQ { get; set; } = false;
 
         // the below exist just to make saving less cumbersome
