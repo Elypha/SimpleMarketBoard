@@ -1,0 +1,12 @@
+{
+  "Author": "Elypha",
+  "Name": "SimpleMarketBoard",
+  "Punchline": "The simple but ultimate market board plugin.",
+  "Description": "Try to be nerd and use this plugin to make money.",
+  "ApplicableVersion": "any",
+  "Tags": [
+    "marketboard",
+    "plugin",
+    "elypha"
+  ]
+}
