@@ -32,7 +32,7 @@ namespace SimpleMarketBoard
 
         // ----------------- Message -----------------
         public bool EnableChatLog { get; set; } = true;
-        public bool EnableToastLog { get; set; } = true;
+        public bool EnableToastLog { get; set; } = false;
         public XivChatType ChatLogChannel { get; set; } = XivChatType.None;
 
         // ----------------- Cache -----------------
