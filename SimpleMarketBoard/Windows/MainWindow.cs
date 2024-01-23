@@ -233,8 +233,8 @@ public class MainWindow : Window, IDisposable
                     ImGui.NextColumn();
 
                     double totalPrice = plugin.Config.TotalIncludeTax
-                      ? listing.Quantity + listing.Tax
-                      : listing.Quantity;
+                      ? listing.PricePerUnit * listing.Quantity + listing.Tax
+                      : listing.PricePerUnit * listing.Quantity;
                     // posX = ImGui.GetCursorPosX()
                     //     + ImGui.GetColumnWidth()
                     //     - ImGui.CalcTextSize($"{totalPrice}").X
