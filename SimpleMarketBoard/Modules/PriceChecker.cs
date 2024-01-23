@@ -33,7 +33,7 @@ namespace SimpleMarketBoard
             this.plugin = plugin;
         }
 
-        public void CheckAsync(ulong itemId, bool isHQ, bool checkRemove = true)
+        public void CheckAsync(ulong itemId, bool isHQ, bool cleanCache = true)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace SimpleMarketBoard
                     Service.PluginLog.Debug($"Check: {itemId} found in cache.");
                     gameItem = plugin.GameItemCacheList.Single(i => i.Id == itemId);
                     plugin.MainWindow.CurrentItemUpdate(gameItem);
-                    // plugin.SearchHistoryUpdate(gameItem, checkRemove);
+                    // plugin.SearchHistoryUpdate(gameItem, cleanCache);
                     return;
                 }
 
@@ -89,7 +89,7 @@ namespace SimpleMarketBoard
                 Task.Run(async () =>
                 {
                     await Task.Delay(plugin.Config.HoverDelayMS, plugin.ItemCancellationTokenSource!.Token).ConfigureAwait(false);
-                    await Task.Run(() => Check(false));
+                    await Task.Run(() => Check(true));
                 });
             }
             catch (Exception ex)
@@ -109,7 +109,7 @@ namespace SimpleMarketBoard
             });
         }
 
-        private void Check(bool checkRemove = true)
+        private void Check(bool cleanCache = true)
         {
             // lookup market data
             gameItem.UniversalisResponse = plugin.Universalis.CheckPrice().Result;
@@ -134,7 +134,7 @@ namespace SimpleMarketBoard
             plugin.MainWindow.CurrentItemUpdate(gameItem);
 
             // inset into search history
-            plugin.SearchHistoryUpdate(gameItem, checkRemove);
+            plugin.SearchHistoryUpdate(gameItem, cleanCache);
         }
 
         public void SendChatMessage(Plugin.GameItem gameItem)
@@ -153,7 +153,7 @@ namespace SimpleMarketBoard
 
         public void SendToast(Plugin.GameItem gameItem)
         {
-            plugin.PrintMessage.PrintMessageToast($"{gameItem.Name} {(char)SeIconChar.ArrowRight} {gameItem.AvgPrice}");
+            plugin.PrintMessage.PrintMessageToast($"{gameItem.Name} {(char)SeIconChar.ArrowRight} {gameItem.AvgPrice:N0}");
         }
     }
 }
