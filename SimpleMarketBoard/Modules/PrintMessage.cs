@@ -46,14 +46,14 @@ namespace SimpleMarketBoard
             {
                 Service.Chat.Print(new XivChatEntry
                 {
-                    Message = BuildSeString(Service.PluginInterface.InternalName, payloadList),
+                    Message = BuildSeString("SMB", payloadList),
                 });
             }
             else
             {
                 Service.Chat.Print(new XivChatEntry
                 {
-                    Message = BuildSeString(Service.PluginInterface.InternalName, payloadList),
+                    Message = BuildSeString("SMB", payloadList),
                     Type = this.plugin.Config.ChatLogChannel,
                 });
             }
