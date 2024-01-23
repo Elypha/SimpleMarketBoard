@@ -1,21 +1,13 @@
 ﻿using System;
-using System.IO;
 using System.Numerics;
-using Dalamud.Plugin;
 using System.Collections.Generic;
-using Dalamud.IoC;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface.Windowing;
-using Dalamud.Interface.GameFonts;
-using Dalamud.Plugin.Services;
 using ImGuiNET;
 
 using Dalamud.Interface;
-using Lumina.Excel.GeneratedSheets;
-using Lumina.Excel;
 using System.Linq;
 using System.Globalization;
-using SimpleMarketBoard.UniversalisModels;
 
 namespace SimpleMarketBoard;
 

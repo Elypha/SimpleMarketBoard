@@ -9,7 +9,6 @@ using Lumina.Excel.GeneratedSheets;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Dalamud.Plugin.Services;
 using System;
 
 namespace SimpleMarketBoard
@@ -27,8 +26,8 @@ namespace SimpleMarketBoard
         // ImGuiWindowFlags.NoScrollWithMouse
         )
         {
-            this.Size = new Vector2(400, 300);
-            this.SizeCondition = ImGuiCond.FirstUseEver;
+            Size = new Vector2(400, 300);
+            SizeCondition = ImGuiCond.FirstUseEver;
 
             this.plugin = plugin;
         }
@@ -51,7 +50,7 @@ namespace SimpleMarketBoard
         public void UpdateWorld()
         {
             Service.PluginLog.Debug($"UpdateWorld");
-            if (Service.ClientState.LocalContentId != 0 && this.playerId != Service.ClientState.LocalContentId)
+            if (Service.ClientState.LocalContentId != 0 && playerId != Service.ClientState.LocalContentId)
             {
                 var localPlayer = Service.ClientState.LocalPlayer;
                 if (localPlayer == null) return;
@@ -88,24 +87,6 @@ namespace SimpleMarketBoard
                 {
                     plugin.Config.selectedWorld = currentDcName;
                 }
-
-                // foreach (var w in this.worldList)
-                // {
-                //     Service.PluginLog.Debug($"worldList: {w}");
-                // }
-
-                // if (this.plugin.Config.CrossDataCenter)
-                // {
-                //     this.plugin.Config.selectedWorld = 0;
-                // }
-                // else if (this.plugin.Config.CrossWorld)
-                // {
-                //     this.selectedWorld = 1;
-                // }
-                // else
-                // {
-                //     this.selectedWorld = worldList.FindIndex(w => w.Item1 == localPlayer.CurrentWorld.GameData.Name);
-                // }
 
                 if (worldList.Count > 1)
                 {
@@ -147,7 +128,7 @@ namespace SimpleMarketBoard
                 plugin.Config.HoverDelayMS = HoverDelayMS;
                 plugin.Config.Save();
             }
-            ImGuiComponents.HelpMarker("you hover over an item > [wait this time in ms] > start to check and show the market data");
+            ImGuiComponents.HelpMarker("How long to wait in ms, after you hover over an item, before the plugin starts to check the market data.");
 
             // MaxCacheItems
             ImGui.Text("Max cached items");
@@ -159,17 +140,18 @@ namespace SimpleMarketBoard
                 plugin.Config.MaxCacheItems = MaxCacheItems;
                 plugin.Config.Save();
             }
+            ImGuiComponents.HelpMarker("How many items you want to keep in cache. Items more than this number will be removed from the oldest when you close the window.");
 
             // EnableRecentHistory
             var EnableRecentHistory = plugin.Config.EnableRecentHistory;
-            if (ImGui.Checkbox($"Show recent history entries{suffix}EnableRecentHistory", ref EnableRecentHistory))
+            if (ImGui.Checkbox($"Include recent history entries{suffix}EnableRecentHistory", ref EnableRecentHistory))
             {
                 plugin.Config.EnableRecentHistory = EnableRecentHistory;
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker(
-                "enable: display both current listings and history entries\n" +
-                "disable: display only current listings"
+                "Enable: Display recent history entries under current listings.\n" +
+                "Disable: The above will not happen."
             );
 
 
@@ -181,8 +163,8 @@ namespace SimpleMarketBoard
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker(
-                "enable: Include tax in the total price\n" +
-                "disable: Not include tax in the total prices"
+                "Enable: Total price will include tax.\n" +
+                "Disable: The above will not happen."
             );
 
             // CleanCacheAsYouGo
@@ -193,13 +175,12 @@ namespace SimpleMarketBoard
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker(
-                "enable: The oldest cache will be removed when a new one comes in and when you close the window\n" +
-                "disable: The oldest cache will only be removed when you close the window"
+                "Enable: The cache clean will also run right after a new one comes in.\n" +
+                "Disable: The above will not happen."
             );
 
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
-            // ImGui.Spacing();
-            // ImGui.Spacing();
+
 
 
             // ----------------- Keybinding -----------------
@@ -215,8 +196,8 @@ namespace SimpleMarketBoard
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker(
-                "enable: [press the keybinding] > hover over an item > get the market data\n" +
-                "disable: [nothing required] > hover over an item > get the market data"
+                "Enable: You need to press the keybinding before you hover over an item to get the market data.\n" +
+                "Disable: Pressing a keybinding will not be required."
             );
 
 
@@ -228,8 +209,8 @@ namespace SimpleMarketBoard
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker(
-                "enable: this will also work, hover over an item > [press a keybinding] > get the market data\n" +
-                "disable: the above will not work"
+                "Enable: In addition, you can also hover over an item first, then press the keybinding to get the market data of it.\n" +
+                "Disable: The above will not work."
             );
 
 
@@ -250,7 +231,6 @@ namespace SimpleMarketBoard
                     {
                         if (!NewHotkey.Contains((VirtualKey)k))
                         {
-
                             if ((VirtualKey)k == VirtualKey.ESCAPE)
                             {
                                 currHotkeyName = null;
@@ -258,7 +238,6 @@ namespace SimpleMarketBoard
                                 currHotkeyBoxName = null;
                                 break;
                             }
-
                             NewHotkey.Add((VirtualKey)k);
                         }
                     }
@@ -340,6 +319,8 @@ namespace SimpleMarketBoard
                 plugin.Config.RequestTimeoutMS = RequestTimeoutMS;
                 plugin.Config.Save();
             }
+            ImGuiComponents.HelpMarker("How long to wait in ms, before the plugin gives up on the market data query.");
+
 
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 
@@ -357,8 +338,8 @@ namespace SimpleMarketBoard
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker(
-                "enable: Market data will print to your game chat (only you can see)\n" +
-                "disable: the above will not happen"
+                "Enable: Your query will print to your game chat (make sure you select the right channel so that only you can see it).\n" +
+                "Disable: The above will not happen."
             );
 
 
@@ -370,8 +351,8 @@ namespace SimpleMarketBoard
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker(
-                "enable: You will receive a toast in game about the market data query" +
-                "disable: the above will not happen"
+                "Enable: Your query will print to your game toast." +
+                "Disable: The above will not happen."
             );
 
 
@@ -394,7 +375,10 @@ namespace SimpleMarketBoard
 
                 ImGui.EndCombo();
             }
-            ImGuiComponents.HelpMarker("set the chat channel to send messages");
+            ImGuiComponents.HelpMarker(
+                "Which in-game chat channel you want to print your query to.\n" +
+                "PS \"None\" is also a channel name."
+            );
 
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 
@@ -413,6 +397,8 @@ namespace SimpleMarketBoard
             {
                 selectedWorld = plugin.Config.selectedWorld;
             }
+            ImGuiComponents.HelpMarker("The world you want to get the market data from. The same thing as the drop down menu. This one here is for displaying purpose and is read-only.");
+
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 
         }
