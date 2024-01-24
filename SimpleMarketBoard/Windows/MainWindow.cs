@@ -87,14 +87,11 @@ public class MainWindow : Window, IDisposable
 
 
 
-
-        // get 50% of the current window width for the tab bar
-
+        // === left column (main tables) ===
         ImGui.BeginChild("left-col-1", new Vector2(LeftColWidth, 0), false, ImGuiWindowFlags.NoScrollbar);
 
+        var topY = ImGui.GetCursorPosY();  // store the Y pos which is the top of the window
 
-
-        var topY = ImGui.GetCursorPosY();
 
 
         // refresh button
@@ -139,11 +136,13 @@ public class MainWindow : Window, IDisposable
                 {
                     plugin.Config.selectedWorld = world.Item1;
                     plugin.PriceChecker.CheckAsyncRefresh();
+
                     Service.PluginLog.Info($"selected world: previous: {lastSelectedWorld}, config: {plugin.Config.selectedWorld}");
                     if (plugin.Config.selectedWorld != lastSelectedWorld)
                     {
                         Service.PluginLog.Info($"refresh previous: {lastSelectedWorld}, config: {plugin.Config.selectedWorld}");
                     }
+
                     lastSelectedWorld = plugin.Config.selectedWorld;
                 }
 
@@ -158,15 +157,12 @@ public class MainWindow : Window, IDisposable
 
 
 
-
-
-
-
-
-
-
+        // main table 1
         if (CurrentItem?.Id > 0)
         {
+
+
+            // item icon
             ImGui.SetCursorPosY(topY);
 
             if (ImGui.ImageButton(CurrentItemIcon.ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
@@ -176,20 +172,26 @@ public class MainWindow : Window, IDisposable
                 ImGui.LogFinish();
             }
 
+
+            // item name
             ImGui.SameLine();
-            // ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (ImGui.GetFontSize() / 2.0f) + (20 * scale));
             ImGui.SetCursorPosY(ImGui.GetCursorPosY());
+
             ImGui.PushFont(plugin.AxisTitle.ImFont);
             ImGui.Text(CurrentItem.Name);
             ImGui.PopFont();
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY());
 
 
+            // set the size for the tables
             int usedTile = plugin.Config.EnableRecentHistory ? 2 : 1;
             var priceTableHeight = ImGui.GetContentRegionAvail().Y / usedTile;
 
 
+            // === item price table 1 ===
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY());
+
             ImGui.BeginChild("left-col-1-current-listings", new Vector2(0, priceTableHeight));
+
             ImGui.Columns(4, "current-listings-columns");
 
             ImGui.SetColumnWidth(0, 70.0f);
@@ -208,7 +210,7 @@ public class MainWindow : Window, IDisposable
             ImGui.NextColumn();
             ImGui.Separator();
 
-
+            // prepare the data
             var marketDataListings = CurrentItem?.UniversalisResponse?.Listings;
             if (plugin.Config.FilterHQ)
             {
@@ -218,65 +220,55 @@ public class MainWindow : Window, IDisposable
             {
                 marketDataListings = marketDataListings?.OrderBy(l => l.PricePerUnit).ToList();
             }
+
             if (marketDataListings != null)
             {
                 foreach (var listing in marketDataListings)
                 {
                     if (listing.Hq) ImGui.PushStyleColor(ImGuiCol.Text, textColourHQ);
 
+                    // Selling
                     var index = marketDataListings.IndexOf(listing);
-                    // float posX;
-
-                    // posX = ImGui.GetCursorPosX()
-                    //     + ImGui.GetColumnWidth()
-                    //     - ImGui.CalcTextSize($"{listing.PricePerUnit}").X
-                    //     - ImGui.GetScrollX()
-                    //     - (2 * ImGui.GetStyle().ItemSpacing.X);
-                    // if (posX > ImGui.GetCursorPosX()) ImGui.SetCursorPosX(posX);
                     if (ImGui.Selectable($"{listing.PricePerUnit}##listing{index}", selectedListing == index, ImGuiSelectableFlags.SpanAllColumns))
                     {
                         selectedListing = index;
                     }
                     ImGui.NextColumn();
 
-                    // posX = ImGui.GetCursorPosX()
-                    //     + ImGui.GetColumnWidth()
-                    //     - ImGui.CalcTextSize($"{listing.Quantity}").X
-                    //     - ImGui.GetScrollX()
-                    //     - (2 * ImGui.GetStyle().ItemSpacing.X);
-                    // if (posX > ImGui.GetCursorPosX()) ImGui.SetCursorPosX(posX);
+                    // Qty
                     ImGui.Text($"{listing.Quantity:##,###}");
                     ImGui.NextColumn();
 
+                    // Total
                     double totalPrice = plugin.Config.TotalIncludeTax
                       ? listing.PricePerUnit * listing.Quantity + listing.Tax
                       : listing.PricePerUnit * listing.Quantity;
-                    // posX = ImGui.GetCursorPosX()
-                    //     + ImGui.GetColumnWidth()
-                    //     - ImGui.CalcTextSize($"{totalPrice}").X
-                    //     - ImGui.GetScrollX()
-                    //     - (2 * ImGui.GetStyle().ItemSpacing.X);
-                    // if (posX > ImGui.GetCursorPosX()) ImGui.SetCursorPosX(posX);
                     ImGui.Text(totalPrice.ToString("N0", CultureInfo.CurrentCulture));
                     ImGui.NextColumn();
 
-
+                    // World
                     ImGui.Text($"{(CurrentItem!.UniversalisResponse.IsCrossWorld ? listing.WorldName : plugin.Config.selectedWorld)}");
                     ImGui.NextColumn();
 
+                    // Finish
                     ImGui.Separator();
 
                     if (listing.Hq) ImGui.PopStyleColor();
                 }
             }
+
+            // === item price table 1 ===
             ImGui.EndChild();
+
 
 
             if (plugin.Config.EnableRecentHistory)
             {
+                // header in between
                 ImGui.Separator();
                 ImGui.Text("History");
 
+                // === item price table 2 ===
                 ImGui.BeginChild("left-col-1-history-entries", new Vector2(0, priceTableHeight));
                 ImGui.Columns(4, "history-entries-columns");
 
@@ -296,6 +288,7 @@ public class MainWindow : Window, IDisposable
                 ImGui.NextColumn();
                 ImGui.Separator();
 
+                // prepare the data
                 var marketDataEntries = CurrentItem?.UniversalisResponse?.Entries;
                 if (plugin.Config.FilterHQ)
                 {
@@ -312,57 +305,62 @@ public class MainWindow : Window, IDisposable
                     {
                         if (entry.Hq) ImGui.PushStyleColor(ImGuiCol.Text, textColourHQ);
 
+                        // Sold
                         var index = marketDataEntries.IndexOf(entry);
-
                         if (ImGui.Selectable($"{entry.PricePerUnit}##history{index}", selectedHistory == index, ImGuiSelectableFlags.SpanAllColumns))
                         {
                             selectedHistory = index;
                         }
                         ImGui.NextColumn();
 
+                        // Qty
                         ImGui.Text($"{entry.Quantity:##,###}");
                         ImGui.NextColumn();
 
+                        // Date
                         ImGui.Text($"{DateTimeOffset.FromUnixTimeSeconds(entry.Timestamp).LocalDateTime:MM-dd HH:mm}");
                         ImGui.NextColumn();
 
+                        // World
                         ImGui.Text(
                           $"{(CurrentItem!.UniversalisResponse.IsCrossWorld ? entry.WorldName : plugin.Config.selectedWorld)}");
                         ImGui.NextColumn();
 
+                        // Finish
                         ImGui.Separator();
 
                         if (entry.Hq) ImGui.PopStyleColor();
                     }
                 }
 
+                // === item price table 2 ===
                 ImGui.EndChild();
             }
         }
 
-
-
-
+        // === left column (main tables) ===
         ImGui.EndChild();
 
 
 
-
+        // === right column ===
         ImGui.SameLine();
 
+        ImGui.BeginGroup();  // for all elements in the right column
 
-        ImGui.BeginGroup();
 
-
+        // === right column group 1 ===
         var rightColTableWidth = rightColWidth - 2 * ImGui.GetStyle().ItemSpacing.X;
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.5f * ImGui.GetStyle().ItemSpacing.X));
-        // ImGui.GetContentRegionAvail().Y
+
         ImGui.BeginChild("right-col-1-buttons", new Vector2(rightColTableWidth, 24 * ImGui.GetIO().FontGlobalScale + 2 * ImGui.GetStyle().ItemSpacing.Y), true, ImGuiWindowFlags.NoScrollbar);
 
 
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.7f * ImGui.GetStyle().ItemSpacing.Y));
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.7f * ImGui.GetStyle().ItemSpacing.Y));  // move the cursor up a bit for all buttons
 
+        // history button
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.3f * ImGui.GetStyle().ItemSpacing.X));
+
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? textColourHQ : textColourWhite);
         if (ImGui.Button($"{(char)FontAwesomeIcon.List}", new Vector2(24 * ImGui.GetIO().FontGlobalScale, ImGui.GetItemRectSize().Y)))
@@ -372,7 +370,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PopStyleColor();
         ImGui.PopFont();
 
-
+        // bin button
         ImGui.SameLine();
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.2f * ImGui.GetStyle().ItemSpacing.X));
         ImGui.PushFont(UiBuilder.IconFont);
@@ -390,6 +388,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PopFont();
 
 
+        // config button
         ImGui.SameLine();
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.2f * ImGui.GetStyle().ItemSpacing.X));
         ImGui.PushFont(UiBuilder.IconFont);
@@ -400,20 +399,21 @@ public class MainWindow : Window, IDisposable
         ImGui.PopFont();
 
 
-
+        // === right column group 1 ===
         ImGui.EndChild();
 
 
 
-
+        // === separator ===
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.5f * ImGui.GetStyle().ItemSpacing.X));
         ImGui.BeginChild("right-col-2", new Vector2(rightColTableWidth, 1), false, ImGuiWindowFlags.NoScrollbar);
         ImGui.Separator();
         ImGui.EndChild();
 
+
+        // === right column group 2 ===
         var WorldOutOfDate = CurrentItem?.UniversalisResponse?.WorldOutOfDate ?? new Dictionary<string, long>();
         var worldOutOfDateCount = WorldOutOfDate.Count;
-
         var dataColHeight =
             Math.Max(worldOutOfDateCount, 1.25f) * ImGui.GetTextLineHeight()
             + (worldOutOfDateCount - 1) * ImGui.GetStyle().ItemSpacing.Y
@@ -428,8 +428,6 @@ public class MainWindow : Window, IDisposable
 
         ImGui.SameLine();
         ImGui.Spacing();
-
-
 
 
         if (searchHistoryOpen)
@@ -450,36 +448,41 @@ public class MainWindow : Window, IDisposable
             }
         }
 
+        // === right column group 2 ===
         ImGui.EndChild();
 
         ImGui.Separator();
-        // ImGui.SameLine();
 
+
+
+        // === right column group 3 ===
         var velocity = CurrentItem?.UniversalisResponse?.Velocity;
         ImGui.Text($"{(int?)velocity}");
         ImGui.Separator();
 
 
-        // var dataColHeight = ImGui.GetContentRegionAvail().Y;
 
-
+        // === right column group 4 ===
         ImGui.BeginChild("right-col-4", new Vector2(rightColTableWidth - ImGui.GetStyle().ItemSpacing.X, ImGui.GetContentRegionAvail().Y), false, ImGuiWindowFlags.NoScrollbar);
+
         ImGui.Columns(2, "world-out-of-date-columns");
 
         ImGui.SetColumnWidth(0, rightColTableWidth - ImGui.CalcTextSize("0000").X - 2 * ImGui.GetStyle().ItemSpacing.X);
         ImGui.SetColumnWidth(1, ImGui.CalcTextSize("0000").X);
-
-
 
         var worldOutOfDateIndex = 0;
         foreach (var i in WorldOutOfDate)
         {
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 0.5f * ImGui.GetStyle().ItemSpacing.Y);
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() - ImGui.GetStyle().ItemSpacing.X);
+
             ImGui.Text($"{i.Key}");
             ImGui.NextColumn();
+
+
             alignRight($"{(int?)i.Value}");
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 0.5f * ImGui.GetStyle().ItemSpacing.Y);
+
             ImGui.Text($"{(int?)i.Value}");
             ImGui.NextColumn();
 
@@ -491,11 +494,10 @@ public class MainWindow : Window, IDisposable
             }
         }
 
-
-
+        // === right column group 4 ===
         ImGui.EndChild();
 
-        ImGui.EndGroup();
+        ImGui.EndGroup();  // for all elements in the right column
     }
 
     public void alignRight(string text)

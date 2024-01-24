@@ -16,6 +16,7 @@ using Dalamud.Plugin;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Excel;
+using SimpleMarketBoard.UniversalisModels;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -24,7 +25,6 @@ using System.Numerics;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
-using SimpleMarketBoard.UniversalisModels;
 
 
 namespace SimpleMarketBoard
@@ -35,24 +35,26 @@ namespace SimpleMarketBoard
         private const string CommandMainWindow = "/mb";
         private const string CommandConfigWindow = "/mbc";
 
-        public SimpleMarketBoardConfig Config { get; init; }
-        public WindowSystem WindowSystem = new("SimpleMarketBoard");
 
-        public ConfigWindow ConfigWindow { get; init; }
-        public MainWindow MainWindow { get; init; }
-
-        public PluginHotkey PluginHotkey { get; init; }
-
-        public CancellationTokenSource? ItemCancellationTokenSource;
-        public HoveredItem HoveredItem { get; set; } = null!;
-        public PriceChecker PriceChecker { get; set; } = null!;
-        public Universalis Universalis { get; set; } = null!;
-        public PrintMessage PrintMessage { get; set; } = null!;
+        public GameFontHandle AxisTitle { get; set; }
         public readonly ExcelSheet<Item> ItemSheet;
         public readonly ExcelSheet<World> WorldSheet;
 
 
-        public GameFontHandle AxisTitle { get; set; }
+        public SimpleMarketBoardConfig Config { get; init; }
+        public WindowSystem WindowSystem = new("SimpleMarketBoard");
+        public ConfigWindow ConfigWindow { get; init; }
+        public MainWindow MainWindow { get; init; }
+
+
+        public PrintMessage PrintMessage { get; set; } = null!;
+        public PluginHotkey PluginHotkey { get; init; }
+        public Universalis Universalis { get; set; } = null!;
+        public HoveredItem HoveredItem { get; set; } = null!;
+        public PriceChecker PriceChecker { get; set; } = null!;
+
+
+        public CancellationTokenSource? ItemCancellationTokenSource;
 
 
         public Plugin(DalamudPluginInterface pluginInterface)
@@ -61,66 +63,61 @@ namespace SimpleMarketBoard
 
             Service.PluginLog.Info($"SimpleMarketBoard loading, LoadTime {Service.PluginInterface.LoadTime}");
 
-            Config = Service.PluginInterface.GetPluginConfig() as SimpleMarketBoardConfig ?? new SimpleMarketBoardConfig();
-            Config.Initialize(Service.PluginInterface);
-
+            AxisTitle = Service.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 20.0f));
             ItemSheet = Service.Data.GetExcelSheet<Item>()!;
             WorldSheet = Service.Data.GetExcelSheet<World>()!;
 
-            PluginHotkey = new PluginHotkey(this);
+            Config = Service.PluginInterface.GetPluginConfig() as SimpleMarketBoardConfig ?? new SimpleMarketBoardConfig();
+            Config.Initialize(Service.PluginInterface);
+            ConfigWindow = new ConfigWindow(this);
+            MainWindow = new MainWindow(this);
+            WindowSystem.AddWindow(ConfigWindow);
+            WindowSystem.AddWindow(MainWindow);
 
-            // PriceChecker = new PriceChecker(this);
+            PrintMessage = new PrintMessage(this);
+            PluginHotkey = new PluginHotkey(this);
+            Universalis = new Universalis(this);
             HoveredItem = new HoveredItem(this);
             PriceChecker = new PriceChecker(this);
-            Universalis = new Universalis(this);
-            PrintMessage = new PrintMessage(this);
-
-            MainWindow = new MainWindow(this);
-            ConfigWindow = new ConfigWindow(this);
-
-            WindowSystem.AddWindow(MainWindow);
-            WindowSystem.AddWindow(ConfigWindow);
-            AxisTitle = Service.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 20.0f));
-
-
-
-            Service.Commands.AddHandler(CommandMainWindow, new CommandInfo(OnCommandMainWindow)
-            {
-                HelpMessage = "Open the main window."
-            });
-            Service.Commands.AddHandler(CommandConfigWindow, new CommandInfo(OnCommandConfigWindow)
-            {
-                HelpMessage = "Open the configuration window."
-            });
 
             Service.PluginInterface.UiBuilder.Draw += DrawUI;
-            Service.PluginInterface.UiBuilder.OpenMainUi += DrawMainUI;
             Service.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
+            Service.PluginInterface.UiBuilder.OpenMainUi += DrawMainUI;
             Service.ClientState.Login += OnLogin;
             Service.ClientState.TerritoryChanged += OnTerritoryChanged;
             HoveredItem.Enable();
             ConfigWindow.UpdateWorld();
+
+            Service.Commands.AddHandler(CommandConfigWindow, new CommandInfo(OnCommandConfigWindow) { HelpMessage = "Open the configuration window." });
+            Service.Commands.AddHandler(CommandMainWindow, new CommandInfo(OnCommandMainWindow) { HelpMessage = "Open the main window." });
 
             Service.PluginLog.Info($"SimpleMarketBoard initialized. LoadTime {Service.PluginInterface.LoadTime}");
         }
 
         public void Dispose()
         {
-            WindowSystem.RemoveAllWindows();
+            ItemCancellationTokenSource?.Dispose();
 
-            ConfigWindow.Dispose();
-            MainWindow.Dispose();
 
-            Service.Commands.RemoveHandler(CommandMainWindow);
             Service.Commands.RemoveHandler(CommandConfigWindow);
+            Service.Commands.RemoveHandler(CommandMainWindow);
 
             Service.PluginInterface.UiBuilder.Draw -= DrawUI;
-            Service.PluginInterface.UiBuilder.OpenMainUi -= DrawMainUI;
             Service.PluginInterface.UiBuilder.OpenConfigUi -= DrawConfigUI;
+            Service.PluginInterface.UiBuilder.OpenMainUi -= DrawMainUI;
             Service.ClientState.Login -= OnLogin;
             Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
 
-            ItemCancellationTokenSource?.Dispose();
+            WindowSystem.RemoveAllWindows();
+            ConfigWindow.Dispose();
+            MainWindow.Dispose();
+
+            PrintMessage.Dispose();
+            PluginHotkey.Dispose();
+            Universalis.Dispose();
+            HoveredItem.Dispose();
+            PriceChecker.Dispose();
+
             AxisTitle.Dispose();
         }
 
@@ -159,34 +156,9 @@ namespace SimpleMarketBoard
         }
 
 
-
-
-
+        // ----------------- game item stuff -----------------
 
         public List<GameItem> GameItemCacheList = new List<GameItem>();
-
-        public void SearchHistoryUpdate(Plugin.GameItem gameItem, bool checkRemove = false)
-        {
-            SearchHistoryClean();
-            if (checkRemove) GameItemCacheList.RemoveAll(i => i.Id == gameItem.Id);
-            GameItemCacheList.Insert(0, gameItem);
-        }
-
-        public void SearchHistoryClean()
-        {
-            Service.PluginLog.Info($"cache items: {GameItemCacheList.Count}");
-
-            if (GameItemCacheList.Count < Config.MaxCacheItems) return;
-
-            if (Config.CleanCacheAsYouGo || (!Config.CleanCacheAsYouGo && !MainWindow.IsOpen))
-            {
-                GameItemCacheList.RemoveRange(
-                    Config.MaxCacheItems - 1,
-                    GameItemCacheList.Count - Config.MaxCacheItems + 1
-                );
-                Service.PluginLog.Info($"cache cleaned: {GameItemCacheList.Count}");
-            }
-        }
 
         public class GameItem
         {
@@ -212,5 +184,31 @@ namespace SimpleMarketBoard
             public const ulong UnknownUserWorld = 12;
             public const ulong APIError = 20;
         }
+
+
+        public void SearchHistoryUpdate(Plugin.GameItem gameItem, bool checkRemove = false)
+        {
+            SearchHistoryClean();
+            if (checkRemove) GameItemCacheList.RemoveAll(i => i.Id == gameItem.Id);
+            GameItemCacheList.Insert(0, gameItem);
+        }
+
+        public void SearchHistoryClean()
+        {
+            Service.PluginLog.Info($"cache items: {GameItemCacheList.Count}");
+
+            if (GameItemCacheList.Count < Config.MaxCacheItems) return;
+
+            if (Config.CleanCacheAsYouGo || (!Config.CleanCacheAsYouGo && !MainWindow.IsOpen))
+            {
+                GameItemCacheList.RemoveRange(
+                    Config.MaxCacheItems - 1,
+                    GameItemCacheList.Count - Config.MaxCacheItems + 1
+                );
+                Service.PluginLog.Info($"cache cleaned: {GameItemCacheList.Count}");
+            }
+        }
+
+
     }
 }

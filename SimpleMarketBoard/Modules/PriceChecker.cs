@@ -33,6 +33,10 @@ namespace SimpleMarketBoard
             this.plugin = plugin;
         }
 
+        public void Dispose()
+        {
+        }
+
         public void CheckAsync(ulong itemId, bool isHQ, bool cleanCache = true)
         {
             try
@@ -88,7 +92,7 @@ namespace SimpleMarketBoard
                 // run price check
                 Task.Run(async () =>
                 {
-                    await Task.Delay(plugin.Config.HoverDelayMS, plugin.ItemCancellationTokenSource!.Token).ConfigureAwait(false);
+                    await Task.Delay(plugin.Config.HoverDelayx100MS * 100, plugin.ItemCancellationTokenSource!.Token).ConfigureAwait(false);
                     await Task.Run(() => Check(true));
                 });
             }

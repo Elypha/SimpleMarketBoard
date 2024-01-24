@@ -29,6 +29,10 @@ namespace SimpleMarketBoard
             this.plugin = plugin;
         }
 
+        public void Dispose()
+        {
+        }
+
         private static SeString BuildSeString(string? pluginName, IEnumerable<Payload> payloads)
         {
             var basePayloads = BuildBasePayloads(pluginName);
