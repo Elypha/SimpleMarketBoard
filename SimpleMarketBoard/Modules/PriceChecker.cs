@@ -81,7 +81,7 @@ namespace SimpleMarketBoard
                 }
 
                 gameItem.IsHQ = isHQ;
-                gameItem.FetchTimestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
                 gameItem.Name = gameItem.InGame.Name.ToString();
 
 
@@ -102,7 +102,6 @@ namespace SimpleMarketBoard
 
         public void CheckAsyncRefresh()
         {
-            gameItem.FetchTimestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             Task.Run(async () =>
             {
                 await Task.Run(() => Check(true));
@@ -112,6 +111,7 @@ namespace SimpleMarketBoard
         private void Check(bool cleanCache = true)
         {
             // lookup market data
+            gameItem.FetchTimestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             gameItem.UniversalisResponse = plugin.Universalis.CheckPrice().Result;
 
             // validate

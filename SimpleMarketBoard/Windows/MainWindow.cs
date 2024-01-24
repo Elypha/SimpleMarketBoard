@@ -97,8 +97,22 @@ public class MainWindow : Window, IDisposable
         var topY = ImGui.GetCursorPosY();
 
 
+        // refresh button
         ImGui.SetCursorPosY(topY + ImGui.GetTextLineHeightWithSpacing() + (1.1f * ImGui.GetStyle().ItemSpacing.Y));
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (130 * scale) - (24 * ImGui.GetIO().FontGlobalScale) - (0.5f * ImGui.GetStyle().ItemSpacing.X));
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (130 * scale) - 2 * (24 * ImGui.GetIO().FontGlobalScale + 0.5f * ImGui.GetStyle().ItemSpacing.X));
+
+        ImGui.PushFont(UiBuilder.IconFont);
+        if (ImGui.Button($"{(char)FontAwesomeIcon.Repeat}", new Vector2(24 * ImGui.GetIO().FontGlobalScale, ImGui.GetItemRectSize().Y)))
+        {
+            plugin.PriceChecker.CheckAsyncRefresh();
+        }
+        ImGui.PopFont();
+        ImGui.SameLine();
+
+
+        // HQ filter button
+        ImGui.SetCursorPosY(topY + ImGui.GetTextLineHeightWithSpacing() + (1.1f * ImGui.GetStyle().ItemSpacing.Y));
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (130 * scale) - 1 * (24 * ImGui.GetIO().FontGlobalScale + 0.5f * ImGui.GetStyle().ItemSpacing.X));
 
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.PushStyleColor(ImGuiCol.Text, plugin.Config.FilterHQ ? textColourHQ : textColourWhite);
@@ -111,6 +125,7 @@ public class MainWindow : Window, IDisposable
         ImGui.SameLine();
 
 
+        // world selection dropdown
         ImGui.SetCursorPosY(topY + ImGui.GetTextLineHeightWithSpacing() + (1 * ImGui.GetStyle().ItemSpacing.Y));
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (130 * scale));
 
@@ -350,7 +365,7 @@ public class MainWindow : Window, IDisposable
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.3f * ImGui.GetStyle().ItemSpacing.X));
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? textColourHQ : textColourWhite);
-        if (ImGui.Button($"{(char)FontAwesomeIcon.History}", new Vector2(24 * ImGui.GetIO().FontGlobalScale, ImGui.GetItemRectSize().Y)))
+        if (ImGui.Button($"{(char)FontAwesomeIcon.List}", new Vector2(24 * ImGui.GetIO().FontGlobalScale, ImGui.GetItemRectSize().Y)))
         {
             searchHistoryOpen = !searchHistoryOpen;
         }
