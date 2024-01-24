@@ -118,14 +118,14 @@ namespace SimpleMarketBoard
             ImGui.Separator();
 
 
-            // HoverDelayMS
+            // HoverDelayx100MS
             ImGui.Text("Hover delay");
             ImGui.SameLine();
-            var HoverDelayMS = plugin.Config.HoverDelayMS;
-            ImGui.SetNextItemWidth(150 * scale);
-            if (ImGui.SliderInt($"ms{suffix}HoverDelayMS", ref HoverDelayMS, 0, 2000))
+            var HoverDelayx100MS = plugin.Config.HoverDelayx100MS;
+            ImGui.SetNextItemWidth(200 * scale);
+            if (ImGui.SliderInt($"{suffix}HoverDelayx100MS", ref HoverDelayx100MS, 0, 20, $"{HoverDelayx100MS * 100} ms"))
             {
-                plugin.Config.HoverDelayMS = HoverDelayMS;
+                plugin.Config.HoverDelayx100MS = HoverDelayx100MS;
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker("How long to wait in ms, after you hover over an item, before the plugin starts to check the market data.");
@@ -389,15 +389,16 @@ namespace SimpleMarketBoard
 
 
             // selectedWorld
-            ImGui.Text("Currently selected world");
+            ImGui.Text("Currently selected world: ");
             ImGui.SameLine();
             var selectedWorld = plugin.Config.selectedWorld;
             ImGui.SetNextItemWidth(150 * scale);
-            if (ImGui.InputText($"{suffix}selectedWorld", ref selectedWorld, 100, ImGuiInputTextFlags.ReadOnly))
-            {
-                selectedWorld = plugin.Config.selectedWorld;
-            }
-            ImGuiComponents.HelpMarker("The world you want to get the market data from. The same thing as the drop down menu. This one here is for displaying purpose and is read-only.");
+            ImGui.Text(plugin.Config.selectedWorld);
+            // if (ImGui.InputText($"{suffix}selectedWorld", ref selectedWorld, 100, ImGuiInputTextFlags.ReadOnly))
+            // {
+            //     selectedWorld = plugin.Config.selectedWorld;
+            // }
+            ImGuiComponents.HelpMarker("The world you selected from the drop down menu.");
 
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 

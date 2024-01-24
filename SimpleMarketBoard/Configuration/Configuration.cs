@@ -14,7 +14,7 @@ namespace SimpleMarketBoard
         public int Version { get; set; } = 0;
 
         // ----------------- General -----------------
-        public int HoverDelayMS { get; set; } = 1000;
+        public int HoverDelayx100MS { get; set; } = 10;
         public int MaxCacheItems { get; set; } = 30;
 
         public bool EnableRecentHistory { get; set; } = true;
