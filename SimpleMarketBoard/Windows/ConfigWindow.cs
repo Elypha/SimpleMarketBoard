@@ -109,6 +109,7 @@ namespace SimpleMarketBoard
         {
             var scale = ImGui.GetIO().FontGlobalScale;
             var padding = 0.8f;
+            var fontsize = ImGui.GetFontSize();
             var titleColour = new Vector4(0.9f, 0.7f, 0.55f, 1);
             var suffix = $"###{plugin.Name}-";
 
@@ -121,6 +122,7 @@ namespace SimpleMarketBoard
             // HoverDelayx100MS
             ImGui.Text("Hover delay");
             ImGui.SameLine();
+
             var HoverDelayx100MS = plugin.Config.HoverDelayx100MS;
             ImGui.SetNextItemWidth(200 * scale);
             if (ImGui.SliderInt($"{suffix}HoverDelayx100MS", ref HoverDelayx100MS, 0, 20, $"{HoverDelayx100MS * 100} ms"))
@@ -130,17 +132,22 @@ namespace SimpleMarketBoard
             }
             ImGuiComponents.HelpMarker("How long to wait in ms, after you hover over an item, before the plugin starts to check the market data.");
 
+
             // MaxCacheItems
-            ImGui.Text("Max cached items");
+            ImGui.Text("Cache size");
             ImGui.SameLine();
+
             var MaxCacheItems = plugin.Config.MaxCacheItems;
-            ImGui.SetNextItemWidth(150 * scale);
-            if (ImGui.InputInt($"{suffix}MaxCacheItems", ref MaxCacheItems))
+            ImGui.SetNextItemWidth(200 * scale);
+            if (ImGui.SliderInt($"{suffix}MaxCacheItems", ref MaxCacheItems, 1, 30, $"{MaxCacheItems} items"))
             {
                 plugin.Config.MaxCacheItems = MaxCacheItems;
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker("How many items you want to keep in cache. Items more than this number will be removed from the oldest when you close the window.");
+
+
+
 
             // EnableRecentHistory
             var EnableRecentHistory = plugin.Config.EnableRecentHistory;
