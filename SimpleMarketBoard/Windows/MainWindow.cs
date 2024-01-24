@@ -169,7 +169,7 @@ public class MainWindow : Window, IDisposable
         {
             ImGui.SetCursorPosY(topY);
 
-            if (ImGui.ImageButton(CurrentItemIcon.ImGuiHandle, new Vector2(40, 40)))
+            if (ImGui.ImageButton(CurrentItemIcon.ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
             {
                 ImGui.LogToClipboard();
                 ImGui.LogText(CurrentItem.Name);
