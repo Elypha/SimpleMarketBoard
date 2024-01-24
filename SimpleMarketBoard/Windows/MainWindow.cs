@@ -2,6 +2,7 @@
 using System.Numerics;
 using System.Collections.Generic;
 using Dalamud.Interface.Internal;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
@@ -362,7 +363,14 @@ public class MainWindow : Window, IDisposable
         ImGui.PushFont(UiBuilder.IconFont);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Trash}", new Vector2(24 * ImGui.GetIO().FontGlobalScale, ImGui.GetItemRectSize().Y)))
         {
-            plugin.GameItemCacheList.RemoveAll(i => i.Id == CurrentItem?.Id);
+            if (plugin.PluginHotkey.CheckHotkeyState([VirtualKey.CONTROL]))
+            {
+                plugin.GameItemCacheList.Clear();
+            }
+            else
+            {
+                plugin.GameItemCacheList.RemoveAll(i => i.Id == CurrentItem?.Id);
+            }
         }
         ImGui.PopFont();
 
