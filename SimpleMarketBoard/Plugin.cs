@@ -42,7 +42,6 @@ namespace SimpleMarketBoard
         public MainWindow MainWindow { get; init; }
 
         public PluginHotkey PluginHotkey { get; init; }
-        public WorldParser WorldParser { get; init; }
 
         public CancellationTokenSource? ItemCancellationTokenSource;
         public HoveredItem HoveredItem { get; set; } = null!;
@@ -69,8 +68,6 @@ namespace SimpleMarketBoard
             WorldSheet = Service.Data.GetExcelSheet<World>()!;
 
             PluginHotkey = new PluginHotkey(this);
-            var worldCsvPath = Path.Combine(Service.PluginInterface.AssemblyLocation.Directory?.FullName!, "Data", "World.csv");
-            WorldParser = new WorldParser(worldCsvPath);
 
             // PriceChecker = new PriceChecker(this);
             HoveredItem = new HoveredItem(this);
