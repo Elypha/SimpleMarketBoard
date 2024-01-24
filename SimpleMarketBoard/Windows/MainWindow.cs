@@ -363,7 +363,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PushFont(UiBuilder.IconFont);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Trash}", new Vector2(24 * ImGui.GetIO().FontGlobalScale, ImGui.GetItemRectSize().Y)))
         {
-            if (plugin.PluginHotkey.CheckHotkeyState([VirtualKey.CONTROL]))
+            if (plugin.PluginHotkey.CheckHotkeyState(new VirtualKey[] { VirtualKey.CONTROL }))
             {
                 plugin.GameItemCacheList.Clear();
             }
