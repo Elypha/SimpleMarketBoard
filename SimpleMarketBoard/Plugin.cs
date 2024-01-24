@@ -50,8 +50,11 @@ namespace SimpleMarketBoard
         public Universalis Universalis { get; set; } = null!;
         public PrintMessage PrintMessage { get; set; } = null!;
         public readonly ExcelSheet<Item> ItemSheet;
+        public readonly ExcelSheet<World> WorldSheet;
+
 
         public GameFontHandle AxisTitle { get; set; }
+
 
         public Plugin(DalamudPluginInterface pluginInterface)
         {
@@ -63,6 +66,7 @@ namespace SimpleMarketBoard
             Config.Initialize(Service.PluginInterface);
 
             ItemSheet = Service.Data.GetExcelSheet<Item>()!;
+            WorldSheet = Service.Data.GetExcelSheet<World>()!;
 
             PluginHotkey = new PluginHotkey(this);
             var worldCsvPath = Path.Combine(Service.PluginInterface.AssemblyLocation.Directory?.FullName!, "Data", "World.csv");

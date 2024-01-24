@@ -51,7 +51,9 @@ namespace SimpleMarketBoard
                 var worldUploadTimes = currentData.WorldUploadTimes.OrderByDescending(w => w.Value).ToList();
                 foreach (var i in worldUploadTimes ?? new List<KeyValuePair<string, long>>() { })
                 {
-                    var worldName = plugin.WorldParser.GetNameForKey(int.Parse(i.Key));
+                    var worldRow = plugin.WorldSheet.GetRow(uint.Parse(i.Key));
+                    if (worldRow == null) continue;
+                    var worldName = worldRow.Name.ToString();
                     // name = name.Substring(0, Math.Min(4, name.Length));
                     var hours = (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - i.Value) / 1000 / 3600;
                     // var hoursStr = hours.ToString("0.0");
