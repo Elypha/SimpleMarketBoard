@@ -24,8 +24,8 @@ public class MainWindow : Window, IDisposable
     {
         LastItemId = CurrentItem?.Id ?? 0;
         CurrentItem = gameItem;
-        // CurrentItemIcon?.Dispose();
         CurrentItemIcon = Service.TextureProvider.GetIcon(CurrentItem.InGame.Icon)!;
+        CurrentItem.Name = CurrentItem.InGame.Name.ToString();
     }
 
     public string lastSelectedWorld = "";
@@ -135,12 +135,12 @@ public class MainWindow : Window, IDisposable
                 if (ImGui.Selectable(world.Item2, isSelected))
                 {
                     plugin.Config.selectedWorld = world.Item1;
-                    plugin.PriceChecker.CheckAsyncRefresh();
 
-                    Service.PluginLog.Info($"selected world: previous: {lastSelectedWorld}, config: {plugin.Config.selectedWorld}");
+                    Service.PluginLog.Debug($"[UI] Selected world: {lastSelectedWorld} -> {plugin.Config.selectedWorld}");
                     if (plugin.Config.selectedWorld != lastSelectedWorld)
                     {
-                        Service.PluginLog.Info($"refresh previous: {lastSelectedWorld}, config: {plugin.Config.selectedWorld}");
+                        Service.PluginLog.Info($"[UI] Fetch data of {plugin.Config.selectedWorld}");
+                        plugin.PriceChecker.CheckAsyncRefresh();
                     }
 
                     lastSelectedWorld = plugin.Config.selectedWorld;
@@ -508,6 +508,5 @@ public class MainWindow : Window, IDisposable
             - ImGui.GetScrollX()
             - (1 * ImGui.GetStyle().ItemSpacing.X);
         ImGui.SetCursorPosX(posX);
-        // Service.PluginLog.Debug($"dataColHeight: {ImGui.GetCursorPosX()} {ImGui.GetColumnWidth()} {text}:{ImGui.CalcTextSize(text).X} {ImGui.GetScrollX()} {posX}");
     }
 }

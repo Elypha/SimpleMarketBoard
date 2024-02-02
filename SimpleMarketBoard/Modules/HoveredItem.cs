@@ -38,18 +38,18 @@ namespace SimpleMarketBoard
             try
             {
                 // cancel in-flight request
-                if (plugin.ItemCancellationTokenSource != null)
+                if (plugin.PriceChecker.ItemCancellationTokenSource != null)
                 {
-                    if (!plugin.ItemCancellationTokenSource.IsCancellationRequested)
-                        plugin.ItemCancellationTokenSource.Cancel();
-                    plugin.ItemCancellationTokenSource.Dispose();
+                    if (!plugin.PriceChecker.ItemCancellationTokenSource.IsCancellationRequested)
+                        plugin.PriceChecker.ItemCancellationTokenSource.Cancel();
+                    plugin.PriceChecker.ItemCancellationTokenSource.Dispose();
                 }
 
                 // stop if invalid itemId
                 if (thisItemId == 0)
                 {
                     ResetItemData();
-                    plugin.ItemCancellationTokenSource = null;
+                    plugin.PriceChecker.ItemCancellationTokenSource = null;
                     return;
                 };
 
@@ -68,7 +68,7 @@ namespace SimpleMarketBoard
                 }
 
                 var rowid = plugin.ItemSheet.GetRow((uint)realItemId);
-                Service.PluginLog.Information($"hovered Id/realId/RouId: {thisItemId}/{realItemId}/{rowid?.RowId}");
+                Service.PluginLog.Debug($"[UI] ItemID, RealID, RowID: | {thisItemId,7} | {realItemId,7} | {rowid?.RowId,7} |");
 
                 // check if keybinding is pressed
                 bool isKeybindingPressed = plugin.PluginHotkey.CheckHotkeyState(plugin.Config.BindingHotkey);
@@ -80,7 +80,7 @@ namespace SimpleMarketBoard
                         if (isKeybindingPressed)
                         {
                             // call immediately
-                            Service.PluginLog.Information($"checker A: {realItemId}, {itemIsHQ}");
+                            Service.PluginLog.Debug($"[UI] Check by keybinding after hover: {realItemId}, {itemIsHQ}");
                             plugin.PriceChecker.CheckAsync(realItemId, itemIsHQ);
                             return;
                         }
@@ -94,22 +94,22 @@ namespace SimpleMarketBoard
                     else
                     {
                         if (!isKeybindingPressed) return;
-                        Service.PluginLog.Information($"checker B: {realItemId}, {itemIsHQ}");
+                        Service.PluginLog.Debug($"[UI] Check by hover after keybinding: {realItemId}, {itemIsHQ}");
                         plugin.PriceChecker.CheckAsync(realItemId, itemIsHQ);
                         return;
                     }
                 }
                 else
                 {
-                    Service.PluginLog.Information($"checker C: {realItemId}, {itemIsHQ}");
+                    Service.PluginLog.Debug($"[UI] Check by hover without keybinding: {realItemId}, {itemIsHQ}");
                     plugin.PriceChecker.CheckAsync(realItemId, itemIsHQ);
                 }
             }
             catch (Exception ex)
             {
-                Service.PluginLog.Error(ex, "Failed to price check.");
+                Service.PluginLog.Error($"[UI] Failed to do price check, {ex.Message}");
                 ResetItemData();
-                plugin.ItemCancellationTokenSource = null;
+                plugin.PriceChecker.ItemCancellationTokenSource = null;
             }
         }
 
@@ -119,7 +119,7 @@ namespace SimpleMarketBoard
             {
                 if (LastItemId != 0)
                 {
-                    Service.PluginLog.Information($"checker rn: {LastItemId}, {LastItemIsHQ}");
+                    Service.PluginLog.Debug($"[UI] Check by keybinding after hover for the current item: {LastItemId}, {LastItemIsHQ}");
                     plugin.PriceChecker.CheckAsync(LastItemId, LastItemIsHQ);
                     LastItemId = 0;
                 }

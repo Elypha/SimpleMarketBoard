@@ -15,7 +15,7 @@ namespace SimpleMarketBoard.UniversalisModels
         /// Gets or sets the ID of the item.
         /// </summary>
         [JsonPropertyName("itemID")]
-        public ulong ItemId { get; set; }
+        public ulong ItemId { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the last upload time.

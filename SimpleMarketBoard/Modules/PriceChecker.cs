@@ -28,6 +28,8 @@ namespace SimpleMarketBoard
         private readonly Plugin plugin;
         public Plugin.GameItem gameItem = null!;
 
+        public CancellationTokenSource? ItemCancellationTokenSource;
+
         public PriceChecker(Plugin plugin)
         {
             this.plugin = plugin;
@@ -35,29 +37,31 @@ namespace SimpleMarketBoard
 
         public void Dispose()
         {
+            ItemCancellationTokenSource?.Dispose();
         }
 
         public void CheckAsync(ulong itemId, bool isHQ, bool cleanCache = true)
         {
             try
             {
-                Service.PluginLog.Debug($"Check: {itemId}, {isHQ}");
+                Service.PluginLog.Debug($"[Checker] Check: {itemId}, {isHQ}");
 
                 // cancel in-flight request
-                if (plugin.ItemCancellationTokenSource != null)
+                if (ItemCancellationTokenSource != null)
                 {
-                    if (!plugin.ItemCancellationTokenSource.IsCancellationRequested)
-                        plugin.ItemCancellationTokenSource.Cancel();
-                    plugin.ItemCancellationTokenSource.Dispose();
+                    if (!ItemCancellationTokenSource.IsCancellationRequested)
+                        ItemCancellationTokenSource.Cancel();
+                    ItemCancellationTokenSource.Dispose();
                 }
 
                 // create new cancel token
-                plugin.ItemCancellationTokenSource = new CancellationTokenSource(plugin.Config.RequestTimeoutMS * 2);
+                // +10 to ensure it's not cancelled before the task starts
+                ItemCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(plugin.Config.HoverDelayIn100MS * 100 + 10));
 
                 List<ulong> SearchHistoryIds = plugin.GameItemCacheList.Select(i => i.Id).ToList();
                 if (SearchHistoryIds.Contains(itemId))
                 {
-                    Service.PluginLog.Debug($"Check: {itemId} found in cache.");
+                    Service.PluginLog.Debug($"[Checker] {itemId} found in cache.");
                     gameItem = plugin.GameItemCacheList.Single(i => i.Id == itemId);
                     plugin.MainWindow.CurrentItemUpdate(gameItem);
                     // plugin.SearchHistoryUpdate(gameItem, cleanCache);
@@ -92,14 +96,15 @@ namespace SimpleMarketBoard
                 // run price check
                 Task.Run(async () =>
                 {
-                    await Task.Delay(plugin.Config.HoverDelayx100MS * 100, plugin.ItemCancellationTokenSource!.Token).ConfigureAwait(false);
+                    await Task.Delay(plugin.Config.HoverDelayIn100MS * 100, ItemCancellationTokenSource!.Token).ConfigureAwait(false);
                     await Task.Run(() => Check(true));
                 });
             }
             catch (Exception ex)
             {
-                Service.PluginLog.Error(ex, "ProcessItemAsync failed.");
-                plugin.ItemCancellationTokenSource = null;
+                Service.PluginLog.Error($"[Checker] Check failed, {ex.Message}");
+                plugin.MainWindow.CurrentItem.Name = "Please try again";
+                ItemCancellationTokenSource = null;
                 plugin.HoveredItem.ResetItemData();
             }
         }
@@ -115,17 +120,30 @@ namespace SimpleMarketBoard
         private void Check(bool cleanCache = true)
         {
             // lookup market data
-            gameItem.FetchTimestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            gameItem.UniversalisResponse = plugin.Universalis.CheckPrice().Result;
+            plugin.MainWindow.CurrentItem.Name = "Loading...";
+            plugin.MainWindow.CurrentItemIcon = Service.TextureProvider.GetIcon(gameItem.InGame.Icon)!;
+            var UniversalisResponse = plugin.Universalis.CheckPriceAsync().Result;
 
             // validate
-            if (plugin.PriceChecker.gameItem.Id != plugin.PriceChecker.gameItem.UniversalisResponse.ItemId)
+            if (UniversalisResponse.ItemId == 0)
             {
+                plugin.MainWindow.CurrentItem.Name = "Timed out";
                 gameItem.Result = Plugin.GameItemResult.APIError;
-                Service.PluginLog.Error($"CheckPrice failed, {gameItem.Id}.");
+                Service.PluginLog.Warning($"[Check] Timed out, {gameItem.Id}.");
                 return;
             }
+            if (plugin.PriceChecker.gameItem.Id != UniversalisResponse.ItemId)
+            {
+                gameItem.Result = Plugin.GameItemResult.APIError;
+                Service.PluginLog.Error($"[Check] API error, {gameItem.Id}.");
+                return;
+            }
+
+            // update game item
             gameItem.Result = Plugin.GameItemResult.Success;
+            gameItem.UniversalisResponse = UniversalisResponse;
+            gameItem.FetchTimestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
 
             // add avg price
             // it's not perfect but I'll take it for now
@@ -145,19 +163,18 @@ namespace SimpleMarketBoard
         {
             plugin.PrintMessage.PrintMessageChat(new List<Payload>
             {
-                new UIForegroundPayload(25),
+                new UIForegroundPayload(39),
                 new ItemPayload((uint)gameItem.Id, gameItem.IsHQ),
-                new TextPayload($"{(char)SeIconChar.LinkMarker}"),
-                new TextPayload(" " + gameItem.Name),
+                new TextPayload($"{(char)SeIconChar.LinkMarker} {gameItem.InGame.Name}"),
                 RawPayload.LinkTerminator,
-                new TextPayload(" " + (char)SeIconChar.ArrowRight + " " + gameItem.AvgPrice.ToString("N0", CultureInfo.InvariantCulture)),
+                new TextPayload($" [{gameItem.UniversalisResponse.RegionName}] {(char)SeIconChar.Gil} {gameItem.AvgPrice:N0}"),
                 new UIForegroundPayload(0)
             });
         }
 
         public void SendToast(Plugin.GameItem gameItem)
         {
-            plugin.PrintMessage.PrintMessageToast($"{gameItem.Name} {(char)SeIconChar.ArrowRight} {gameItem.AvgPrice:N0}");
+            plugin.PrintMessage.PrintMessageToast($"{gameItem.InGame.Name} [{gameItem.UniversalisResponse.RegionName}] {(char)SeIconChar.Gil} {gameItem.AvgPrice:N0}");
         }
     }
 }

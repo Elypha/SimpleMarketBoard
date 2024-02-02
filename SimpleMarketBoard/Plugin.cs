@@ -54,14 +54,14 @@ namespace SimpleMarketBoard
         public PriceChecker PriceChecker { get; set; } = null!;
 
 
-        public CancellationTokenSource? ItemCancellationTokenSource;
+
 
 
         public Plugin(DalamudPluginInterface pluginInterface)
         {
             pluginInterface.Create<Service>();
 
-            Service.PluginLog.Info($"SimpleMarketBoard loading, LoadTime {Service.PluginInterface.LoadTime}");
+            Service.PluginLog.Info($"[General] Plugin loading...");
 
             AxisTitle = Service.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 20.0f));
             ItemSheet = Service.Data.GetExcelSheet<Item>()!;
@@ -91,14 +91,11 @@ namespace SimpleMarketBoard
             Service.Commands.AddHandler(CommandConfigWindow, new CommandInfo(OnCommandConfigWindow) { HelpMessage = "Open the configuration window." });
             Service.Commands.AddHandler(CommandMainWindow, new CommandInfo(OnCommandMainWindow) { HelpMessage = "Open the main window." });
 
-            Service.PluginLog.Info($"SimpleMarketBoard initialized. LoadTime {Service.PluginInterface.LoadTime}");
+            Service.PluginLog.Info($"[General] Plugin initialised");
         }
 
         public void Dispose()
         {
-            ItemCancellationTokenSource?.Dispose();
-
-
             Service.Commands.RemoveHandler(CommandConfigWindow);
             Service.Commands.RemoveHandler(CommandMainWindow);
 
@@ -195,7 +192,7 @@ namespace SimpleMarketBoard
 
         public void SearchHistoryClean()
         {
-            Service.PluginLog.Info($"cache items: {GameItemCacheList.Count}");
+            Service.PluginLog.Debug($"[Cache] Items in cache {GameItemCacheList.Count}");
 
             if (GameItemCacheList.Count < Config.MaxCacheItems) return;
 
@@ -205,7 +202,7 @@ namespace SimpleMarketBoard
                     Config.MaxCacheItems - 1,
                     GameItemCacheList.Count - Config.MaxCacheItems + 1
                 );
-                Service.PluginLog.Info($"cache cleaned: {GameItemCacheList.Count}");
+                Service.PluginLog.Debug($"[Cache] Cache cleaned. Current items in cache {GameItemCacheList.Count}");
             }
         }
 

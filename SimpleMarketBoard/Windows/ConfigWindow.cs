@@ -49,7 +49,7 @@ namespace SimpleMarketBoard
 
         public void UpdateWorld()
         {
-            Service.PluginLog.Debug($"UpdateWorld");
+            Service.PluginLog.Debug($"[Config] Update player's current world");
             if (Service.ClientState.LocalContentId != 0 && playerId != Service.ClientState.LocalContentId)
             {
                 var localPlayer = Service.ClientState.LocalPlayer;
@@ -119,15 +119,15 @@ namespace SimpleMarketBoard
             ImGui.Separator();
 
 
-            // HoverDelayx100MS
+            // HoverDelayIn100MS
             ImGui.Text("Hover delay");
             ImGui.SameLine();
 
-            var HoverDelayx100MS = plugin.Config.HoverDelayx100MS;
+            var HoverDelayIn100MS = plugin.Config.HoverDelayIn100MS;
             ImGui.SetNextItemWidth(200 * scale);
-            if (ImGui.SliderInt($"{suffix}HoverDelayx100MS", ref HoverDelayx100MS, 0, 20, $"{HoverDelayx100MS * 100} ms"))
+            if (ImGui.SliderInt($"{suffix}HoverDelayIn100MS", ref HoverDelayIn100MS, 0, 20, $"{HoverDelayIn100MS * 100} ms"))
             {
-                plugin.Config.HoverDelayx100MS = HoverDelayx100MS;
+                plugin.Config.HoverDelayIn100MS = HoverDelayIn100MS;
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker("How long to wait in ms, after you hover over an item, before the plugin starts to check the market data.");
@@ -319,14 +319,15 @@ namespace SimpleMarketBoard
             // RequestTimeout
             ImGui.Text("Request timeout");
             ImGui.SameLine();
-            var RequestTimeoutMS = plugin.Config.RequestTimeoutMS;
+            var RequestTimeout = plugin.Config.RequestTimeout;
             ImGui.SetNextItemWidth(150 * scale);
-            if (ImGui.InputInt($"ms{suffix}RequestTimeout", ref RequestTimeoutMS))
+            if (ImGui.InputInt($"seconds{suffix}RequestTimeout", ref RequestTimeout))
             {
-                plugin.Config.RequestTimeoutMS = RequestTimeoutMS;
+                plugin.Config.RequestTimeout = RequestTimeout;
+                plugin.Universalis.ReloadHttpClient();
                 plugin.Config.Save();
             }
-            ImGuiComponents.HelpMarker("How long to wait in ms, before the plugin gives up on the market data query.");
+            ImGuiComponents.HelpMarker("How long to wait in seconds, before the plugin gives up on the market data query.");
 
 
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
@@ -358,7 +359,7 @@ namespace SimpleMarketBoard
                 plugin.Config.Save();
             }
             ImGuiComponents.HelpMarker(
-                "Enable: Your query will print to your game toast." +
+                "Enable: Your query will print to your game toast.\n" +
                 "Disable: The above will not happen."
             );
 
