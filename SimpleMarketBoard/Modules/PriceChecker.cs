@@ -63,7 +63,6 @@ public class PriceChecker
                 Service.PluginLog.Debug($"[Checker] {itemId} found in cache.");
                 gameItem = plugin.GameItemCacheList.Single(i => i.Id == itemId);
                 plugin.MainWindow.CurrentItemUpdate(gameItem);
-                // plugin.SearchHistoryUpdate(gameItem, cleanCache);
                 return;
             }
 
@@ -75,6 +74,7 @@ public class PriceChecker
             // check if marketable
             if (gameItem.InGame.ItemSearchCategory.Row == 0)
             {
+                Service.PluginLog.Debug($"[Checker] {itemId} is unmarketable.");
                 gameItem.Result = Plugin.GameItemResult.Unmarketable;
                 return;
             }
@@ -83,6 +83,7 @@ public class PriceChecker
             gameItem.PlayerWorldId = Service.ClientState.LocalPlayer?.HomeWorld.Id ?? 0;
             if (gameItem.PlayerWorldId == 0)
             {
+                Service.PluginLog.Debug($"[Checker] Unknown user world.");
                 gameItem.Result = Plugin.GameItemResult.UnknownUserWorld;
                 return;
             }
