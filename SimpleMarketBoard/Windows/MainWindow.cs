@@ -35,6 +35,7 @@ public class MainWindow : Window, IDisposable
     private int selectedHistory = -1;
 
     private Vector4 textColourHQ = new Vector4(247f, 202f, 111f, 255f) / 255f;
+    private Vector4 textColourHigherThanVendor = new Vector4(230f, 90f, 80f, 255f) / 255f;
     private Vector4 textColourWhite = new Vector4(1f, 1f, 1f, 1f);
 
     public MainWindow(Plugin plugin) : base(
@@ -77,6 +78,7 @@ public class MainWindow : Window, IDisposable
         var scale = ImGui.GetIO().FontGlobalScale;
         var fontsize = ImGui.GetFontSize();
         var suffix = $"###{plugin.Name}-";
+        var _coloured = false;
         // HQ yellow colour: ARGB
 
         var rightColWidth = fontsize * 6;
@@ -225,7 +227,17 @@ public class MainWindow : Window, IDisposable
             {
                 foreach (var listing in marketDataListings)
                 {
-                    if (listing.Hq) ImGui.PushStyleColor(ImGuiCol.Text, textColourHQ);
+                    _coloured = false;
+                    if (plugin.Config.MarkHigherThanVendor && (CurrentItem?.VendorSelling > 0) && (listing.PricePerUnit >= CurrentItem?.VendorSelling))
+                    {
+                        ImGui.PushStyleColor(ImGuiCol.Text, textColourHigherThanVendor);
+                        _coloured = true;
+                    }
+                    else if (listing.Hq)
+                    {
+                        ImGui.PushStyleColor(ImGuiCol.Text, textColourHQ);
+                        _coloured = true;
+                    }
 
                     // Selling
                     var index = marketDataListings.IndexOf(listing);
@@ -246,14 +258,14 @@ public class MainWindow : Window, IDisposable
                     ImGui.Text(totalPrice.ToString("N0", CultureInfo.CurrentCulture));
                     ImGui.NextColumn();
 
+                    if (_coloured) ImGui.PopStyleColor();
+
                     // World
                     ImGui.Text($"{(CurrentItem!.UniversalisResponse.IsCrossWorld ? listing.WorldName : plugin.Config.selectedWorld)}");
                     ImGui.NextColumn();
 
                     // Finish
                     ImGui.Separator();
-
-                    if (listing.Hq) ImGui.PopStyleColor();
                 }
             }
 

@@ -79,7 +79,7 @@ public class PriceChecker
                 return;
             }
 
-            // check if in game
+            // check if player in game
             gameItem.PlayerWorldId = Service.ClientState.LocalPlayer?.HomeWorld.Id ?? 0;
             if (gameItem.PlayerWorldId == 0)
             {
@@ -87,10 +87,14 @@ public class PriceChecker
                 return;
             }
 
-            gameItem.IsHQ = isHQ;
-
             gameItem.Name = gameItem.InGame.Name.ToString();
-
+            gameItem.IsHQ = isHQ;
+            gameItem.VendorSelling = 0;
+            var valid_vendors = Service.Data.Excel.GetSheet<GilShopItem>()?.Where(i => i.Item.Row == (uint)gameItem.Id).ToList();
+            if (valid_vendors is { Count: > 0 })
+            {
+                gameItem.VendorSelling = gameItem.InGame.PriceMid;
+            }
 
             // run price check
             Task.Run(async () =>

@@ -18,6 +18,7 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
 
     public bool EnableRecentHistory { get; set; } = true;
     public bool TotalIncludeTax { get; set; } = true;
+    public bool MarkHigherThanVendor { get; set; } = false;
     public bool CleanCacheAsYouGo { get; set; } = true;
 
     // ----------------- Keybinding -----------------

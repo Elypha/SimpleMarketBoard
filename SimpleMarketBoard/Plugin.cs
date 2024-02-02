@@ -167,6 +167,7 @@ public sealed class Plugin : IDalamudPlugin
         public bool IsHQ { get; set; }
         public ulong PlayerWorldId { get; set; }
         public double AvgPrice { get; set; }
+        public uint VendorSelling { get; set; }
         public ulong FetchTimestamp { get; set; }
         public ulong Result { get; set; } = GameItemResult.Init;
         public Dictionary<string, ulong> WorldOutOfDate { get; set; } = null!;

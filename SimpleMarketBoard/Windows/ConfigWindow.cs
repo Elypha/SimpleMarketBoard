@@ -188,7 +188,7 @@ public class ConfigWindow : Window, IDisposable
                 new List<string> {
                     "· Selling and history prices are tax excluded (i.e., the price as you see in the game).",
                     "This serves trading and comparison purposes. There's an option to include tax in the total price which gives you a rough idea of how much you will pay.",
-                    "· The price can be coloured in red if it's higher than the vendor price from NPC, and in green if it's lower (both via options).",
+                    "· The price can be coloured in red if it's higher than the vendor price from NPC (enable via option, takes priority over HQ colouring).",
                 }
             );
 
@@ -282,6 +282,18 @@ public class ConfigWindow : Window, IDisposable
         }
         ImGuiComponents.HelpMarker(
             "Enable: Total price will include tax.\n" +
+            "Disable: The above will not happen."
+        );
+
+        // MarkHigherThanVendor
+        var MarkHigherThanVendor = plugin.Config.MarkHigherThanVendor;
+        if (ImGui.Checkbox($"Colour red if higher than vendor{suffix}MarkHigherThanVendor", ref MarkHigherThanVendor))
+        {
+            plugin.Config.MarkHigherThanVendor = MarkHigherThanVendor;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: The listing will be coloured in red if it sells higher than vendor NPC in game.\n" +
             "Disable: The above will not happen."
         );
 
