@@ -51,7 +51,7 @@ public class PriceChecker
             catch (Exception ex)
             {
                 Service.PluginLog.Error($"[PriceChecker] CheckNewAsync failed, {ex.Message}");
-                plugin.MainWindow.CurrentItem.Name = "Plugin error";
+                plugin.MainWindow.CurrentItemLabel = "Plugin error";
                 ItemCancellationTokenSource = null;
             }
         });
@@ -136,7 +136,7 @@ public class PriceChecker
             catch (Exception ex)
             {
                 Service.PluginLog.Error($"[PriceChecker] CheckRefreshAsync failed, {ex.Message}");
-                plugin.MainWindow.CurrentItem.Name = "Plugin error";
+                plugin.MainWindow.CurrentItemLabel = "Plugin error";
             }
         });
     }
@@ -152,7 +152,7 @@ public class PriceChecker
         gameItem.TargetRegion = plugin.Config.selectedWorld;
 
         // lookup market data
-        plugin.MainWindow.CurrentItem.Name = "Loading...";
+        plugin.MainWindow.CurrentItemLabel = "Loading";
         plugin.MainWindow.LoadingQueue += 1;
         plugin.MainWindow.CurrentItemIcon = Service.TextureProvider.GetIcon(gameItem.InGame.Icon)!;
         var UniversalisResponse = plugin.Universalis.GetDataAsync(gameItem).Result;
@@ -160,34 +160,35 @@ public class PriceChecker
         // validate
         if (UniversalisResponse.Status == UniversalisResponseStatus.ServerError)
         {
-            plugin.MainWindow.CurrentItem.Name = "API error";
+            plugin.MainWindow.CurrentItemLabel = "API error";
             gameItem.Result = Plugin.GameItemResult.APIError;
             Service.PluginLog.Warning($"[PriceChecker] ServerError, {gameItem.Id}.");
             return;
         }
         if (UniversalisResponse.Status == UniversalisResponseStatus.InvalidItemId)
         {
-            plugin.MainWindow.CurrentItem.Name = "API error";
+            plugin.MainWindow.CurrentItemLabel = "API error";
             gameItem.Result = Plugin.GameItemResult.APIError;
             Service.PluginLog.Error($"[PriceChecker] InvalidItemId, {gameItem.Id}.");
             return;
         }
         if (UniversalisResponse.Status == UniversalisResponseStatus.UserCancellation)
         {
-            plugin.MainWindow.CurrentItem.Name = "Timed out";
+            plugin.MainWindow.CurrentItemLabel = "Timed out";
             gameItem.Result = Plugin.GameItemResult.InGameError;
             Service.PluginLog.Debug($"[PriceChecker] UserCancellation, {gameItem.Id}.");
             return;
         }
         if (UniversalisResponse.Status == UniversalisResponseStatus.UnknownError)
         {
-            plugin.MainWindow.CurrentItem.Name = "Plugin error";
+            plugin.MainWindow.CurrentItemLabel = "Plugin error";
             gameItem.Result = Plugin.GameItemResult.APIError;
             Service.PluginLog.Error($"[PriceChecker] UnknownError, {gameItem.Id}.");
             return;
         }
 
         // update game item
+        // plugin.MainWindow.CurrentItemLabel = plugin.MainWindow.CurrentItem.InGame.Name.ToString();
         gameItem.Result = Plugin.GameItemResult.Success;
         gameItem.FetchTimestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         gameItem.UniversalisResponse = UniversalisResponse;

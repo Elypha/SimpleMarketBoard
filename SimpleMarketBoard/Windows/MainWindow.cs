@@ -20,6 +20,7 @@ public class MainWindow : Window, IDisposable
     public ulong LastItemId = 0;
     public Plugin.GameItem CurrentItem { get; set; } = new Plugin.GameItem();
     public IDalamudTextureWrap CurrentItemIcon = null!;
+    public string CurrentItemLabel = "";
 
     public void CurrentItemUpdate(Plugin.GameItem gameItem)
     {
@@ -27,6 +28,7 @@ public class MainWindow : Window, IDisposable
         CurrentItem = gameItem;
         CurrentItemIcon = Service.TextureProvider.GetIcon(CurrentItem.InGame.Icon)!;
         CurrentItem.Name = CurrentItem.InGame.Name.ToString();
+        CurrentItemLabel = CurrentItem.Name;
     }
 
     public string lastSelectedWorld = "";
@@ -54,7 +56,7 @@ public class MainWindow : Window, IDisposable
         this.plugin = plugin;
         CurrentItem.Id = 4691;
         CurrentItem.InGame = plugin.ItemSheet.GetRow(4691)!;
-        CurrentItem.Name = "(/ω＼)";
+        CurrentItemLabel = "(/ω＼)";
         CurrentItemIcon = Service.TextureProvider.GetIcon(CurrentItem.InGame.Icon)!;
         if (plugin.Config.selectedWorld != "") lastSelectedWorld = plugin.Config.selectedWorld;
 
@@ -180,7 +182,7 @@ public class MainWindow : Window, IDisposable
             ImGui.SetCursorPosY(ImGui.GetCursorPosY());
 
             ImGui.PushFont(plugin.AxisTitle.ImFont);
-            ImGui.Text(CurrentItem.Name);
+            ImGui.Text(CurrentItemLabel);
             if (LoadingQueue > 0)
             {
                 ImGui.SameLine();
