@@ -65,9 +65,9 @@ public class Universalis
             var API_ResponseDict = await API_Response.Content.ReadFromJsonAsync<MarketDataCurrent>();
 
             // validate response
-            if (API_ResponseDict!.ItemId == 0)
+            if (API_ResponseDict!.ItemId == 0 || API_ResponseDict!.ItemId != gameItem.Id)
             {
-                throw new JsonException("Response not decoded properly");
+                throw new JsonException();
             }
 
             // update if there's world data
@@ -94,6 +94,7 @@ public class Universalis
 
             var response = new UniversalisResponse
             {
+                Status = UniversalisResponseStatus.Success,
                 ItemId = API_ResponseDict.ItemId,
                 IsCrossWorld = API_ResponseDict.WorldUploadTimes.Count > 0,
                 WorldOutOfDate = worldOutOfDateDict,
@@ -118,24 +119,24 @@ public class Universalis
         {
             Service.PluginLog.Warning(ex, $"[Universalis] HTTP request not successful");
             Service.PluginLog.Debug(ex.Message);
-            return new UniversalisResponse { ItemId = 0 };
+            return new UniversalisResponse { Status = UniversalisResponseStatus.ServerError };
         }
         catch (JsonException ex)
         {
-            Service.PluginLog.Warning($"[Universalis] Response not decoded properly");
+            Service.PluginLog.Warning($"[Universalis] Invalid item ID");
             Service.PluginLog.Debug(ex.Message);
-            return new UniversalisResponse { ItemId = 0 };
+            return new UniversalisResponse { Status = UniversalisResponseStatus.InvalidItemId };
         }
         catch (TaskCanceledException ex)
         {
             Service.PluginLog.Warning($"[Universalis] HTTP request cancelled by user configured timeout");
             Service.PluginLog.Debug(ex.Message);
-            return new UniversalisResponse { ItemId = 0 };
+            return new UniversalisResponse { Status = UniversalisResponseStatus.UserCancellation };
         }
         catch (Exception ex)
         {
             Service.PluginLog.Error(ex, $"[Universalis] Unknown error: {ex.Message}");
-            return new UniversalisResponse { ItemId = 0 };
+            return new UniversalisResponse { Status = UniversalisResponseStatus.UnknownError };
         }
     }
 }

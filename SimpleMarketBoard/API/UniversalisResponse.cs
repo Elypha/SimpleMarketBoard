@@ -3,14 +3,26 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Lumina.Excel.GeneratedSheets;
 
 namespace SimpleMarketBoard.UniversalisModels;
+
+public class UniversalisResponseStatus
+{
+    public const ulong Success = 0;
+    public const ulong ServerError = 1;
+    public const ulong InvalidItemId = 2;
+    public const ulong UserCancellation = 3;
+    public const ulong UnknownError = 99;
+}
 
 /// <summary>
 /// A model representing a market data response from Universalis.
 /// </summary>
 public class UniversalisResponse
 {
+    public ulong Status { get; set; }
+
     /// <summary>
     /// Gets or sets the ID of the item.
     /// </summary>
