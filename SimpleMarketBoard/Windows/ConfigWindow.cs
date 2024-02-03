@@ -116,7 +116,7 @@ public class ConfigWindow : Window, IDisposable
         var suffix = $"###{plugin.Name}-";
 
 
-        if (ImGui.CollapsingHeader("Features & UI Introduction", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader("Features & UI Introduction"))
         {
             ImGui.TextColored(new Vector4(245f, 220f, 80f, 255f) / 255f, "> Below is a detailed manual.\n> I recommend to read only the sections you are interested.");
 
