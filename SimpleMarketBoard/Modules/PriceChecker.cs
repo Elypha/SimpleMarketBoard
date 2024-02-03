@@ -25,7 +25,6 @@ public class PriceChecker
 {
 
     private readonly Plugin plugin;
-    public Plugin.GameItem gameItem = null!;
 
     public CancellationTokenSource? ItemCancellationTokenSource;
 
@@ -39,26 +38,33 @@ public class PriceChecker
         ItemCancellationTokenSource?.Dispose();
     }
 
-    public void CheckAsync(ulong itemId, bool isHQ, bool cleanCache = true)
+    public void CheckNewAsync(ulong itemId, bool isHQ)
+    {
+        Task.Run(() => CheckNew(itemId, isHQ));
+    }
+
+    public void CheckNew(ulong itemId, bool isHQ)
     {
         try
         {
             Service.PluginLog.Debug($"[Checker] Check: {itemId}, {isHQ}");
 
-            // cancel in-flight request
+            // handle hover delay
             if (ItemCancellationTokenSource != null)
             {
                 if (!ItemCancellationTokenSource.IsCancellationRequested)
                     ItemCancellationTokenSource.Cancel();
                 ItemCancellationTokenSource.Dispose();
             }
-
-            // create new cancel token
             // +10 to ensure it's not cancelled before the task starts
             ItemCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(plugin.Config.HoverDelayIn100MS * 100 + 10));
 
-            List<ulong> SearchHistoryIds = plugin.GameItemCacheList.Select(i => i.Id).ToList();
-            if (SearchHistoryIds.Contains(itemId))
+            // start checking task
+            var gameItem = new Plugin.GameItem();
+
+            // if in cache, return
+            List<ulong> _cacheIds = plugin.GameItemCacheList.Select(i => i.Id).ToList();
+            if (_cacheIds.Contains(itemId))
             {
                 Service.PluginLog.Debug($"[Checker] {itemId} found in cache.");
                 gameItem = plugin.GameItemCacheList.Single(i => i.Id == itemId);
@@ -67,8 +73,9 @@ public class PriceChecker
             }
 
             // create new game item object
-            gameItem = new Plugin.GameItem();
             gameItem.Id = itemId;
+            gameItem.IsHQ = isHQ;
+
             gameItem.InGame = plugin.ItemSheet.Single(i => i.RowId == (uint)gameItem.Id);
 
             // check if marketable
@@ -88,8 +95,6 @@ public class PriceChecker
                 return;
             }
 
-            gameItem.Name = gameItem.InGame.Name.ToString();
-            gameItem.IsHQ = isHQ;
             gameItem.VendorSelling = 0;
             var valid_vendors = Service.Data.Excel.GetSheet<GilShopItem>()?.Where(i => i.Item.Row == (uint)gameItem.Id).ToList();
             if (valid_vendors is { Count: > 0 })
@@ -98,35 +103,44 @@ public class PriceChecker
             }
 
             // run price check
-            Task.Run(async () =>
+            if (plugin.Config.HoverDelayIn100MS > 0)
             {
-                await Task.Delay(plugin.Config.HoverDelayIn100MS * 100, ItemCancellationTokenSource!.Token).ConfigureAwait(false);
-                await Task.Run(() => Check(true));
-            });
+                Task.Run(async () =>
+                {
+                    await Task.Delay(plugin.Config.HoverDelayIn100MS * 100, ItemCancellationTokenSource!.Token).ConfigureAwait(false);
+                });
+            }
+            Check(gameItem);
         }
         catch (Exception ex)
         {
             Service.PluginLog.Error($"[Checker] Check failed, {ex.Message}");
-            plugin.MainWindow.CurrentItem.Name = "Please try again";
+            plugin.MainWindow.CurrentItem.Name = "Plugin error";
             ItemCancellationTokenSource = null;
-            plugin.HoveredItem.ResetItemData();
+            plugin.HoveredItem.ResetLastItem();
         }
     }
 
-    public void CheckAsyncRefresh()
+    public void CheckRefreshAsync(Plugin.GameItem gameItem)
     {
-        Task.Run(async () =>
-        {
-            await Task.Run(() => Check(true));
-        });
+        Task.Run(() => CheckRefresh(gameItem));
     }
 
-    private void Check(bool cleanCache = true)
+    public void CheckRefresh(Plugin.GameItem gameItem)
     {
+        Check(gameItem);
+    }
+
+    private void Check(Plugin.GameItem gameItem)
+    {
+        gameItem.Name = gameItem.InGame.Name.ToString();
+        gameItem.TargetRegion = plugin.Config.selectedWorld;
+
         // lookup market data
         plugin.MainWindow.CurrentItem.Name = "Loading...";
+        plugin.MainWindow.LoadingQueue += 1;
         plugin.MainWindow.CurrentItemIcon = Service.TextureProvider.GetIcon(gameItem.InGame.Icon)!;
-        var UniversalisResponse = plugin.Universalis.CheckPriceAsync().Result;
+        var UniversalisResponse = plugin.Universalis.GetDataAsync(gameItem).Result;
 
         // validate
         if (UniversalisResponse.ItemId == 0)
@@ -136,8 +150,9 @@ public class PriceChecker
             Service.PluginLog.Warning($"[Check] Timed out, {gameItem.Id}.");
             return;
         }
-        if (plugin.PriceChecker.gameItem.Id != UniversalisResponse.ItemId)
+        if (gameItem.Id != UniversalisResponse.ItemId)
         {
+            plugin.MainWindow.CurrentItem.Name = "API error";
             gameItem.Result = Plugin.GameItemResult.APIError;
             Service.PluginLog.Error($"[Check] API error, {gameItem.Id}.");
             return;
@@ -145,8 +160,9 @@ public class PriceChecker
 
         // update game item
         gameItem.Result = Plugin.GameItemResult.Success;
-        gameItem.UniversalisResponse = UniversalisResponse;
         gameItem.FetchTimestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        gameItem.UniversalisResponse = UniversalisResponse;
+        gameItem.WorldOutOfDate = gameItem.UniversalisResponse.WorldOutOfDate;
 
 
         // add avg price
@@ -160,7 +176,9 @@ public class PriceChecker
         plugin.MainWindow.CurrentItemUpdate(gameItem);
 
         // inset into search history
-        plugin.SearchHistoryUpdate(gameItem, cleanCache);
+        plugin.SearchHistoryUpdate(gameItem);
+
+        plugin.MainWindow.LoadingQueue -= 1;
     }
 
     public void SendChatMessage(Plugin.GameItem gameItem)
@@ -171,13 +189,13 @@ public class PriceChecker
                 new ItemPayload((uint)gameItem.Id, gameItem.IsHQ),
                 new TextPayload($"{(char)SeIconChar.LinkMarker} {gameItem.InGame.Name}"),
                 RawPayload.LinkTerminator,
-                new TextPayload($" [{gameItem.UniversalisResponse.RegionName}] {(char)SeIconChar.Gil} {gameItem.AvgPrice:N0}"),
+                new TextPayload($" [{gameItem.TargetRegion}] {(char)SeIconChar.Gil} {gameItem.AvgPrice:N0}"),
                 new UIForegroundPayload(0)
             });
     }
 
     public void SendToast(Plugin.GameItem gameItem)
     {
-        plugin.PrintMessage.PrintMessageToast($"{gameItem.InGame.Name} [{gameItem.UniversalisResponse.RegionName}] {(char)SeIconChar.Gil} {gameItem.AvgPrice:N0}");
+        plugin.PrintMessage.PrintMessageToast($"{gameItem.InGame.Name} [{gameItem.TargetRegion}] {(char)SeIconChar.Gil} {gameItem.AvgPrice:N0}");
     }
 }

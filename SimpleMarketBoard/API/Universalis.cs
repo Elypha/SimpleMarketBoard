@@ -42,18 +42,18 @@ public class Universalis
         httpClient.Dispose();
     }
 
-    public async Task<UniversalisResponse> CheckPriceAsync()
+    public async Task<UniversalisResponse> GetDataAsync(Plugin.GameItem gameItem)
     {
-        return await CheckPrice();
+        return await GetData(gameItem);
     }
 
-    public async Task<UniversalisResponse> CheckPrice()
+    public async Task<UniversalisResponse> GetData(Plugin.GameItem gameItem)
     {
         try
         {
             // build url
             var API_URL = new UriBuilder(
-                $"{Host}/api/v2/{plugin.Config.selectedWorld}/{plugin.PriceChecker.gameItem.Id}?listings=75&entries=75"
+                $"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings=75&entries=75"
             ).Uri.ToString();
 
             // get response
@@ -88,14 +88,13 @@ public class Universalis
             }
             else
             {
-                worldOutOfDateDict.Add(plugin.Config.selectedWorld, (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - API_ResponseDict.LastUploadTime) / 1000 / 3600);
+                worldOutOfDateDict.Add(gameItem.TargetRegion, (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - API_ResponseDict.LastUploadTime) / 1000 / 3600);
             }
 
 
             var response = new UniversalisResponse
             {
                 ItemId = API_ResponseDict.ItemId,
-                RegionName = plugin.Config.selectedWorld,
                 IsCrossWorld = API_ResponseDict.WorldUploadTimes.Count > 0,
                 WorldOutOfDate = worldOutOfDateDict,
                 UnitsForSale = API_ResponseDict.UnitsForSale,

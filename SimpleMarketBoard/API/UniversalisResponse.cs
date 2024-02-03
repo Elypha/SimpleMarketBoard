@@ -18,11 +18,6 @@ public class UniversalisResponse
     public ulong ItemId { get; set; }
 
     /// <summary>
-    /// Data Centre name for cross-world query, and World Name for single world query.
-    /// </summary>
-    public string RegionName { get; set; }
-
-    /// <summary>
     /// If this is a cross-world query.
     /// </summary>
     public bool IsCrossWorld { get; set; }

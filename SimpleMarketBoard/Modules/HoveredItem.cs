@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Dalamud.Plugin.Services;
 
 
@@ -22,7 +23,7 @@ public class HoveredItem
         Service.GameGui.HoveredItemChanged += OnHoveredItemChanged;
     }
 
-    public void ResetItemData()
+    public void ResetLastItem()
     {
         LastItemId = 0;
         LastItemIsHQ = false;
@@ -48,7 +49,7 @@ public class HoveredItem
             // stop if invalid itemId
             if (thisItemId == 0)
             {
-                ResetItemData();
+                ResetLastItem();
                 plugin.PriceChecker.ItemCancellationTokenSource = null;
                 return;
             };
@@ -80,13 +81,14 @@ public class HoveredItem
                     if (isKeybindingPressed)
                     {
                         // call immediately
-                        Service.PluginLog.Debug($"[UI] Check by keybinding after hover: {realItemId}, {itemIsHQ}");
-                        plugin.PriceChecker.CheckAsync(realItemId, itemIsHQ);
+                        Service.PluginLog.Debug($"[UI] (A) Check by keybinding after hover: {realItemId}, {itemIsHQ}");
+                        plugin.PriceChecker.CheckNewAsync(realItemId, itemIsHQ);
                         return;
                     }
                     else
                     {
                         // save for next keybinding press
+                        Service.PluginLog.Debug($"[UI] Save for keybinding after hover: {realItemId}, {itemIsHQ}");
                         LastItemId = realItemId;
                         LastItemIsHQ = itemIsHQ;
                     }
@@ -94,34 +96,34 @@ public class HoveredItem
                 else
                 {
                     if (!isKeybindingPressed) return;
-                    Service.PluginLog.Debug($"[UI] Check by hover after keybinding: {realItemId}, {itemIsHQ}");
-                    plugin.PriceChecker.CheckAsync(realItemId, itemIsHQ);
+                    Service.PluginLog.Debug($"[UI] (B) Check by hover after keybinding: {realItemId}, {itemIsHQ}");
+                    plugin.PriceChecker.CheckNewAsync(realItemId, itemIsHQ);
                     return;
                 }
             }
             else
             {
-                Service.PluginLog.Debug($"[UI] Check by hover without keybinding: {realItemId}, {itemIsHQ}");
-                plugin.PriceChecker.CheckAsync(realItemId, itemIsHQ);
+                Service.PluginLog.Debug($"[UI] (C) Check by hover without keybinding: {realItemId}, {itemIsHQ}");
+                plugin.PriceChecker.CheckNewAsync(realItemId, itemIsHQ);
             }
         }
         catch (Exception ex)
         {
             Service.PluginLog.Error($"[UI] Failed to do price check, {ex.Message}");
-            ResetItemData();
+            ResetLastItem();
             plugin.PriceChecker.ItemCancellationTokenSource = null;
         }
     }
 
-    public void CheckAsyncLastItem()
+    public void CheckLastItem()
     {
         if (plugin.Config.KeybindingEnabled && plugin.Config.AllowKeybindingAfterHover && plugin.PluginHotkey.CheckHotkeyState(plugin.Config.BindingHotkey))
         {
             if (LastItemId != 0)
             {
-                Service.PluginLog.Debug($"[UI] Check by keybinding after hover for the current item: {LastItemId}, {LastItemIsHQ}");
-                plugin.PriceChecker.CheckAsync(LastItemId, LastItemIsHQ);
-                LastItemId = 0;
+                Service.PluginLog.Debug($"[UI] (D) Check by keybinding after hover for the current item: {LastItemId}, {LastItemIsHQ}");
+                plugin.PriceChecker.CheckNewAsync(LastItemId, LastItemIsHQ);
+                ResetLastItem();
             }
         }
     }

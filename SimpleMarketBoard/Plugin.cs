@@ -163,17 +163,17 @@ public sealed class Plugin : IDalamudPlugin
     public class GameItem
     {
         public ulong Id { get; set; }
-        public string Name { get; set; } = "";
         public bool IsHQ { get; set; }
+        public string Name { get; set; } = "";
+        public string TargetRegion { get; set; } = "";
         public ulong PlayerWorldId { get; set; }
-        public double AvgPrice { get; set; }
         public uint VendorSelling { get; set; }
-        public ulong FetchTimestamp { get; set; }
-        public ulong Result { get; set; } = GameItemResult.Init;
-        public Dictionary<string, ulong> WorldOutOfDate { get; set; } = null!;
-        // gameItem.InGame.PriceLow;
         public Item InGame { get; set; } = null!;
-        public UniversalisResponse UniversalisResponse { get; set; } = null!;
+        public ulong FetchTimestamp { get; set; }
+        public UniversalisResponse UniversalisResponse { get; set; } = new UniversalisResponse();
+        public Dictionary<string, long> WorldOutOfDate { get; set; } = new Dictionary<string, long>();
+        public double AvgPrice { get; set; }
+        public ulong Result { get; set; } = GameItemResult.Init;
     }
 
     public class GameItemResult
@@ -187,10 +187,10 @@ public sealed class Plugin : IDalamudPlugin
     }
 
 
-    public void SearchHistoryUpdate(Plugin.GameItem gameItem, bool checkRemove = false)
+    public void SearchHistoryUpdate(Plugin.GameItem gameItem)
     {
         SearchHistoryClean();
-        if (checkRemove) GameItemCacheList.RemoveAll(i => i.Id == gameItem.Id);
+        GameItemCacheList.RemoveAll(i => i.Id == gameItem.Id);
         GameItemCacheList.Insert(0, gameItem);
     }
 
