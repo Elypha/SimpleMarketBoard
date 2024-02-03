@@ -148,12 +148,13 @@ public class PriceChecker
 
     private void Check(Plugin.GameItem gameItem)
     {
+        plugin.MainWindow.LoadingQueue += 1;
+
         gameItem.Name = gameItem.InGame.Name.ToString();
         gameItem.TargetRegion = plugin.Config.selectedWorld;
 
         // lookup market data
         plugin.MainWindow.CurrentItemLabel = "Loading";
-        plugin.MainWindow.LoadingQueue += 1;
         plugin.MainWindow.CurrentItemIcon = Service.TextureProvider.GetIcon(gameItem.InGame.Icon)!;
         var UniversalisResponse = plugin.Universalis.GetDataAsync(gameItem).Result;
 
@@ -163,6 +164,7 @@ public class PriceChecker
             plugin.MainWindow.CurrentItemLabel = "API error";
             gameItem.Result = Plugin.GameItemResult.APIError;
             Service.PluginLog.Warning($"[PriceChecker] ServerError, {gameItem.Id}.");
+            plugin.MainWindow.LoadingQueue -= 1;
             return;
         }
         if (UniversalisResponse.Status == UniversalisResponseStatus.InvalidItemId)
@@ -170,6 +172,7 @@ public class PriceChecker
             plugin.MainWindow.CurrentItemLabel = "API error";
             gameItem.Result = Plugin.GameItemResult.APIError;
             Service.PluginLog.Error($"[PriceChecker] InvalidItemId, {gameItem.Id}.");
+            plugin.MainWindow.LoadingQueue -= 1;
             return;
         }
         if (UniversalisResponse.Status == UniversalisResponseStatus.UserCancellation)
@@ -177,6 +180,7 @@ public class PriceChecker
             plugin.MainWindow.CurrentItemLabel = "Timed out";
             gameItem.Result = Plugin.GameItemResult.InGameError;
             Service.PluginLog.Debug($"[PriceChecker] UserCancellation, {gameItem.Id}.");
+            plugin.MainWindow.LoadingQueue -= 1;
             return;
         }
         if (UniversalisResponse.Status == UniversalisResponseStatus.UnknownError)
@@ -184,6 +188,7 @@ public class PriceChecker
             plugin.MainWindow.CurrentItemLabel = "Plugin error";
             gameItem.Result = Plugin.GameItemResult.APIError;
             Service.PluginLog.Error($"[PriceChecker] UnknownError, {gameItem.Id}.");
+            plugin.MainWindow.LoadingQueue -= 1;
             return;
         }
 
