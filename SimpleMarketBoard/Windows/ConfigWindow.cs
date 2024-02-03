@@ -125,7 +125,7 @@ public class ConfigWindow : Window, IDisposable
             plugin.ImGuiHelper.BulletTextList(
                 "Keybinding",
                 "you can configure it below",
-                [
+                new List<string> {
                     "This is intended to cater your preference. By design there are 3 ways to start a check.\n" +
                     "1. Hover over an item, then press the keybinding.\n" +
                     "2. Press the keybinding first, then hover over an item.\n" +
@@ -133,25 +133,25 @@ public class ConfigWindow : Window, IDisposable
                     "All these can be configured with an optional delay.",
                     "With that said, my recommendation is to set the delay to 0, and use a simple keybinding like 'Ctrl'. This way you can just hover over an item and press 'Ctrl' to get the market data, which is the most efficient way IMO.",
                     "Remember you can search multiple items without waiting for the previous ones to finish. All your query will be added to the cache sequentially.",
-                ]
+                }
             );
 
             plugin.ImGuiHelper.BulletTextList(
                 "Item Icon",
                 "on the top left corner",
-                [
+                new List<string> {
                     "· Click: Copy the item name to clipboard.",
-                ]
+                }
             );
 
             plugin.ImGuiHelper.BulletTextList(
                 "Item Name",
                 "to the right of the Item Icon",
-                [
+                new List<string> {
                     "The item name is followed by an orange loading icon when there are still requests going on.",
                     "This place is also used to display the status of the market data query request.\n" +
                     "If it says 'timedout' or 'failed', just use the Refresh button and usually it will be fine.",
-                ]
+                }
             );
 
             plugin.ImGuiHelper.BulletTextList(
