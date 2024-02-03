@@ -9,6 +9,7 @@ using ImGuiNET;
 using Dalamud.Interface;
 using System.Linq;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace SimpleMarketBoard;
 
@@ -17,12 +18,12 @@ public class MainWindow : Window, IDisposable
     // private IDalamudTextureWrap goatImage;
     private Plugin plugin;
     public ulong LastItemId = 0;
-    public Plugin.GameItem CurrentItem { get; set; } = null!;
+    public Plugin.GameItem CurrentItem { get; set; } = new Plugin.GameItem();
     public IDalamudTextureWrap CurrentItemIcon = null!;
 
     public void CurrentItemUpdate(Plugin.GameItem gameItem)
     {
-        LastItemId = CurrentItem?.Id ?? 0;
+        LastItemId = CurrentItem.Id;
         CurrentItem = gameItem;
         CurrentItemIcon = Service.TextureProvider.GetIcon(CurrentItem.InGame.Icon)!;
         CurrentItem.Name = CurrentItem.InGame.Name.ToString();
@@ -33,6 +34,8 @@ public class MainWindow : Window, IDisposable
 
     private int selectedListing = -1;
     private int selectedHistory = -1;
+
+    public int LoadingQueue = 0;
 
     private Vector4 textColourHQ = new Vector4(247f, 202f, 111f, 255f) / 255f;
     private Vector4 textColourHigherThanVendor = new Vector4(230f, 90f, 80f, 255f) / 255f;
@@ -48,11 +51,7 @@ public class MainWindow : Window, IDisposable
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
 
-        // var imagePath = Path.Combine(Service.PluginInterface.AssemblyLocation.Directory?.FullName!, "Data", "goat.png");
-        // goatImage = Service.PluginInterface.UiBuilder.LoadImage(imagePath);
-
         this.plugin = plugin;
-        CurrentItem = new Plugin.GameItem();
         CurrentItem.Id = 4691;
         CurrentItem.InGame = plugin.ItemSheet.GetRow(4691)!;
         CurrentItem.Name = "(/ω＼)";
@@ -84,7 +83,7 @@ public class MainWindow : Window, IDisposable
         var rightColWidth = fontsize * 6;
         var LeftColWidth = ImGui.GetWindowWidth() - rightColWidth;
 
-        plugin.HoveredItem.CheckAsyncLastItem();
+        plugin.HoveredItem.CheckLastItem();
 
 
 
@@ -103,7 +102,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PushFont(UiBuilder.IconFont);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Repeat}", new Vector2(24 * ImGui.GetIO().FontGlobalScale, ImGui.GetItemRectSize().Y)))
         {
-            plugin.PriceChecker.CheckAsyncRefresh();
+            plugin.PriceChecker.CheckRefreshAsync(CurrentItem);
         }
         ImGui.PopFont();
         ImGui.SameLine();
@@ -142,7 +141,7 @@ public class MainWindow : Window, IDisposable
                     if (plugin.Config.selectedWorld != lastSelectedWorld)
                     {
                         Service.PluginLog.Info($"[UI] Fetch data of {plugin.Config.selectedWorld}");
-                        plugin.PriceChecker.CheckAsyncRefresh();
+                        plugin.PriceChecker.CheckRefreshAsync(CurrentItem);
                     }
 
                     lastSelectedWorld = plugin.Config.selectedWorld;
@@ -160,7 +159,7 @@ public class MainWindow : Window, IDisposable
 
 
         // main table 1
-        if (CurrentItem?.Id > 0)
+        if (CurrentItem.Id > 0)
         {
 
 
@@ -181,6 +180,16 @@ public class MainWindow : Window, IDisposable
 
             ImGui.PushFont(plugin.AxisTitle.ImFont);
             ImGui.Text(CurrentItem.Name);
+            if (LoadingQueue > 0)
+            {
+                ImGui.SameLine();
+                ImGui.PushFont(UiBuilder.IconFont);
+                ImGui.PushStyleColor(ImGuiCol.Text, textColourHQ);
+                ImGui.Text($"{(char)FontAwesomeIcon.Spinner}");
+                ImGui.PopStyleColor();
+                ImGui.PopFont();
+            }
+
             ImGui.PopFont();
 
 
@@ -213,14 +222,14 @@ public class MainWindow : Window, IDisposable
             ImGui.Separator();
 
             // prepare the data
-            var marketDataListings = CurrentItem?.UniversalisResponse?.Listings;
+            var marketDataListings = CurrentItem.UniversalisResponse.Listings;
             if (plugin.Config.FilterHQ)
             {
-                marketDataListings = marketDataListings?.Where(l => l.Hq == true).OrderBy(l => l.PricePerUnit).ToList();
+                marketDataListings = marketDataListings.Where(l => l.Hq == true).OrderBy(l => l.PricePerUnit).ToList();
             }
             else
             {
-                marketDataListings = marketDataListings?.OrderBy(l => l.PricePerUnit).ToList();
+                marketDataListings = marketDataListings.OrderBy(l => l.PricePerUnit).ToList();
             }
 
             if (marketDataListings != null)
@@ -228,7 +237,7 @@ public class MainWindow : Window, IDisposable
                 foreach (var listing in marketDataListings)
                 {
                     _coloured = false;
-                    if (plugin.Config.MarkHigherThanVendor && (CurrentItem?.VendorSelling > 0) && (listing.PricePerUnit >= CurrentItem?.VendorSelling))
+                    if (plugin.Config.MarkHigherThanVendor && (CurrentItem.VendorSelling > 0) && (listing.PricePerUnit >= CurrentItem.VendorSelling))
                     {
                         ImGui.PushStyleColor(ImGuiCol.Text, textColourHigherThanVendor);
                         _coloured = true;
@@ -261,7 +270,7 @@ public class MainWindow : Window, IDisposable
                     if (_coloured) ImGui.PopStyleColor();
 
                     // World
-                    ImGui.Text($"{(CurrentItem!.UniversalisResponse.IsCrossWorld ? listing.WorldName : plugin.Config.selectedWorld)}");
+                    ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? listing.WorldName : plugin.Config.selectedWorld)}");
                     ImGui.NextColumn();
 
                     // Finish
@@ -301,14 +310,14 @@ public class MainWindow : Window, IDisposable
                 ImGui.Separator();
 
                 // prepare the data
-                var marketDataEntries = CurrentItem?.UniversalisResponse?.Entries;
+                var marketDataEntries = CurrentItem.UniversalisResponse.Entries;
                 if (plugin.Config.FilterHQ)
                 {
-                    marketDataEntries = marketDataEntries?.Where(l => l.Hq == true).OrderByDescending(l => l.Timestamp).ToList();
+                    marketDataEntries = marketDataEntries.Where(l => l.Hq == true).OrderByDescending(l => l.Timestamp).ToList();
                 }
                 else
                 {
-                    marketDataEntries = marketDataEntries?.OrderByDescending(l => l.Timestamp).ToList();
+                    marketDataEntries = marketDataEntries.OrderByDescending(l => l.Timestamp).ToList();
                 }
 
                 if (marketDataEntries != null)
@@ -335,7 +344,7 @@ public class MainWindow : Window, IDisposable
 
                         // World
                         ImGui.Text(
-                          $"{(CurrentItem!.UniversalisResponse.IsCrossWorld ? entry.WorldName : plugin.Config.selectedWorld)}");
+                          $"{(CurrentItem.UniversalisResponse.IsCrossWorld ? entry.WorldName : plugin.Config.selectedWorld)}");
                         ImGui.NextColumn();
 
                         // Finish
@@ -394,7 +403,7 @@ public class MainWindow : Window, IDisposable
             }
             else
             {
-                plugin.GameItemCacheList.RemoveAll(i => i.Id == CurrentItem?.Id);
+                plugin.GameItemCacheList.RemoveAll(i => i.Id == CurrentItem.Id);
             }
         }
         ImGui.PopFont();
@@ -424,8 +433,8 @@ public class MainWindow : Window, IDisposable
 
 
         // === right column group 2 ===
-        var WorldOutOfDate = CurrentItem?.UniversalisResponse?.WorldOutOfDate ?? new Dictionary<string, long>();
-        var worldOutOfDateCount = WorldOutOfDate.Count;
+
+        var worldOutOfDateCount = CurrentItem.WorldOutOfDate.Count;
         var dataColHeight =
             Math.Max(worldOutOfDateCount, 1.25f) * ImGui.GetTextLineHeight()
             + (worldOutOfDateCount - 1) * ImGui.GetStyle().ItemSpacing.Y
@@ -444,18 +453,11 @@ public class MainWindow : Window, IDisposable
 
         if (searchHistoryOpen)
         {
-            // ImGui.Text("History");
-            // ImGui.Separator();
-            List<ulong> SearchHistoryIds = plugin.GameItemCacheList.Select(i => i.Id).ToList();
-
-            foreach (var id in SearchHistoryIds)
+            foreach (var item in plugin.GameItemCacheList)
             {
-                var item = plugin.ItemSheet.GetRow((uint)id);
-                if (item == null) continue;
-
-                if (ImGui.Selectable($"{item.Name}", (uint)CurrentItem?.Id! == item.RowId))
+                if (ImGui.Selectable($"{item.Name}", (uint)CurrentItem.Id == item.Id))
                 {
-                    plugin.PriceChecker.CheckAsync(id, true);
+                    plugin.PriceChecker.CheckNewAsync(item.Id, item.IsHQ);
                 }
             }
         }
@@ -468,8 +470,8 @@ public class MainWindow : Window, IDisposable
 
 
         // === right column group 3 ===
-        var velocity = CurrentItem?.UniversalisResponse?.Velocity;
-        ImGui.Text($"{(int?)velocity}");
+        var velocity = CurrentItem.UniversalisResponse.Velocity;
+        ImGui.Text($"{(int)velocity}");
         ImGui.Separator();
 
 
@@ -483,7 +485,7 @@ public class MainWindow : Window, IDisposable
         ImGui.SetColumnWidth(1, ImGui.CalcTextSize("0000").X);
 
         var worldOutOfDateIndex = 0;
-        foreach (var i in WorldOutOfDate)
+        foreach (var i in CurrentItem.WorldOutOfDate)
         {
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 0.5f * ImGui.GetStyle().ItemSpacing.Y);
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() - ImGui.GetStyle().ItemSpacing.X);
@@ -492,10 +494,10 @@ public class MainWindow : Window, IDisposable
             ImGui.NextColumn();
 
 
-            alignRight($"{(int?)i.Value}");
+            alignRight($"{(int)i.Value}");
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 0.5f * ImGui.GetStyle().ItemSpacing.Y);
 
-            ImGui.Text($"{(int?)i.Value}");
+            ImGui.Text($"{(int)i.Value}");
             ImGui.NextColumn();
 
             worldOutOfDateIndex += 1;

@@ -132,6 +132,7 @@ public class ConfigWindow : Window, IDisposable
                 "Item Name",
                 "on the top left corner",
                 [
+                    "The item name is followed by an orange loading icon when there are still requests going on. All your query will be added to the cache sequentially.",
                     "This place is also used to display the status of the market data query request.\n" +
                     "If it says 'timedout' or 'failed', just use the Refresh button and usually it will be fine.",
                 ]
@@ -149,7 +150,7 @@ public class ConfigWindow : Window, IDisposable
                 "HQ Filter Button",
                 "the star button under the item name",
                 new List<string> {
-                    "HQ items are coloured in yellow in the market data table.",
+                    "HQ items are coloured in orange in the market data table.",
                     "· Click: Toggle whether to show HQ items only in your current listings.",
                 }
             );
