@@ -2,10 +2,11 @@
   "Author": "Elypha",
   "Name": "SimpleMarketBoard",
   "Punchline": "The simple but ultimate market board plugin.",
-  "Description": "You get some useful bonus info and a nice, condensed layout with it. Might be useful for power users, perhaps?\nCheckout the Github page for information and acknowledgement.",
+  "Description": "You get some useful bonus info and a nice, condensed UI with it. Might be useful for power users, perhaps?\nCheck out the Introduction in Plugin Configuration for general usage, and Github page for more details.",
   "ApplicableVersion": "any",
   "Tags": [
     "marketboard",
+    "price",
     "plugin",
     "elypha"
   ]
