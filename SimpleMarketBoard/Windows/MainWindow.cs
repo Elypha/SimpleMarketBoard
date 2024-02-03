@@ -136,6 +136,7 @@ public class MainWindow : Window, IDisposable
                 if (ImGui.Selectable(world.Item2, isSelected))
                 {
                     plugin.Config.selectedWorld = world.Item1;
+                    plugin.Config.Save();
 
                     Service.PluginLog.Debug($"[UI] Selected world: {lastSelectedWorld} -> {plugin.Config.selectedWorld}");
                     if (plugin.Config.selectedWorld != lastSelectedWorld)

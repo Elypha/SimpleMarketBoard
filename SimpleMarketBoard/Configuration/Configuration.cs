@@ -27,7 +27,7 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
     public VirtualKey[] BindingHotkey { get; set; } = new VirtualKey[] { VirtualKey.CONTROL, VirtualKey.X };
 
     // ----------------- API -----------------
-    public int RequestTimeout { get; set; } = 10;
+    public int RequestTimeout { get; set; } = 20;
 
 
     // ----------------- Message -----------------

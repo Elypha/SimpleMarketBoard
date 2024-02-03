@@ -69,7 +69,7 @@ public class HoveredItem
             }
 
             var rowid = plugin.ItemSheet.GetRow((uint)realItemId);
-            Service.PluginLog.Debug($"[UI] ItemID, RealID, RowID: | {thisItemId,7} | {realItemId,7} | {rowid?.RowId,7} |");
+            Service.PluginLog.Verbose($"[UI] ItemID, RealID, RowID: | {thisItemId,7} | {realItemId,7} | {rowid?.RowId,7} |");
 
             // check if keybinding is pressed
             bool isKeybindingPressed = plugin.PluginHotkey.CheckHotkeyState(plugin.Config.BindingHotkey);
@@ -88,7 +88,7 @@ public class HoveredItem
                     else
                     {
                         // save for next keybinding press
-                        Service.PluginLog.Debug($"[UI] Save for keybinding after hover: {realItemId}, {itemIsHQ}");
+                        Service.PluginLog.Verbose($"[UI] Save for keybinding after hover: {realItemId}, {itemIsHQ}");
                         LastItemId = realItemId;
                         LastItemIsHQ = itemIsHQ;
                     }
@@ -121,7 +121,7 @@ public class HoveredItem
         {
             if (LastItemId != 0)
             {
-                Service.PluginLog.Debug($"[UI] (D) Check by keybinding after hover for the current item: {LastItemId}, {LastItemIsHQ}");
+                Service.PluginLog.Verbose($"[UI] (D) Check by keybinding after hover for the current item: {LastItemId}, {LastItemIsHQ}");
                 plugin.PriceChecker.CheckNewAsync(LastItemId, LastItemIsHQ);
                 ResetLastItem();
             }

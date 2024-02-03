@@ -118,7 +118,23 @@ public class ConfigWindow : Window, IDisposable
 
         if (ImGui.CollapsingHeader("Features & UI Introduction", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            ImGui.TextColored(titleColour, "- Use the collapse bar above to show/hide the content below. -");
+            ImGui.TextColored(new Vector4(245f, 220f, 80f, 255f) / 255f, "> Below is a detailed manual.\n> I recommend to read only the sections you are interested.");
+
+            ImGui.Text("");
+
+            plugin.ImGuiHelper.BulletTextList(
+                "Keybinding",
+                "you can configure it below",
+                [
+                    "This is intended to cater your preference. By design there are 3 ways to start a check.\n" +
+                    "1. Hover over an item, then press the keybinding.\n" +
+                    "2. Press the keybinding first, then hover over an item.\n" +
+                    "3. Just hover over an item.",
+                    "All these can be configured with an optional delay.",
+                    "With that said, my recommendation is to set the delay to 0, and use a simple keybinding like 'Ctrl'. This way you can just hover over an item and press 'Ctrl' to get the market data, which is the most efficient way IMO.",
+                    "Remember you can search multiple items without waiting for the previous ones to finish. All your query will be added to the cache sequentially.",
+                ]
+            );
 
             plugin.ImGuiHelper.BulletTextList(
                 "Item Icon",
@@ -130,9 +146,9 @@ public class ConfigWindow : Window, IDisposable
 
             plugin.ImGuiHelper.BulletTextList(
                 "Item Name",
-                "on the top left corner",
+                "to the right of the Item Icon",
                 [
-                    "The item name is followed by an orange loading icon when there are still requests going on. All your query will be added to the cache sequentially.",
+                    "The item name is followed by an orange loading icon when there are still requests going on.",
                     "This place is also used to display the status of the market data query request.\n" +
                     "If it says 'timedout' or 'failed', just use the Refresh button and usually it will be fine.",
                 ]
@@ -179,7 +195,7 @@ public class ConfigWindow : Window, IDisposable
                 "Config Button",
                 "on the right side, the 3rd button from left",
                 new List<string> {
-                    "· Click: Toggle whether to show the configuration window.",
+                    "· Click: Show/Hide the configuration window.",
                 }
             );
 
@@ -451,7 +467,10 @@ public class ConfigWindow : Window, IDisposable
             plugin.Universalis.ReloadHttpClient();
             plugin.Config.Save();
         }
-        ImGuiComponents.HelpMarker("How long to wait in seconds, before the plugin gives up on the market data query.");
+        ImGuiComponents.HelpMarker(
+            "How long to wait in seconds, before the plugin gives up on the market data query.\n" +
+            "Please note that query the whole region (e.g., Japan) may take longer time, so please set a reasonable value."
+            );
 
 
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
