@@ -105,6 +105,26 @@ public class ConfigWindow : Window, IDisposable
         plugin.Config.Save();
     }
 
+
+    public override void PreDraw()
+    {
+        if (plugin.Config.EnableTheme)
+        {
+            plugin.PluginTheme.Push();
+            plugin.PluginThemeEnabled = true;
+        }
+    }
+
+    public override void PostDraw()
+    {
+        if (plugin.PluginThemeEnabled)
+        {
+            plugin.PluginTheme.Pop();
+            plugin.PluginThemeEnabled = false;
+        }
+    }
+
+
     public override void Draw()
     {
         var scale = ImGui.GetIO().FontGlobalScale;
@@ -506,6 +526,19 @@ public class ConfigWindow : Window, IDisposable
         // ----------------- UI -----------------
         ImGui.TextColored(titleColour, "UI settings");
         ImGui.Separator();
+
+
+        // EnableTheme
+        var EnableTheme = plugin.Config.EnableTheme;
+        if (ImGui.Checkbox($"Enable bundled theme{suffix}EnableTheme", ref EnableTheme))
+        {
+            plugin.Config.EnableTheme = EnableTheme;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: A bundled theme will apply to this plugin so that it can be more compact and compatible.\n" +
+            "Disable: Your own (default) dalamud theme will be used."
+        );
 
 
         // EnableChatLog

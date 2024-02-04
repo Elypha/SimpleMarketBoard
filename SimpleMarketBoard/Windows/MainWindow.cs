@@ -49,7 +49,7 @@ public class MainWindow : Window, IDisposable
     {
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(300, 300),
+            MinimumSize = new Vector2(100, 100),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
 
@@ -72,6 +72,24 @@ public class MainWindow : Window, IDisposable
         plugin.SearchHistoryClean();
     }
 
+    public override void PreDraw()
+    {
+        if (plugin.Config.EnableTheme)
+        {
+            plugin.PluginTheme.Push();
+            plugin.PluginThemeEnabled = true;
+        }
+    }
+
+    public override void PostDraw()
+    {
+        if (plugin.PluginThemeEnabled)
+        {
+            plugin.PluginTheme.Pop();
+            plugin.PluginThemeEnabled = false;
+        }
+    }
+
 
 
     public override void Draw()
@@ -82,7 +100,6 @@ public class MainWindow : Window, IDisposable
         var _coloured = false;
         // HQ yellow colour: ARGB
 
-        // var rightColWidth = fontsize * 6;
         var rightColWidth = plugin.Config.rightColWidth;
         var LeftColWidth = ImGui.GetWindowWidth() - rightColWidth;
 

@@ -13,6 +13,7 @@ using Dalamud.IoC;
 using Dalamud.Logging;
 using Dalamud.Plugin.Services;
 using Dalamud.Plugin;
+using Dalamud.Interface.Style;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Excel;
@@ -34,6 +35,10 @@ public sealed class Plugin : IDalamudPlugin
     public string Name => "SimpleMarketBoard";
     private const string CommandMainWindow = "/mb";
     private const string CommandConfigWindow = "/mbc";
+
+
+    public bool PluginThemeEnabled { get; set; }
+    public StyleModel PluginTheme { get; set; }
 
 
     public GameFontHandle AxisTitle { get; set; }
@@ -64,6 +69,8 @@ public sealed class Plugin : IDalamudPlugin
 
         Service.PluginLog.Info($"[General] Plugin loading...");
 
+        PluginTheme = StyleModel.Deserialize("DS1H4sIAAAAAAAACq1XS3PbOAz+LzpnMnpQlORbE2+bQ7uTadLpbm+MzdiqFcsry27TTP97CZIgIcr2etLqIojChxcBEHyJRDRJLuOL6CGavET/RBMOH//q98+LaBZNGCzMo0kMb2m5YssVX+aK61HJuIgWdnlpJdb2WzxY4qsFMwvOtIpVNElhobFcT4EhhmsdYJlebYPVVK9uRkbC6n/qt7arU/bpX1sL7NWC0nIR7awpe/vjm/3+bmU9O8E58f7HQXVC2OVs4MesVX6+RPfye2//J/a/fn+x78/6rfiBcVpvxUMj52PtGqDfDvC5Xs/bb1cLb1RRsizJCgSRbw0m30pIfGk/mZJ1vaybORWFIhBqIaD3tt3sNpS3ROYSuUvLXoHsq7aby86xs8yyA0GcMiE2zHdLoVw7y5q3nXiSxJq0ssxAaG4gjHzm+W/avexooBlGmqFVzMII6s2sr/e+MjiCOII4gngBW1r3DbUtSQrOiphblP/UWP9prC3LNMszLyZQnlUsLqoUg5nHPCmd8ayKk4q7fRjJum6bRmy2JACvE/dBrndXoqM+YkyAMH4xkrR3s06pfhhATm2v43/XQXdBYxMLAUJjgBgrAVC40wyxQBjvjmKDkOcIBcIkCYVeL+Vs9UF0KwcocauB0AAgvK6mVsk+8OxoHoaIMBULTMUCU7EguKtd37fYWVXloyNAaG4gXLYb7jBwWZUmOS9RUZ5WLEmw5HlaMBsMKPs8rsrYiwpTl+lcx77BEPyFJNdY1I0UtI/kWOhAGCQWepY49lGdH2yoal8cIgwsxhUdpbshN6ITfXtuc3P8rw8t6dlO2qgxvGKfPspt/UO+62p/pBYYYCBMkmCA03wACd0pcGeBMMiS9kWP/BOm35PySTH+QJjuj5lUcsP7G7GH9pxXRsyrLR9I+bR+bGc72odjjsFLVM9VDwpJWBmrxxVGkbJARmBSkuUWbyLCtTjMY5bSvjJtZ6t6vbjt5L6W/uBNeVhjIM644VF/PW36Z3oEo0bcAqLotmn79/Vabn2BYS8CwoQrOQQY7hvOUqTSsjyA3dTbvl2ok9vpchk9OGkOII4pw+gNBjcY2UzvoOcg6gJiFAaNsbNO37XrxamjLT8MfF8vlv2pzB/hPg7HxRPHrmd/0/zf+Ao5a+fXO9nIWS/pJHkihTLoItNOLKZdu7kX3UIeU+WNg7r5W+xvlO/N0P9jeoz/CmPmZZWvIfi4Y0WAnNZPxDWsLKxQ9CuFwaidi8bgzgOpYMDlR42Z0SSSzfNmKSJ1GzOXCDFKxGFcjI++DRZBntNRQF30zuA67woiz7rZPHrn3cmgKRMAezYY3sXI0yLGDaUyl6M05gc01yMu100z/RBevLOCRphB2IlIr47mKW2qjZcYhrriNIy+QaFSN3gTLj++qenpYHkYPrwqe6dZZkI4DI4/6Tn8N80jdhYOgqOu1MG25DH2JyrTT0Klm33VvQIbe0632h8BpTukcHu0dMupWFUzVqs/fwHiVFw/xBAAAA==")!;
+
         AxisTitle = Service.PluginInterface.UiBuilder.GetGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 20.0f));
         ItemSheet = Service.Data.GetExcelSheet<Item>()!;
         WorldSheet = Service.Data.GetExcelSheet<World>()!;
@@ -87,7 +94,7 @@ public sealed class Plugin : IDalamudPlugin
         Service.PluginInterface.UiBuilder.OpenMainUi += DrawMainUI;
         Service.ClientState.Login += OnLogin;
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
-        Service.Framework.Update += onFrameUpdate;
+        Service.Framework.Update += OnFrameUpdate;
         HoveredItem.Enable();
         ConfigWindow.UpdateWorld();
 
@@ -107,7 +114,7 @@ public sealed class Plugin : IDalamudPlugin
         Service.PluginInterface.UiBuilder.OpenMainUi -= DrawMainUI;
         Service.ClientState.Login -= OnLogin;
         Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
-        Service.Framework.Update -= onFrameUpdate;
+        Service.Framework.Update -= OnFrameUpdate;
 
         WindowSystem.RemoveAllWindows();
         ConfigWindow.Dispose();
@@ -157,7 +164,7 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow.UpdateWorld();
     }
 
-    public void onFrameUpdate(IFramework framework)
+    public void OnFrameUpdate(IFramework framework)
     {
         if (!Config.KeybindingEnabled) return;
         if (!PluginHotkey.CheckHotkeyState(Config.BindingHotkey)) return;
