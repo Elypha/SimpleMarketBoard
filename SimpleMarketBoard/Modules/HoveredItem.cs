@@ -8,6 +8,7 @@ namespace SimpleMarketBoard;
 
 public class HoveredItem
 {
+    public ulong HoverItemId;
     public ulong LastItemId;
     public bool LastItemIsHQ;
 
@@ -38,6 +39,8 @@ public class HoveredItem
     {
         try
         {
+            HoverItemId = thisItemId;
+
             // cancel in-flight request
             if (plugin.PriceChecker.ItemCancellationTokenSource != null)
             {

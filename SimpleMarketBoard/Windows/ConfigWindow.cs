@@ -448,6 +448,33 @@ public class ConfigWindow : Window, IDisposable
         ImGuiComponents.HelpMarker(
             "Press the button to set a keybinding. Press ESC to cancel."
         );
+
+
+        // KeybindingToOpenWindow
+        var KeybindingToOpenWindow = plugin.Config.KeybindingToOpenWindow;
+        if (ImGui.Checkbox($"Keybinding can open main window{suffix}KeybindingToOpenWindow", ref KeybindingToOpenWindow))
+        {
+            plugin.Config.KeybindingToOpenWindow = KeybindingToOpenWindow;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: If you choose to use a keybinding, now the main window will show up automatically when you press the keybinding to check an item\n" +
+            "Disable: The above will not work."
+        );
+
+        // KeybindingToCloseWindow
+        var KeybindingToCloseWindow = plugin.Config.KeybindingToCloseWindow;
+        if (ImGui.Checkbox($"Keybinding can close main window{suffix}KeybindingToCloseWindow", ref KeybindingToCloseWindow))
+        {
+            plugin.Config.KeybindingToCloseWindow = KeybindingToCloseWindow;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: If you choose to use a keybinding, now the main window will close when you press the keybinding without hovering an item\n" +
+            "Disable: The above will not work."
+        );
+
+
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 
 

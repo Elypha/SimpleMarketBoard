@@ -87,6 +87,7 @@ public sealed class Plugin : IDalamudPlugin
         Service.PluginInterface.UiBuilder.OpenMainUi += DrawMainUI;
         Service.ClientState.Login += OnLogin;
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
+        Service.Framework.Update += onFrameUpdate;
         HoveredItem.Enable();
         ConfigWindow.UpdateWorld();
 
@@ -106,6 +107,7 @@ public sealed class Plugin : IDalamudPlugin
         Service.PluginInterface.UiBuilder.OpenMainUi -= DrawMainUI;
         Service.ClientState.Login -= OnLogin;
         Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
+        Service.Framework.Update -= onFrameUpdate;
 
         WindowSystem.RemoveAllWindows();
         ConfigWindow.Dispose();
@@ -153,6 +155,24 @@ public sealed class Plugin : IDalamudPlugin
     public void OnTerritoryChanged(ushort territoryId)
     {
         ConfigWindow.UpdateWorld();
+    }
+
+    public void onFrameUpdate(IFramework framework)
+    {
+        if (!Config.KeybindingEnabled) return;
+        if (!PluginHotkey.CheckHotkeyState(Config.BindingHotkey)) return;
+
+        if (Config.KeybindingToOpenWindow && !MainWindow.IsOpen && (HoveredItem.HoverItemId != 0))
+        {
+            MainWindow.Toggle();
+            return;
+        }
+
+        if (Config.KeybindingToCloseWindow && MainWindow.IsOpen && (HoveredItem.HoverItemId == 0))
+        {
+            MainWindow.Toggle();
+            return;
+        }
     }
 
 
