@@ -1,6 +1,6 @@
 # SimpleMarketBoard
 
-![2024-01-23_07-51-49_150](https://github.com/Elypha/SimpleMarketBoard/assets/30290883/1be58c0b-9e72-4c3f-90a3-66d564ea6ca1)
+![2024-02-05_01-30-52_337](https://github.com/Elypha/SimpleMarketBoard/assets/30290883/767325f5-a9d9-4cdd-bb70-25ea8c1818da)
 
 ## Introduction
 
@@ -9,7 +9,7 @@ A simple but ultimate market board plugin caters for me at present, and potentia
 ### Features
 
 - **Compact UI design**, that won't eat out your screen even on your grandma's 800x600 CRT
-- **Search history**, and with cache for review when you work with multi-items and a button to delete an entry
+- **Search history**, and with cache for review when you work with multiple items and a button to delete any entry
 - **Flexible Keybindings**, so long as you can press it on your keyboard
 - **More data, more money**
     - Universalis Last Updated Time (hrs)
@@ -19,8 +19,8 @@ A simple but ultimate market board plugin caters for me at present, and potentia
       - It is right above `Universalis Last Updated Time`
       - The velocity exhibits a monotonically increasing correlation with the aggregate volume of goods sold within a specified time interval
     - (TBD) Data from other DC
-- **An HQ filter**, to display HQ only if you wish
-- **Colour highlight**, so you tell HQ items visually instead of textually
+- **HQ filter**, to display HQ only if you wish
+- **Colour highlight**, so you tell HQ items visually instead of textually, and this can also work for price higher than vendor NPC, etc.
 
 ## Whydunit
 
