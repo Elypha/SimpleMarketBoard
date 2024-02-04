@@ -503,7 +503,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 
 
-        // ----------------- Message -----------------
+        // ----------------- UI -----------------
         ImGui.TextColored(titleColour, "UI settings");
         ImGui.Separator();
 
@@ -557,6 +557,33 @@ public class ConfigWindow : Window, IDisposable
             "Which in-game chat channel you want to print your query to.\n" +
             "PS \"None\" is also a channel name."
         );
+
+
+        // rightColWidth
+        ImGui.Text("Right column width");
+        ImGui.SameLine();
+        var rightColWidth = plugin.Config.rightColWidth;
+        ImGui.SetNextItemWidth(150 * scale);
+        if (ImGui.InputInt($"px{suffix}rightColWidth", ref rightColWidth))
+        {
+            plugin.Config.rightColWidth = rightColWidth;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker("The width of the column on the right of the main window.");
+
+
+        // WorldUpdateColWidthOffset
+        ImGui.Text("World last update table column width offset");
+        ImGui.SameLine();
+        var WorldUpdateColWidthOffset = plugin.Config.WorldUpdateColWidthOffset;
+        ImGui.SetNextItemWidth(150 * scale);
+        if (ImGui.InputInt2($"px{suffix}WorldUpdateColWidthOffset", ref WorldUpdateColWidthOffset[0]))
+        {
+            plugin.Config.WorldUpdateColWidthOffset = WorldUpdateColWidthOffset;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker("The width of the columns of the last updated time for each world on the right bottom. Try changing the two values yourself and you'll know what it does.");
+
 
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 

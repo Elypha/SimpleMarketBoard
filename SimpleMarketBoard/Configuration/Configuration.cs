@@ -32,10 +32,12 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
     public int RequestTimeout { get; set; } = 20;
 
 
-    // ----------------- Message -----------------
+    // ----------------- UI -----------------
     public bool EnableChatLog { get; set; } = true;
     public bool EnableToastLog { get; set; } = false;
     public XivChatType ChatLogChannel { get; set; } = XivChatType.None;
+    public int rightColWidth { get; set; } = 102;
+    public int[] WorldUpdateColWidthOffset { get; set; } = new int[] { 0, 0 };
 
     // ----------------- Cache -----------------
     public List<ulong> SearchHistoryId { get; set; } = new List<ulong>();

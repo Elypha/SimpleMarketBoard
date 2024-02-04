@@ -82,7 +82,8 @@ public class MainWindow : Window, IDisposable
         var _coloured = false;
         // HQ yellow colour: ARGB
 
-        var rightColWidth = fontsize * 6;
+        // var rightColWidth = fontsize * 6;
+        var rightColWidth = plugin.Config.rightColWidth;
         var LeftColWidth = ImGui.GetWindowWidth() - rightColWidth;
 
         plugin.HoveredItem.CheckLastItem();
@@ -484,8 +485,8 @@ public class MainWindow : Window, IDisposable
 
         ImGui.Columns(2, "world-out-of-date-columns");
 
-        ImGui.SetColumnWidth(0, rightColTableWidth - ImGui.CalcTextSize("0000").X - 2 * ImGui.GetStyle().ItemSpacing.X);
-        ImGui.SetColumnWidth(1, ImGui.CalcTextSize("0000").X);
+        ImGui.SetColumnWidth(0, rightColTableWidth - ImGui.CalcTextSize("0000").X - 2 * ImGui.GetStyle().ItemSpacing.X + plugin.Config.WorldUpdateColWidthOffset[0]);
+        ImGui.SetColumnWidth(1, ImGui.CalcTextSize("0000").X + plugin.Config.WorldUpdateColWidthOffset[1]);
 
         var worldOutOfDateIndex = 0;
         foreach (var i in CurrentItem.WorldOutOfDate)
