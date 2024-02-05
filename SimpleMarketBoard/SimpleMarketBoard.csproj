@@ -28,8 +28,14 @@
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
+  <ProjectExtensions>
+    <DalamudPlugin>
+      <Hidden>False</Hidden>
+    </DalamudPlugin>
+  </ProjectExtensions>
+
   <PropertyGroup>
-    <DalamudLibPath>C:\Users\elyph\AppData\Roaming\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+    <DalamudLibPath>$(AppData)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   </PropertyGroup>

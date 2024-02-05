@@ -1,0 +1,31 @@
+---
+author: Elypha
+name: SimpleMarketBoard
+repo_url: https://github.com/Elypha/SimpleMarketBoard
+punchline: The simple but ultimate market board plugin.
+description: |
+  You get some useful bonus info and a nice, condensed presentation. Might be useful for power users, perhaps?
+
+  Highlights:
+    - Compact UI design
+    - Cached search history
+    - Flexible configuration
+    - Live data filters
+    - Colour highlights
+
+  Check out the Introduction in Plugin Configuration for general usage, and Github page for more details.
+
+  If you have any feedback or suggestions, feel free to contact me on Discord or Github. I'm always open to new ideas and improvements. Enjoy!
+tags:
+  - Marketboard
+  - Price
+  - Data
+  - Universalis
+  - Elypha
+category_tags:
+  - Utility
+  - Other
+
+# in the images folder on D17:
+# - icon should be 512x512 named with 'icon.png'
+# - preview images shoulld be 730x380 named with 'image1.png' up to 5
