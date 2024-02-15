@@ -199,7 +199,7 @@ public class MainWindow : Window, IDisposable
             ImGui.SameLine();
             ImGui.SetCursorPosY(ImGui.GetCursorPosY());
 
-            ImGui.PushFont(plugin.AxisTitle.ImFont);
+            plugin.AxisTitle.Push();
             ImGui.Text(CurrentItemLabel);
             if (LoadingQueue > 0)
             {
@@ -211,7 +211,7 @@ public class MainWindow : Window, IDisposable
                 ImGui.PopFont();
             }
 
-            ImGui.PopFont();
+            plugin.AxisTitle.Pop();
 
 
             // set the size for the tables
