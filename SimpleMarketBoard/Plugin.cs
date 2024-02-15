@@ -1,32 +1,15 @@
-﻿using Dalamud.Configuration;
-using Dalamud.ContextMenu;
-using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.Command;
-using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Game.Text;
+﻿using Dalamud.Game.Command;
 using Dalamud.Interface.GameFonts;
-using Dalamud.Interface.Internal;
-using Dalamud.Interface.Windowing;
 using Dalamud.Interface.ManagedFontAtlas;
-using Dalamud.Interface;
-using Dalamud.IoC;
-using Dalamud.Logging;
+using Dalamud.Interface.Style;
+using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using Dalamud.Plugin;
-using Dalamud.Interface.Style;
-using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Excel;
-using SimpleMarketBoard.UniversalisModels;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
+
+using SimpleMarketBoard.UniversalisModels;
 
 
 namespace SimpleMarketBoard;

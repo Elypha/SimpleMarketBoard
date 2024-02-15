@@ -1,15 +1,13 @@
-﻿using System;
-using System.Numerics;
-using System.Collections.Generic;
+﻿using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Internal;
-using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Windowing;
-using ImGuiNET;
-
 using Dalamud.Interface;
-using System.Linq;
+using ImGuiNET;
 using System.Globalization;
-using System.Threading.Tasks;
+using System.Linq;
+using System.Numerics;
+using System;
+
 
 namespace SimpleMarketBoard;
 

@@ -1,13 +1,8 @@
-using Dalamud.Game.ClientState.Keys;
-using Dalamud.Game.Text;
 using Dalamud.Interface.Components;
-using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System;
+
 
 namespace SimpleMarketBoard;
 

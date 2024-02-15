@@ -1,16 +1,15 @@
 #pragma warning disable CS8603
 
-using System;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-using Dalamud.Logging;
-using System.Text.Json;
-using SimpleMarketBoard.UniversalisModels;
-using System.Net.Http.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System;
+
+using SimpleMarketBoard.UniversalisModels;
+
 
 namespace SimpleMarketBoard;
 

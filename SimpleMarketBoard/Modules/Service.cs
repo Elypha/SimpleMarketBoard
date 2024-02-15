@@ -1,11 +1,12 @@
 #pragma warning disable CS8618
 
-using System.Diagnostics.CodeAnalysis;
-using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects;
+using Dalamud.Game;
 using Dalamud.IoC;
-using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using Dalamud.Plugin;
+using System.Diagnostics.CodeAnalysis;
+
 
 namespace SimpleMarketBoard;
 

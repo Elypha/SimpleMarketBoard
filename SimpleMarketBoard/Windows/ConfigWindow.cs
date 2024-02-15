@@ -11,6 +11,7 @@ using System.Linq;
 using System.Numerics;
 using System;
 
+
 namespace SimpleMarketBoard;
 
 public class ConfigWindow : Window, IDisposable

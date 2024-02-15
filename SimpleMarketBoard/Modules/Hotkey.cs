@@ -1,11 +1,7 @@
+using Dalamud.Game.ClientState.Keys;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System;
-
-using Dalamud.Game.ClientState.Keys;
-using Lumina.Excel.GeneratedSheets;
-using Newtonsoft.Json;
 
 
 namespace SimpleMarketBoard;
