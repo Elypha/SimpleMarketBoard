@@ -8,13 +8,13 @@ namespace SimpleMarketBoard;
 
 public class ImGuiHelper
 {
-    public Vector4 titleColour;
-    public Vector4 bulletColour;
+    public Vector4 bulletTitleColour;
+    public Vector4 bulletListColour;
 
     public ImGuiHelper()
     {
-        titleColour = new Vector4(0.95f, 0.8f, 0.6f, 1);
-        bulletColour = new Vector4(0.8f, 0.8f, 0.8f, 1);
+        bulletTitleColour = new Vector4(0.95f, 0.8f, 0.6f, 1);
+        bulletListColour = new Vector4(0.8f, 0.8f, 0.8f, 1);
     }
 
     public void Dispose()
@@ -24,7 +24,7 @@ public class ImGuiHelper
     public void BulletTextList(string title, string description, List<string> list)
     {
 
-        ImGui.TextColored(titleColour, title);
+        ImGui.TextColored(bulletTitleColour, title);
 
         ImGui.SameLine();
         ImGuiComponents.HelpMarker(description);
@@ -32,7 +32,7 @@ public class ImGuiHelper
         ImGui.Indent();
 
         ImGui.PushTextWrapPos();
-        ImGui.PushStyleColor(ImGuiCol.Text, bulletColour);
+        ImGui.PushStyleColor(ImGuiCol.Text, bulletListColour);
         foreach (var text in list)
         {
             ImGui.Text(text);
