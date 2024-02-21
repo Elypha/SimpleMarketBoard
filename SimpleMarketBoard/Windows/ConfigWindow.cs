@@ -521,6 +521,39 @@ public class ConfigWindow : Window, IDisposable
             );
 
 
+        // UniversalisListings
+        ImGui.Text("Listings to request");
+        ImGui.SameLine();
+        var UniversalisListings = plugin.Config.UniversalisListings;
+        ImGui.SetNextItemWidth(150 * scale);
+        if (ImGui.InputInt($"{suffix}UniversalisListings", ref UniversalisListings))
+        {
+            plugin.Config.UniversalisListings = UniversalisListings;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "How many listings to request from Universalis.\n" +
+            "Please set a reasonable value. Default is 70.\n"
+            );
+
+
+        // UniversalisEntries
+        ImGui.Text("Historical entries to request");
+        ImGui.SameLine();
+        var UniversalisEntries = plugin.Config.UniversalisEntries;
+        ImGui.SetNextItemWidth(150 * scale);
+        if (ImGui.InputInt($"{suffix}UniversalisEntries", ref UniversalisEntries))
+        {
+            plugin.Config.UniversalisEntries = UniversalisEntries;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "How many historical entries to request from Universalis.\n" +
+            "Please set a reasonable value. Default is 70.\n" +
+            "The more you request, the more accurate the popularity number is."
+            );
+
+
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
 
 

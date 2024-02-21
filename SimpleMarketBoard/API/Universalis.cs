@@ -52,7 +52,7 @@ public class Universalis
         {
             // build url
             var API_URL = new UriBuilder(
-                $"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings=75&entries=75"
+                $"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings={plugin.Config.UniversalisListings}&entries={plugin.Config.UniversalisEntries}"
             ).Uri.ToString();
 
             // get response

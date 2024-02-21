@@ -31,6 +31,8 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
 
     // ----------------- API -----------------
     public int RequestTimeout { get; set; } = 20;
+    public int UniversalisListings { get; set; } = 70;
+    public int UniversalisEntries { get; set; } = 70;
 
 
     // ----------------- UI -----------------
