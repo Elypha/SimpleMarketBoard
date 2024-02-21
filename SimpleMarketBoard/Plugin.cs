@@ -33,6 +33,7 @@ public sealed class Plugin : IDalamudPlugin
     public SimpleMarketBoardConfig Config { get; init; }
     public WindowSystem WindowSystem = new("SimpleMarketBoard");
     public ConfigWindow ConfigWindow { get; init; }
+    public ChangelogWindow ChangelogWindow { get; init; }
     public MainWindow MainWindow { get; init; }
 
 
@@ -62,8 +63,10 @@ public sealed class Plugin : IDalamudPlugin
         Config = Service.PluginInterface.GetPluginConfig() as SimpleMarketBoardConfig ?? new SimpleMarketBoardConfig();
         Config.Initialize(Service.PluginInterface);
         ConfigWindow = new ConfigWindow(this);
+        ChangelogWindow = new ChangelogWindow(this);
         MainWindow = new MainWindow(this);
         WindowSystem.AddWindow(ConfigWindow);
+        WindowSystem.AddWindow(ChangelogWindow);
         WindowSystem.AddWindow(MainWindow);
 
         PrintMessage = new PrintMessage(this);
@@ -102,6 +105,7 @@ public sealed class Plugin : IDalamudPlugin
 
         WindowSystem.RemoveAllWindows();
         ConfigWindow.Dispose();
+        ChangelogWindow.Dispose();
         MainWindow.Dispose();
 
         PrintMessage.Dispose();
