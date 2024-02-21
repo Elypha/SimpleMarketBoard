@@ -80,7 +80,7 @@ public class ChangelogWindow : Window, IDisposable
             {
                 "· New option: how many listings to request from Universalis.",
                 "· New option: how many entries to request from Universalis.",
-                "· New option: only request HQ listings from Universalis.",
+                "· New option: only request HQ listings from Universalis (HQ Filter Button).",
                 "· A changelog window is now available from the configuration window.",
             }
         );
@@ -90,7 +90,7 @@ public class ChangelogWindow : Window, IDisposable
             new List<string>
             {
                 "· Plugin now comes with a default theme for better compatibility.",
-                "· New option: alter last update table width.",
+                "· New option: customise last update table width.",
                 "· New option: use keybinding to open and close the main window.",
             }
         );
