@@ -522,7 +522,7 @@ public class ConfigWindow : Window, IDisposable
 
 
         // UniversalisListings
-        ImGui.Text("Listings to request");
+        ImGui.Text("Current listings to request");
         ImGui.SameLine();
         var UniversalisListings = plugin.Config.UniversalisListings;
         ImGui.SetNextItemWidth(150 * scale);
