@@ -81,6 +81,7 @@ public class ChangelogWindow : Window, IDisposable
                 "· New option: how many listings to request from Universalis.",
                 "· New option: how many entries to request from Universalis.",
                 "· New option: only request HQ listings from Universalis.",
+                "· A changelog window is now available from the configuration window.",
             }
         );
 
