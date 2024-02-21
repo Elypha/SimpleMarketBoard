@@ -37,7 +37,8 @@ public class MainWindow : Window, IDisposable
 
     public int LoadingQueue = 0;
 
-    private Vector4 textColourHQ = new Vector4(247f, 202f, 111f, 255f) / 255f;
+    private Vector4 textColourHq = new Vector4(247f, 202f, 111f, 255f) / 255f;
+    private Vector4 textColourHqOnly = new Vector4(62f, 186f, 240f, 255f) / 255f;
     private Vector4 textColourHigherThanVendor = new Vector4(230f, 90f, 80f, 255f) / 255f;
     private Vector4 textColourWhite = new Vector4(1f, 1f, 1f, 1f);
 
@@ -130,11 +131,21 @@ public class MainWindow : Window, IDisposable
         ImGui.SetCursorPosY(topY + ImGui.GetTextLineHeightWithSpacing() + (1.1f * ImGui.GetStyle().ItemSpacing.Y));
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (130 * scale) - 1 * (24 * ImGui.GetIO().FontGlobalScale + 0.5f * ImGui.GetStyle().ItemSpacing.X));
 
+        var _iconColour = textColourWhite;
+        if (plugin.Config.FilterHq) _iconColour = textColourHq;
+        if (plugin.Config.UniversalisHqOnly) _iconColour = textColourHqOnly;
         ImGui.PushFont(UiBuilder.IconFont);
-        ImGui.PushStyleColor(ImGuiCol.Text, plugin.Config.FilterHQ ? textColourHQ : textColourWhite);
+        ImGui.PushStyleColor(ImGuiCol.Text, _iconColour);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Splotch}", new Vector2(24 * ImGui.GetIO().FontGlobalScale, ImGui.GetItemRectSize().Y)))
         {
-            plugin.Config.FilterHQ = !plugin.Config.FilterHQ;
+            if (plugin.PluginHotkey.CheckHotkeyState(new VirtualKey[] { VirtualKey.CONTROL }))
+            {
+                plugin.Config.UniversalisHqOnly = !plugin.Config.UniversalisHqOnly;
+            }
+            else
+            {
+                plugin.Config.FilterHq = !plugin.Config.FilterHq;
+            }
         }
         ImGui.PopStyleColor();
         ImGui.PopFont();
@@ -203,7 +214,7 @@ public class MainWindow : Window, IDisposable
             {
                 ImGui.SameLine();
                 ImGui.PushFont(UiBuilder.IconFont);
-                ImGui.PushStyleColor(ImGuiCol.Text, textColourHQ);
+                ImGui.PushStyleColor(ImGuiCol.Text, textColourHq);
                 ImGui.Text($"{(char)FontAwesomeIcon.Spinner}");
                 ImGui.PopStyleColor();
                 ImGui.PopFont();
@@ -242,7 +253,7 @@ public class MainWindow : Window, IDisposable
 
             // prepare the data
             var marketDataListings = CurrentItem.UniversalisResponse.Listings;
-            if (plugin.Config.FilterHQ)
+            if (plugin.Config.FilterHq)
             {
                 marketDataListings = marketDataListings.Where(l => l.Hq == true).OrderBy(l => l.PricePerUnit).ToList();
             }
@@ -263,7 +274,7 @@ public class MainWindow : Window, IDisposable
                     }
                     else if (listing.Hq)
                     {
-                        ImGui.PushStyleColor(ImGuiCol.Text, textColourHQ);
+                        ImGui.PushStyleColor(ImGuiCol.Text, textColourHq);
                         _coloured = true;
                     }
 
@@ -330,7 +341,7 @@ public class MainWindow : Window, IDisposable
 
                 // prepare the data
                 var marketDataEntries = CurrentItem.UniversalisResponse.Entries;
-                if (plugin.Config.FilterHQ)
+                if (plugin.Config.FilterHq)
                 {
                     marketDataEntries = marketDataEntries.Where(l => l.Hq == true).OrderByDescending(l => l.Timestamp).ToList();
                 }
@@ -343,7 +354,7 @@ public class MainWindow : Window, IDisposable
                 {
                     foreach (var entry in marketDataEntries)
                     {
-                        if (entry.Hq) ImGui.PushStyleColor(ImGuiCol.Text, textColourHQ);
+                        if (entry.Hq) ImGui.PushStyleColor(ImGuiCol.Text, textColourHq);
 
                         // Sold
                         var index = marketDataEntries.IndexOf(entry);
@@ -402,7 +413,7 @@ public class MainWindow : Window, IDisposable
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.3f * ImGui.GetStyle().ItemSpacing.X));
 
         ImGui.PushFont(UiBuilder.IconFont);
-        ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? textColourHQ : textColourWhite);
+        ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? textColourHq : textColourWhite);
         if (ImGui.Button($"{(char)FontAwesomeIcon.List}", new Vector2(24 * ImGui.GetIO().FontGlobalScale, ImGui.GetItemRectSize().Y)))
         {
             searchHistoryOpen = !searchHistoryOpen;

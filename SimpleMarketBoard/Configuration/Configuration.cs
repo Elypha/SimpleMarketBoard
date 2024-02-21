@@ -31,6 +31,7 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
 
     // ----------------- API -----------------
     public int RequestTimeout { get; set; } = 20;
+    public bool UniversalisHqOnly { get; set; } = false;
     public int UniversalisListings { get; set; } = 70;
     public int UniversalisEntries { get; set; } = 70;
 
@@ -47,7 +48,7 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
     public List<ulong> SearchHistoryId { get; set; } = new List<ulong>();
     public string selectedWorld { get; set; } = "";
 
-    public bool FilterHQ { get; set; } = false;
+    public bool FilterHq { get; set; } = false;
 
     // the below exist just to make saving less cumbersome
     [NonSerialized]

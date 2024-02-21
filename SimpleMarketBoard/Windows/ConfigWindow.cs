@@ -139,7 +139,17 @@ public class ConfigWindow : Window, IDisposable
 
         if (ImGui.CollapsingHeader("Features & UI Introduction"))
         {
-            ImGui.TextColored(new Vector4(245f, 220f, 80f, 255f) / 255f, "> Below is a detailed manual.\n> I recommend to read only the sections you are interested.");
+            ImGui.TextColored(
+                new Vector4(245f, 220f, 80f, 255f) / 255f,
+                "> Below is a detailed manual.\n" +
+                "> I recommend to read only the sections you are interested.\n" +
+                "> Please checkout the changelog so that you can keep up with all the new features."
+            );
+
+            if (ImGui.Button($"Open Changelog Window"))
+            {
+                plugin.ChangelogWindow.Toggle();
+            }
 
             ImGui.Text("");
 
@@ -187,8 +197,9 @@ public class ConfigWindow : Window, IDisposable
                 "HQ Filter Button",
                 "the star button under the item name",
                 new List<string> {
-                    "HQ items are coloured in orange in the market data table.",
-                    "· Click: Toggle whether to show HQ items only in your current listings.",
+                    "HQ items are by default coloured in orange in the market data table. You can further filter the results by",
+                    "· Click: Toggle whether to show only HQ items in the table. When enabled the icon will be coloured in orange.",
+                    "· Ctrl + Click: Toggle whether to request only HQ items from the server. When enabled the icon will be coloured in cyan. This has a higher priority. It can be helpful when you are looking for HQ items but the table is flooded with low-priced NQs, e.g., Commanding Craftsman's Draught.",
                 }
             );
 
@@ -250,10 +261,16 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Text("");
 
+            ImGui.TextColored(titleColour, "PS");
             var _ending_width = ImGui.GetContentRegionAvail().X;
             ImGui.PushTextWrapPos(ImGui.GetCursorPosX() + _ending_width * 0.9f);
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + _ending_width * 0.1f);
-            ImGui.TextColored(titleColour, "This plugin is still in active development.\nIf you have any suggestions or issues, please let me know on Discord or GitHub, and I will appreciate it.\nElypha.");
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + _ending_width * 0.05f);
+            ImGui.TextColored(
+                titleColour,
+                "This plugin is still in active development.\n" +
+                "If you have any suggestions or issues, please let me know on Discord or GitHub, and I will appreciate it.\n" +
+                "Elypha."
+            );
             ImGui.PopTextWrapPos();
 
             ImGui.Text("");

@@ -51,8 +51,9 @@ public class Universalis
         try
         {
             // build url
+            var _hq = plugin.Config.UniversalisHqOnly ? "&hq=1" : "";
             var API_URL = new UriBuilder(
-                $"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings={plugin.Config.UniversalisListings}&entries={plugin.Config.UniversalisEntries}"
+                $"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings={plugin.Config.UniversalisListings}&entries={plugin.Config.UniversalisEntries}{_hq}"
             ).Uri.ToString();
 
             // get response
