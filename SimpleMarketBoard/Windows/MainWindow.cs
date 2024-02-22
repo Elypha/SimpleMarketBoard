@@ -46,11 +46,13 @@ public class MainWindow : Window, IDisposable
         "SimpleMarketBoard",
         ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
-        SizeConstraints = new WindowSizeConstraints
-        {
-            MinimumSize = new Vector2(100, 100),
-            MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
-        };
+        Size = new Vector2(350, 450);
+        SizeCondition = ImGuiCond.FirstUseEver;
+        // SizeConstraints = new WindowSizeConstraints
+        // {
+        //     MinimumSize = new Vector2(100, 100),
+        //     MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
+        // };
 
         this.plugin = plugin;
         CurrentItem.Id = 4691;
