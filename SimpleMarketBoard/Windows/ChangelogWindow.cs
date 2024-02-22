@@ -24,7 +24,7 @@ public class ChangelogWindow : Window, IDisposable
     // ImGuiWindowFlags.NoScrollWithMouse
     )
     {
-        Size = new Vector2(400, 300);
+        Size = new Vector2(550, 400);
         SizeCondition = ImGuiCond.FirstUseEver;
 
         this.plugin = plugin;

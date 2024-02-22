@@ -27,7 +27,7 @@ public class ConfigWindow : Window, IDisposable
     // ImGuiWindowFlags.NoScrollWithMouse
     )
     {
-        Size = new Vector2(400, 300);
+        Size = new Vector2(450, 600);
         SizeCondition = ImGuiCond.FirstUseEver;
 
         this.plugin = plugin;
