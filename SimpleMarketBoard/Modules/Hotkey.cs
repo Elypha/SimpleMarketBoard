@@ -8,27 +8,33 @@ namespace SimpleMarketBoard;
 
 public class PluginHotkey : IDisposable
 {
-
-    private Plugin plugin;
+    private readonly Plugin plugin;
 
     public PluginHotkey(Plugin plugin)
     {
         this.plugin = plugin;
     }
 
-    public bool CheckHotkeyState(VirtualKey[] keys) {
-        foreach (var vk in Service.KeyState.GetValidVirtualKeys()) {
-            if (keys.Contains(vk)) {
+    public void Dispose()
+    {
+    }
+
+
+    // -------------------------------- hotkey methods --------------------------------
+    public bool CheckHotkeyState(VirtualKey[] keys)
+    {
+        foreach (var vk in Service.KeyState.GetValidVirtualKeys())
+        {
+            if (keys.Contains(vk))
+            {
                 if (!Service.KeyState[vk]) return false;
-            } else {
+            }
+            else
+            {
                 if (Service.KeyState[vk]) return false;
             }
         }
         return true;
-    }
-
-    public void Dispose()
-    {
     }
 }
 
@@ -50,5 +56,5 @@ public static class Extensions
         { VirtualKey.SHIFT, "Shift"},
     };
 
-    public static string GetKeyName(this VirtualKey k) => NamedKeys.ContainsKey(k) ? NamedKeys[k] : k.ToString();
+    public static string GetKeyName(this VirtualKey k) => NamedKeys.TryGetValue(k, out var value) ? value : k.ToString();
 }
