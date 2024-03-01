@@ -22,7 +22,7 @@ public sealed class Plugin : IDalamudPlugin
     private const string CommandMain = "/smb";
 
     // fonts and data resources
-    public IFontHandle AxisTitle { get; set; }
+    public IFontHandle Axis20 { get; set; }
     public readonly ExcelSheet<Item> ItemSheet;
     public readonly ExcelSheet<World> WorldSheet;
     public StyleModel PluginTheme { get; set; }
@@ -43,7 +43,7 @@ public sealed class Plugin : IDalamudPlugin
     public Universalis Universalis { get; set; } = null!;
     public HoveredItem HoveredItem { get; set; } = null!;
     public PriceChecker PriceChecker { get; set; } = null!;
-    public ImGuiHelper ImGuiHelper { get; set; } = null!;
+    public UiHelper UiHelper { get; set; } = null!;
 
 
     public Plugin(DalamudPluginInterface pluginInterface)
@@ -54,7 +54,7 @@ public sealed class Plugin : IDalamudPlugin
 
         // load fonts and data resources
         PluginTheme = StyleModel.Deserialize("DS1H4sIAAAAAAAACq1XS3PbOAz+LzpnMnpQlORbE2+bQ7uTadLpbm+MzdiqFcsry27TTP97CZIgIcr2etLqIojChxcBEHyJRDRJLuOL6CGavET/RBMOH//q98+LaBZNGCzMo0kMb2m5YssVX+aK61HJuIgWdnlpJdb2WzxY4qsFMwvOtIpVNElhobFcT4EhhmsdYJlebYPVVK9uRkbC6n/qt7arU/bpX1sL7NWC0nIR7awpe/vjm/3+bmU9O8E58f7HQXVC2OVs4MesVX6+RPfye2//J/a/fn+x78/6rfiBcVpvxUMj52PtGqDfDvC5Xs/bb1cLb1RRsizJCgSRbw0m30pIfGk/mZJ1vaybORWFIhBqIaD3tt3sNpS3ROYSuUvLXoHsq7aby86xs8yyA0GcMiE2zHdLoVw7y5q3nXiSxJq0ssxAaG4gjHzm+W/avexooBlGmqFVzMII6s2sr/e+MjiCOII4gngBW1r3DbUtSQrOiphblP/UWP9prC3LNMszLyZQnlUsLqoUg5nHPCmd8ayKk4q7fRjJum6bRmy2JACvE/dBrndXoqM+YkyAMH4xkrR3s06pfhhATm2v43/XQXdBYxMLAUJjgBgrAVC40wyxQBjvjmKDkOcIBcIkCYVeL+Vs9UF0KwcocauB0AAgvK6mVsk+8OxoHoaIMBULTMUCU7EguKtd37fYWVXloyNAaG4gXLYb7jBwWZUmOS9RUZ5WLEmw5HlaMBsMKPs8rsrYiwpTl+lcx77BEPyFJNdY1I0UtI/kWOhAGCQWepY49lGdH2yoal8cIgwsxhUdpbshN6ITfXtuc3P8rw8t6dlO2qgxvGKfPspt/UO+62p/pBYYYCBMkmCA03wACd0pcGeBMMiS9kWP/BOm35PySTH+QJjuj5lUcsP7G7GH9pxXRsyrLR9I+bR+bGc72odjjsFLVM9VDwpJWBmrxxVGkbJARmBSkuUWbyLCtTjMY5bSvjJtZ6t6vbjt5L6W/uBNeVhjIM644VF/PW36Z3oEo0bcAqLotmn79/Vabn2BYS8CwoQrOQQY7hvOUqTSsjyA3dTbvl2ok9vpchk9OGkOII4pw+gNBjcY2UzvoOcg6gJiFAaNsbNO37XrxamjLT8MfF8vlv2pzB/hPg7HxRPHrmd/0/zf+Ao5a+fXO9nIWS/pJHkihTLoItNOLKZdu7kX3UIeU+WNg7r5W+xvlO/N0P9jeoz/CmPmZZWvIfi4Y0WAnNZPxDWsLKxQ9CuFwaidi8bgzgOpYMDlR42Z0SSSzfNmKSJ1GzOXCDFKxGFcjI++DRZBntNRQF30zuA67woiz7rZPHrn3cmgKRMAezYY3sXI0yLGDaUyl6M05gc01yMu100z/RBevLOCRphB2IlIr47mKW2qjZcYhrriNIy+QaFSN3gTLj++qenpYHkYPrwqe6dZZkI4DI4/6Tn8N80jdhYOgqOu1MG25DH2JyrTT0Klm33VvQIbe0632h8BpTukcHu0dMupWFUzVqs/fwHiVFw/xBAAAA==")!;
-        AxisTitle = Service.PluginInterface.UiBuilder.FontAtlas.NewGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 20.0f));
+        Axis20 = Service.PluginInterface.UiBuilder.FontAtlas.NewGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 20.0f));
         ItemSheet = Service.Data.GetExcelSheet<Item>()!;
         WorldSheet = Service.Data.GetExcelSheet<World>()!;
 
@@ -76,7 +76,7 @@ public sealed class Plugin : IDalamudPlugin
         Universalis = new Universalis(this);
         HoveredItem = new HoveredItem(this);
         PriceChecker = new PriceChecker(this);
-        ImGuiHelper = new ImGuiHelper();
+        UiHelper = new UiHelper(this);
 
         // load event handlers
         Service.PluginInterface.UiBuilder.Draw += DrawUI;
@@ -110,7 +110,7 @@ public sealed class Plugin : IDalamudPlugin
         ChangelogWindow.Dispose();
 
         // unload fonts and data resources
-        AxisTitle.Dispose();
+        Axis20.Dispose();
 
         // unload event handlers
         Service.PluginInterface.UiBuilder.Draw -= DrawUI;
@@ -126,7 +126,7 @@ public sealed class Plugin : IDalamudPlugin
         Universalis.Dispose();
         HoveredItem.Dispose();
         PriceChecker.Dispose();
-        ImGuiHelper.Dispose();
+        UiHelper.Dispose();
     }
 
     public void DrawUI()

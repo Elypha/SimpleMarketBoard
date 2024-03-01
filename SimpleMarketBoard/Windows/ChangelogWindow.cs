@@ -57,16 +57,13 @@ public class ChangelogWindow : Window, IDisposable
         var scale = ImGui.GetIO().FontGlobalScale;
         var fontsize = ImGui.GetFontSize();
 
-
-        var suffix = $"###{plugin.Name}-";
-
         ImGui.TextWrapped(
             "This is to give you a quick overview of what has changed.\n" +
             "If any of the descriptions are unclear, please refer to the documentation on the plugin's configuration window."
         );
         ImGui.Text("");
 
-        plugin.ImGuiHelper.ChangelogList(
+        plugin.UiHelper.ChangelogList(
             "1.4.0.0 - 02 March 2024",
             new List<string>
             {
@@ -75,7 +72,7 @@ public class ChangelogWindow : Window, IDisposable
             }
         );
 
-        plugin.ImGuiHelper.ChangelogList(
+        plugin.UiHelper.ChangelogList(
             "1.3.0.0 - 22 February 2024",
             new List<string>
             {
@@ -86,7 +83,7 @@ public class ChangelogWindow : Window, IDisposable
             }
         );
 
-        plugin.ImGuiHelper.ChangelogList(
+        plugin.UiHelper.ChangelogList(
             "1.2.0.0 - 05 February 2024",
             new List<string>
             {
@@ -96,7 +93,7 @@ public class ChangelogWindow : Window, IDisposable
             }
         );
 
-        plugin.ImGuiHelper.ChangelogList(
+        plugin.UiHelper.ChangelogList(
             "1.1.0.0 - 03 February 2024",
             new List<string>
             {
@@ -104,7 +101,7 @@ public class ChangelogWindow : Window, IDisposable
             }
         );
 
-        plugin.ImGuiHelper.ChangelogList(
+        plugin.UiHelper.ChangelogList(
             "1.0.0.0 - 24 Janurary 2024",
             new List<string>
             {

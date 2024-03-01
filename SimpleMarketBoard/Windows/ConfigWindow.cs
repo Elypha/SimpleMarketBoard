@@ -71,9 +71,7 @@ public class ConfigWindow : Window, IDisposable
         var padding = 0.8f;
         var fontsize = ImGui.GetFontSize();
         var titleColour = new Vector4(0.9f, 0.7f, 0.55f, 1);
-
-
-        var suffix = $"###{plugin.Name}-";
+        string suffix;
 
 
         if (ImGui.CollapsingHeader("Features & UI Introduction"))
@@ -92,7 +90,7 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Text("");
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "Keybinding",
                 "you can configure it below",
                 new List<string> {
@@ -106,7 +104,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "Item Icon",
                 "on the top left corner",
                 new List<string> {
@@ -114,7 +112,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "Item Name",
                 "to the right of the Item Icon",
                 new List<string> {
@@ -124,7 +122,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "Refresh Button",
                 "the two-arrow button under the item name",
                 new List<string> {
@@ -132,7 +130,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "HQ Filter Button",
                 "the star button under the item name",
                 new List<string> {
@@ -142,7 +140,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "History Panel",
                 "on the right side, the 1st button from left",
                 new List<string> {
@@ -153,7 +151,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "Delete Button",
                 "on the right side, the 2nd button from left",
                 new List<string> {
@@ -162,7 +160,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "Config Button",
                 "on the right side, the 3rd button from left",
                 new List<string> {
@@ -170,7 +168,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "Market Data Table",
                 "on the left bottom",
                 new List<string> {
@@ -180,7 +178,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "Popularity",
                 "on the right side, the one-line text in between the two tables",
                 new List<string> {
@@ -189,7 +187,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.ImGuiHelper.BulletTextList(
+            plugin.UiHelper.BulletTextList(
                 "Update Information per World",
                 "on the right side, the table under the Popularity",
                 new List<string> {
@@ -220,6 +218,7 @@ public class ConfigWindow : Window, IDisposable
         }
 
         // ----------------- General -----------------
+        suffix = $"###{plugin.Name}[General]";
         ImGui.TextColored(titleColour, "General");
         ImGui.Separator();
 
@@ -308,6 +307,7 @@ public class ConfigWindow : Window, IDisposable
 
 
         // ----------------- Keybinding -----------------
+        suffix = $"###{plugin.Name}[Keybinding]";
         ImGui.TextColored(titleColour, "Key bindings");
         ImGui.Separator();
 
@@ -456,6 +456,7 @@ public class ConfigWindow : Window, IDisposable
 
 
         // ----------------- API -----------------
+        suffix = $"###{plugin.Name}[API]";
         ImGui.TextColored(titleColour, "API settings");
         ImGui.Separator();
 
@@ -514,6 +515,7 @@ public class ConfigWindow : Window, IDisposable
 
 
         // ----------------- UI -----------------
+        suffix = $"###{plugin.Name}[UI]";
         ImGui.TextColored(titleColour, "UI settings");
         ImGui.Separator();
 
@@ -612,6 +614,7 @@ public class ConfigWindow : Window, IDisposable
 
 
         // ----------------- Cache -----------------
+        suffix = $"###{plugin.Name}[Cache]";
         ImGui.TextColored(titleColour, "Cache");
         ImGui.Separator();
 

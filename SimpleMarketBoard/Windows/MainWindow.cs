@@ -101,9 +101,8 @@ public class MainWindow : Window, IDisposable
     {
         var scale = ImGui.GetIO().FontGlobalScale;
         var fontsize = ImGui.GetFontSize();
-        var suffix = $"###{plugin.Name}-";
         var _coloured = false;
-        // HQ yellow colour: ARGB
+        string suffix;
 
         var rightColWidth = plugin.Config.rightColWidth;
         var LeftColWidth = ImGui.GetWindowWidth() - rightColWidth;
@@ -114,6 +113,7 @@ public class MainWindow : Window, IDisposable
 
 
         // === left column (main tables) ===
+        suffix = $"###{plugin.Name}[main table]";
         ImGui.BeginChild("left-col-1", new Vector2(LeftColWidth, 0), false, ImGuiWindowFlags.NoScrollbar);
 
         var topY = ImGui.GetCursorPosY();  // store the Y pos which is the top of the window
@@ -163,7 +163,7 @@ public class MainWindow : Window, IDisposable
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - (130 * scale));
 
         ImGui.SetNextItemWidth(130 * scale);
-        if (ImGui.BeginCombo($"{suffix}worldCombo", plugin.Config.selectedWorld))
+        if (ImGui.BeginCombo($"{suffix}selectedWorld", plugin.Config.selectedWorld))
         {
             foreach (var world in worldList)
             {
@@ -214,7 +214,7 @@ public class MainWindow : Window, IDisposable
             ImGui.SameLine();
             ImGui.SetCursorPosY(ImGui.GetCursorPosY());
 
-            plugin.AxisTitle.Push();
+            plugin.Axis20.Push();
             ImGui.Text(CurrentItemLabel);
             if (LoadingQueue > 0)
             {
@@ -226,7 +226,7 @@ public class MainWindow : Window, IDisposable
                 ImGui.PopFont();
             }
 
-            plugin.AxisTitle.Pop();
+            plugin.Axis20.Pop();
 
 
             // set the size for the tables
@@ -530,7 +530,7 @@ public class MainWindow : Window, IDisposable
             ImGui.NextColumn();
 
 
-            plugin.ImGuiHelper.AlignRight($"{(int)i.Value}");
+            plugin.UiHelper.AlignRight($"{(int)i.Value}");
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 0.5f * ImGui.GetStyle().ItemSpacing.Y);
 
             ImGui.Text($"{(int)i.Value}");

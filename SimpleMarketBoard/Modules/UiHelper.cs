@@ -8,15 +8,13 @@ using System.Numerics;
 
 namespace SimpleMarketBoard;
 
-public class ImGuiHelper
+public class UiHelper
 {
-    public Vector4 titleColour = HSLA_to_Decimal(25, 0.65, 0.75, 1.0);
-    public Vector4 textColour = HSLA_to_Decimal(0, 0.0, 0.95, 1.0);
-    public Vector4 bulletTitleColour = HSLA_to_Decimal(35, 0.75, 0.75, 1.0);
-    public Vector4 bulletListColour = HSLA_to_Decimal(0, 0.0, 0.8, 1.0);
+    private readonly Plugin plugin;
 
-    public ImGuiHelper()
+    public UiHelper(Plugin plugin)
     {
+        this.plugin = plugin;
     }
 
     public void Dispose()
@@ -25,6 +23,12 @@ public class ImGuiHelper
 
 
     // -------------------------------- ImGui utils --------------------------------
+    public Vector4 titleColour = HSLA_to_Decimal(25, 0.65, 0.75, 1.0);
+    public Vector4 textColour = HSLA_to_Decimal(0, 0.0, 0.95, 1.0);
+    public Vector4 textColourDim = HSLA_to_Decimal(0, 0.0, 0.6, 1.0);
+    public Vector4 bulletTitleColour = HSLA_to_Decimal(35, 0.75, 0.75, 1.0);
+    public Vector4 bulletListColour = HSLA_to_Decimal(0, 0.0, 0.8, 1.0);
+
     public void BulletTextList(string title, string description, List<string> list)
     {
 
