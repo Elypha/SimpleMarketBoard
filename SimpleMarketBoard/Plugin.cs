@@ -16,27 +16,27 @@ namespace SimpleMarketBoard;
 
 public sealed class Plugin : IDalamudPlugin
 {
+    // dalamud plugin
     public string Name => "SimpleMarketBoard";
-    private const string CommandMainWindow = "/mb";
-    private const string CommandConfigWindow = "/mbc";
+    private const string CommandMain = "/smb";
 
-
-    public bool PluginThemeEnabled { get; set; }
-    public StyleModel PluginTheme { get; set; }
-
-
+    // fonts and data resources
     public IFontHandle AxisTitle { get; set; }
     public readonly ExcelSheet<Item> ItemSheet;
     public readonly ExcelSheet<World> WorldSheet;
+    public StyleModel PluginTheme { get; set; }
+    public bool PluginThemeEnabled { get; set; }
 
-
+    // configuration
     public SimpleMarketBoardConfig Config { get; init; }
+
+    // windows
     public WindowSystem WindowSystem = new("SimpleMarketBoard");
+    public MainWindow MainWindow { get; init; }
     public ConfigWindow ConfigWindow { get; init; }
     public ChangelogWindow ChangelogWindow { get; init; }
-    public MainWindow MainWindow { get; init; }
 
-
+    // modules
     public PrintMessage PrintMessage { get; set; } = null!;
     public PluginHotkey PluginHotkey { get; init; }
     public Universalis Universalis { get; set; } = null!;
@@ -45,30 +45,31 @@ public sealed class Plugin : IDalamudPlugin
     public ImGuiHelper ImGuiHelper { get; set; } = null!;
 
 
-
-
-
     public Plugin(DalamudPluginInterface pluginInterface)
     {
+        // load plugin services
         pluginInterface.Create<Service>();
-
         Service.PluginLog.Info($"[General] Plugin loading...");
 
+        // load fonts and data resources
         PluginTheme = StyleModel.Deserialize("DS1H4sIAAAAAAAACq1XS3PbOAz+LzpnMnpQlORbE2+bQ7uTadLpbm+MzdiqFcsry27TTP97CZIgIcr2etLqIojChxcBEHyJRDRJLuOL6CGavET/RBMOH//q98+LaBZNGCzMo0kMb2m5YssVX+aK61HJuIgWdnlpJdb2WzxY4qsFMwvOtIpVNElhobFcT4EhhmsdYJlebYPVVK9uRkbC6n/qt7arU/bpX1sL7NWC0nIR7awpe/vjm/3+bmU9O8E58f7HQXVC2OVs4MesVX6+RPfye2//J/a/fn+x78/6rfiBcVpvxUMj52PtGqDfDvC5Xs/bb1cLb1RRsizJCgSRbw0m30pIfGk/mZJ1vaybORWFIhBqIaD3tt3sNpS3ROYSuUvLXoHsq7aby86xs8yyA0GcMiE2zHdLoVw7y5q3nXiSxJq0ssxAaG4gjHzm+W/avexooBlGmqFVzMII6s2sr/e+MjiCOII4gngBW1r3DbUtSQrOiphblP/UWP9prC3LNMszLyZQnlUsLqoUg5nHPCmd8ayKk4q7fRjJum6bRmy2JACvE/dBrndXoqM+YkyAMH4xkrR3s06pfhhATm2v43/XQXdBYxMLAUJjgBgrAVC40wyxQBjvjmKDkOcIBcIkCYVeL+Vs9UF0KwcocauB0AAgvK6mVsk+8OxoHoaIMBULTMUCU7EguKtd37fYWVXloyNAaG4gXLYb7jBwWZUmOS9RUZ5WLEmw5HlaMBsMKPs8rsrYiwpTl+lcx77BEPyFJNdY1I0UtI/kWOhAGCQWepY49lGdH2yoal8cIgwsxhUdpbshN6ITfXtuc3P8rw8t6dlO2qgxvGKfPspt/UO+62p/pBYYYCBMkmCA03wACd0pcGeBMMiS9kWP/BOm35PySTH+QJjuj5lUcsP7G7GH9pxXRsyrLR9I+bR+bGc72odjjsFLVM9VDwpJWBmrxxVGkbJARmBSkuUWbyLCtTjMY5bSvjJtZ6t6vbjt5L6W/uBNeVhjIM644VF/PW36Z3oEo0bcAqLotmn79/Vabn2BYS8CwoQrOQQY7hvOUqTSsjyA3dTbvl2ok9vpchk9OGkOII4pw+gNBjcY2UzvoOcg6gJiFAaNsbNO37XrxamjLT8MfF8vlv2pzB/hPg7HxRPHrmd/0/zf+Ao5a+fXO9nIWS/pJHkihTLoItNOLKZdu7kX3UIeU+WNg7r5W+xvlO/N0P9jeoz/CmPmZZWvIfi4Y0WAnNZPxDWsLKxQ9CuFwaidi8bgzgOpYMDlR42Z0SSSzfNmKSJ1GzOXCDFKxGFcjI++DRZBntNRQF30zuA67woiz7rZPHrn3cmgKRMAezYY3sXI0yLGDaUyl6M05gc01yMu100z/RBevLOCRphB2IlIr47mKW2qjZcYhrriNIy+QaFSN3gTLj++qenpYHkYPrwqe6dZZkI4DI4/6Tn8N80jdhYOgqOu1MG25DH2JyrTT0Klm33VvQIbe0632h8BpTukcHu0dMupWFUzVqs/fwHiVFw/xBAAAA==")!;
-
         AxisTitle = Service.PluginInterface.UiBuilder.FontAtlas.NewGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 20.0f));
         ItemSheet = Service.Data.GetExcelSheet<Item>()!;
         WorldSheet = Service.Data.GetExcelSheet<World>()!;
 
+        // load configuration
         Config = Service.PluginInterface.GetPluginConfig() as SimpleMarketBoardConfig ?? new SimpleMarketBoardConfig();
         Config.Initialize(Service.PluginInterface);
-        ConfigWindow = new ConfigWindow(this);
-        ChangelogWindow = new ChangelogWindow(this);
-        MainWindow = new MainWindow(this);
-        WindowSystem.AddWindow(ConfigWindow);
-        WindowSystem.AddWindow(ChangelogWindow);
-        WindowSystem.AddWindow(MainWindow);
 
+        // load windows
+        MainWindow = new MainWindow(this);
+        WindowSystem.AddWindow(MainWindow);
+        ConfigWindow = new ConfigWindow(this);
+        WindowSystem.AddWindow(ConfigWindow);
+        ChangelogWindow = new ChangelogWindow(this);
+        WindowSystem.AddWindow(ChangelogWindow);
+
+        // load modules
         PrintMessage = new PrintMessage(this);
         PluginHotkey = new PluginHotkey(this);
         Universalis = new Universalis(this);
@@ -76,6 +77,7 @@ public sealed class Plugin : IDalamudPlugin
         PriceChecker = new PriceChecker(this);
         ImGuiHelper = new ImGuiHelper();
 
+        // load event handlers
         Service.PluginInterface.UiBuilder.Draw += DrawUI;
         Service.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
         Service.PluginInterface.UiBuilder.OpenMainUi += DrawMainUI;
@@ -85,17 +87,32 @@ public sealed class Plugin : IDalamudPlugin
         HoveredItem.Enable();
         ConfigWindow.UpdateWorld();
 
-        Service.Commands.AddHandler(CommandConfigWindow, new CommandInfo(OnCommandConfigWindow) { HelpMessage = "Open the configuration window." });
-        Service.Commands.AddHandler(CommandMainWindow, new CommandInfo(OnCommandMainWindow) { HelpMessage = "Open the main window." });
+        // load command handlers
+        Service.Commands.AddHandler(CommandMain, new CommandInfo(OnCommandMain)
+        {
+            HelpMessage = "main command entry:\n" +
+                "└ /smb → open the main window (market data table).\n" +
+                "└ /smb c|config → open the configuration window."
+        });
 
         Service.PluginLog.Info($"[General] Plugin initialised");
     }
 
     public void Dispose()
     {
-        Service.Commands.RemoveHandler(CommandConfigWindow);
-        Service.Commands.RemoveHandler(CommandMainWindow);
+        // unload command handlers
+        Service.Commands.RemoveHandler(CommandMain);
 
+        // unload windows
+        WindowSystem.RemoveAllWindows();
+        MainWindow.Dispose();
+        ConfigWindow.Dispose();
+        ChangelogWindow.Dispose();
+
+        // unload fonts and data resources
+        AxisTitle.Dispose();
+
+        // unload event handlers
         Service.PluginInterface.UiBuilder.Draw -= DrawUI;
         Service.PluginInterface.UiBuilder.OpenConfigUi -= DrawConfigUI;
         Service.PluginInterface.UiBuilder.OpenMainUi -= DrawMainUI;
@@ -103,19 +120,13 @@ public sealed class Plugin : IDalamudPlugin
         Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
         Service.Framework.Update -= OnFrameUpdate;
 
-        WindowSystem.RemoveAllWindows();
-        ConfigWindow.Dispose();
-        ChangelogWindow.Dispose();
-        MainWindow.Dispose();
-
+        // unload modules
         PrintMessage.Dispose();
         PluginHotkey.Dispose();
         Universalis.Dispose();
         HoveredItem.Dispose();
         PriceChecker.Dispose();
         ImGuiHelper.Dispose();
-
-        AxisTitle.Dispose();
     }
 
     public void DrawUI()
@@ -133,20 +144,24 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow.Toggle();
     }
 
-    public void OnCommandMainWindow(string command, string args)
+    public void OnCommandMain(string command, string args)
     {
-        MainWindow.Toggle();
-    }
-
-    public void OnCommandConfigWindow(string command, string args)
-    {
-        ConfigWindow.Toggle();
+        if (args == "c" || args == "config")
+        {
+            ConfigWindow.Toggle();
+            return;
+        }
+        else
+        {
+            MainWindow.Toggle();
+        }
     }
 
     public void OnLogin()
     {
         ConfigWindow.UpdateWorld();
     }
+
     public void OnTerritoryChanged(ushort territoryId)
     {
         ConfigWindow.UpdateWorld();
@@ -169,61 +184,4 @@ public sealed class Plugin : IDalamudPlugin
             return;
         }
     }
-
-
-    // ----------------- game item stuff -----------------
-
-    public List<GameItem> GameItemCacheList = new List<GameItem>();
-
-    public class GameItem
-    {
-        public ulong Id { get; set; }
-        public bool IsHQ { get; set; }
-        public string Name { get; set; } = "";
-        public string TargetRegion { get; set; } = "";
-        public ulong PlayerWorldId { get; set; }
-        public uint VendorSelling { get; set; }
-        public Item InGame { get; set; } = null!;
-        public ulong FetchTimestamp { get; set; }
-        public UniversalisResponse UniversalisResponse { get; set; } = new UniversalisResponse();
-        public Dictionary<string, long> WorldOutOfDate { get; set; } = new Dictionary<string, long>();
-        public double AvgPrice { get; set; }
-        public ulong Result { get; set; } = GameItemResult.Init;
-    }
-
-    public class GameItemResult
-    {
-        public const ulong Init = 0;
-        public const ulong Success = 1;
-        public const ulong InGameError = 10;
-        public const ulong Unmarketable = 11;
-        public const ulong UnknownUserWorld = 12;
-        public const ulong APIError = 20;
-    }
-
-
-    public void SearchHistoryUpdate(Plugin.GameItem gameItem)
-    {
-        SearchHistoryClean();
-        GameItemCacheList.RemoveAll(i => i.Id == gameItem.Id);
-        GameItemCacheList.Insert(0, gameItem);
-    }
-
-    public void SearchHistoryClean()
-    {
-        Service.PluginLog.Debug($"[Cache] Items in cache {GameItemCacheList.Count}");
-
-        if (GameItemCacheList.Count < Config.MaxCacheItems) return;
-
-        if (Config.CleanCacheAsYouGo || (!Config.CleanCacheAsYouGo && !MainWindow.IsOpen))
-        {
-            GameItemCacheList.RemoveRange(
-                Config.MaxCacheItems - 1,
-                GameItemCacheList.Count - Config.MaxCacheItems + 1
-            );
-            Service.PluginLog.Debug($"[Cache] Cache cleaned. Current items in cache {GameItemCacheList.Count}");
-        }
-    }
-
-
 }

@@ -15,8 +15,6 @@ namespace SimpleMarketBoard;
 
 public class Universalis
 {
-    private const string Host = "https://universalis.app";
-    private HttpClient httpClient;
     private readonly Plugin plugin;
 
     public Universalis(Plugin plugin)
@@ -28,6 +26,16 @@ public class Universalis
         this.plugin = plugin;
     }
 
+    public void Dispose()
+    {
+        httpClient.Dispose();
+    }
+
+
+    // -------------------------------- http client --------------------------------
+    private const string Host = "https://universalis.app";
+    private HttpClient httpClient;
+
     public void ReloadHttpClient()
     {
         httpClient = new HttpClient
@@ -36,17 +44,14 @@ public class Universalis
         };
     }
 
-    public void Dispose()
-    {
-        httpClient.Dispose();
-    }
 
-    public async Task<UniversalisResponse> GetDataAsync(Plugin.GameItem gameItem)
+    // -------------------------------- http methods --------------------------------
+    public async Task<UniversalisResponse> GetDataAsync(PriceChecker.GameItem gameItem)
     {
         return await GetData(gameItem);
     }
 
-    public async Task<UniversalisResponse> GetData(Plugin.GameItem gameItem)
+    public async Task<UniversalisResponse> GetData(PriceChecker.GameItem gameItem)
     {
         try
         {

@@ -15,10 +15,7 @@ namespace SimpleMarketBoard;
 
 public class PriceChecker
 {
-
     private readonly Plugin plugin;
-
-    public CancellationTokenSource? ItemCancellationTokenSource;
 
     public PriceChecker(Plugin plugin)
     {
@@ -30,6 +27,42 @@ public class PriceChecker
         ItemCancellationTokenSource?.Dispose();
     }
 
+
+    // -------------------------------- game item --------------------------------
+    public List<GameItem> GameItemCacheList = new List<GameItem>();
+
+    public class GameItem
+    {
+        public ulong Id { get; set; }
+        public bool IsHQ { get; set; }
+        public string Name { get; set; } = "";
+        public string TargetRegion { get; set; } = "";
+        public ulong PlayerWorldId { get; set; }
+        public uint VendorSelling { get; set; }
+        public Item InGame { get; set; } = null!;
+        public ulong FetchTimestamp { get; set; }
+        public UniversalisResponse UniversalisResponse { get; set; } = new UniversalisResponse();
+        public Dictionary<string, long> WorldOutOfDate { get; set; } = new Dictionary<string, long>();
+        public double AvgPrice { get; set; }
+        public ulong Result { get; set; } = GameItemResult.Init;
+    }
+
+    public class GameItemResult
+    {
+        public const ulong Init = 0;
+        public const ulong Success = 1;
+        public const ulong InGameError = 10;
+        public const ulong Unmarketable = 11;
+        public const ulong UnknownUserWorld = 12;
+        public const ulong APIError = 20;
+    }
+
+
+    // -------------------------------- others --------------------------------
+    public CancellationTokenSource? ItemCancellationTokenSource;
+
+
+    // -------------------------------- price checker --------------------------------
     public void CheckNewAsync(ulong itemId, bool isHQ)
     {
         Service.PluginLog.Debug($"[PriceChecker] Start CheckNewAsync: {itemId}, {isHQ}");
@@ -62,14 +95,14 @@ public class PriceChecker
         ItemCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(plugin.Config.HoverDelayIn100MS * 100 + 10));
 
         // start checking task
-        var gameItem = new Plugin.GameItem();
+        var gameItem = new GameItem();
 
         // if in cache, return
-        List<ulong> _cacheIds = plugin.GameItemCacheList.Select(i => i.Id).ToList();
+        List<ulong> _cacheIds = GameItemCacheList.Select(i => i.Id).ToList();
         if (_cacheIds.Contains(itemId))
         {
             Service.PluginLog.Debug($"[PriceChecker] {itemId} found in cache.");
-            gameItem = plugin.GameItemCacheList.Single(i => i.Id == itemId);
+            gameItem = GameItemCacheList.Single(i => i.Id == itemId);
             plugin.MainWindow.CurrentItemUpdate(gameItem);
             return;
         }
@@ -84,7 +117,7 @@ public class PriceChecker
         if (gameItem.InGame.ItemSearchCategory.Row == 0)
         {
             Service.PluginLog.Debug($"[PriceChecker] {itemId} is unmarketable.");
-            gameItem.Result = Plugin.GameItemResult.Unmarketable;
+            gameItem.Result = GameItemResult.Unmarketable;
             return;
         }
 
@@ -93,7 +126,7 @@ public class PriceChecker
         if (gameItem.PlayerWorldId == 0)
         {
             Service.PluginLog.Debug($"[PriceChecker] {itemId} but unknown user world.");
-            gameItem.Result = Plugin.GameItemResult.UnknownUserWorld;
+            gameItem.Result = GameItemResult.UnknownUserWorld;
             return;
         }
 
@@ -115,7 +148,7 @@ public class PriceChecker
         Check(gameItem);
     }
 
-    public void CheckRefreshAsync(Plugin.GameItem gameItem)
+    public void CheckRefreshAsync(GameItem gameItem)
     {
         Service.PluginLog.Debug($"[PriceChecker] Start CheckRefreshAsync: {gameItem.Id}, {gameItem.IsHQ}");
 
@@ -133,12 +166,12 @@ public class PriceChecker
         });
     }
 
-    public void CheckRefresh(Plugin.GameItem gameItem)
+    public void CheckRefresh(GameItem gameItem)
     {
         Check(gameItem);
     }
 
-    private void Check(Plugin.GameItem gameItem)
+    private void Check(GameItem gameItem)
     {
         plugin.MainWindow.LoadingQueue += 1;
 
@@ -154,7 +187,7 @@ public class PriceChecker
         if (UniversalisResponse.Status == UniversalisResponseStatus.ServerError)
         {
             plugin.MainWindow.CurrentItemLabel = "API error";
-            gameItem.Result = Plugin.GameItemResult.APIError;
+            gameItem.Result = GameItemResult.APIError;
             Service.PluginLog.Warning($"[PriceChecker] ServerError, {gameItem.Id}.");
             plugin.MainWindow.LoadingQueue -= 1;
             return;
@@ -162,7 +195,7 @@ public class PriceChecker
         if (UniversalisResponse.Status == UniversalisResponseStatus.InvalidItemId)
         {
             plugin.MainWindow.CurrentItemLabel = "API error";
-            gameItem.Result = Plugin.GameItemResult.APIError;
+            gameItem.Result = GameItemResult.APIError;
             Service.PluginLog.Error($"[PriceChecker] InvalidItemId, {gameItem.Id}.");
             plugin.MainWindow.LoadingQueue -= 1;
             return;
@@ -170,7 +203,7 @@ public class PriceChecker
         if (UniversalisResponse.Status == UniversalisResponseStatus.UserCancellation)
         {
             plugin.MainWindow.CurrentItemLabel = "Timed out";
-            gameItem.Result = Plugin.GameItemResult.InGameError;
+            gameItem.Result = GameItemResult.InGameError;
             Service.PluginLog.Debug($"[PriceChecker] UserCancellation, {gameItem.Id}.");
             plugin.MainWindow.LoadingQueue -= 1;
             return;
@@ -178,7 +211,7 @@ public class PriceChecker
         if (UniversalisResponse.Status == UniversalisResponseStatus.UnknownError)
         {
             plugin.MainWindow.CurrentItemLabel = "Plugin error";
-            gameItem.Result = Plugin.GameItemResult.APIError;
+            gameItem.Result = GameItemResult.APIError;
             Service.PluginLog.Error($"[PriceChecker] UnknownError, {gameItem.Id}.");
             plugin.MainWindow.LoadingQueue -= 1;
             return;
@@ -186,7 +219,7 @@ public class PriceChecker
 
         // update game item
         // plugin.MainWindow.CurrentItemLabel = plugin.MainWindow.CurrentItem.InGame.Name.ToString();
-        gameItem.Result = Plugin.GameItemResult.Success;
+        gameItem.Result = GameItemResult.Success;
         gameItem.FetchTimestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         gameItem.UniversalisResponse = UniversalisResponse;
         gameItem.WorldOutOfDate = gameItem.UniversalisResponse.WorldOutOfDate;
@@ -203,12 +236,39 @@ public class PriceChecker
         plugin.MainWindow.CurrentItemUpdate(gameItem);
 
         // inset into search history
-        plugin.SearchHistoryUpdate(gameItem);
+        SearchHistoryUpdate(gameItem);
 
         plugin.MainWindow.LoadingQueue -= 1;
     }
 
-    public void SendChatMessage(Plugin.GameItem gameItem)
+
+    // -------------------------------- search history --------------------------------
+    public void SearchHistoryUpdate(GameItem gameItem)
+    {
+        SearchHistoryClean();
+        GameItemCacheList.RemoveAll(i => i.Id == gameItem.Id);
+        GameItemCacheList.Insert(0, gameItem);
+    }
+
+    public void SearchHistoryClean()
+    {
+        Service.PluginLog.Debug($"[Cache] Items in cache {GameItemCacheList.Count}");
+
+        if (GameItemCacheList.Count < plugin.Config.MaxCacheItems) return;
+
+        if (plugin.Config.CleanCacheAsYouGo || (!plugin.Config.CleanCacheAsYouGo && !plugin.MainWindow.IsOpen))
+        {
+            GameItemCacheList.RemoveRange(
+                plugin.Config.MaxCacheItems - 1,
+                GameItemCacheList.Count - plugin.Config.MaxCacheItems + 1
+            );
+            Service.PluginLog.Debug($"[Cache] Cache cleaned. Current items in cache {GameItemCacheList.Count}");
+        }
+    }
+
+
+    // -------------------------------- notification --------------------------------
+    public void SendChatMessage(GameItem gameItem)
     {
         plugin.PrintMessage.PrintMessageChat(new List<Payload>
             {
@@ -221,7 +281,7 @@ public class PriceChecker
             });
     }
 
-    public void SendToast(Plugin.GameItem gameItem)
+    public void SendToast(GameItem gameItem)
     {
         plugin.PrintMessage.PrintMessageToast($"{gameItem.InGame.Name} [{gameItem.TargetRegion}] {(char)SeIconChar.Gil} {gameItem.AvgPrice:N0}");
     }

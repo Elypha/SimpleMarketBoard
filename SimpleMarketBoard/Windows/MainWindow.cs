@@ -16,11 +16,11 @@ public class MainWindow : Window, IDisposable
     // private IDalamudTextureWrap goatImage;
     private Plugin plugin;
     public ulong LastItemId = 0;
-    public Plugin.GameItem CurrentItem { get; set; } = new Plugin.GameItem();
+    public PriceChecker.GameItem CurrentItem { get; set; } = new PriceChecker.GameItem();
     public IDalamudTextureWrap CurrentItemIcon = null!;
     public string CurrentItemLabel = "";
 
-    public void CurrentItemUpdate(Plugin.GameItem gameItem)
+    public void CurrentItemUpdate(PriceChecker.GameItem gameItem)
     {
         LastItemId = CurrentItem.Id;
         CurrentItem = gameItem;
@@ -70,7 +70,7 @@ public class MainWindow : Window, IDisposable
 
     public override void OnClose()
     {
-        plugin.SearchHistoryClean();
+        plugin.PriceChecker.SearchHistoryClean();
     }
 
     public override void PreDraw()
@@ -431,11 +431,11 @@ public class MainWindow : Window, IDisposable
         {
             if (plugin.PluginHotkey.CheckHotkeyState(new VirtualKey[] { VirtualKey.CONTROL }))
             {
-                plugin.GameItemCacheList.Clear();
+                plugin.PriceChecker.GameItemCacheList.Clear();
             }
             else
             {
-                plugin.GameItemCacheList.RemoveAll(i => i.Id == CurrentItem.Id);
+                plugin.PriceChecker.GameItemCacheList.RemoveAll(i => i.Id == CurrentItem.Id);
             }
         }
         ImGui.PopFont();
@@ -485,7 +485,7 @@ public class MainWindow : Window, IDisposable
 
         if (searchHistoryOpen)
         {
-            foreach (var item in plugin.GameItemCacheList)
+            foreach (var item in plugin.PriceChecker.GameItemCacheList)
             {
                 if (ImGui.Selectable($"{item.Name}", (uint)CurrentItem.Id == item.Id))
                 {

@@ -141,9 +141,9 @@ public class ConfigWindow : Window, IDisposable
         {
             ImGui.TextColored(
                 new Vector4(245f, 220f, 80f, 255f) / 255f,
-                "> Below is a detailed manual.\n" +
-                "> I recommend to read only the sections you are interested.\n" +
-                "> Please checkout the changelog so that you can keep up with all the new features."
+                "Below is a detailed manual.\n" +
+                "I recommend to read only the sections you are interested.\n" +
+                "Please checkout the changelog so that you can keep up with all the new features."
             );
 
             if (ImGui.Button($"Open Changelog Window"))
