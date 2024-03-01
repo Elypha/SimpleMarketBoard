@@ -2,5 +2,4 @@
 obj/
 bin/
 *.user
-/Scripts/
-/Notes/
+/private
