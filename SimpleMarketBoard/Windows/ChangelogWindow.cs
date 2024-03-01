@@ -9,32 +9,16 @@ namespace SimpleMarketBoard;
 
 public class ChangelogWindow : Window, IDisposable
 {
-    private Plugin plugin;
+    private readonly Plugin plugin;
 
     public ChangelogWindow(Plugin plugin) : base(
         "SimpleMarketBoard Changelog"
-    // ImGuiWindowFlags.NoResize |
-    // ImGuiWindowFlags.NoCollapse |
-    // ImGuiWindowFlags.NoScrollbar |
-    // ImGuiWindowFlags.NoScrollWithMouse
     )
     {
         Size = new Vector2(550, 400);
         SizeCondition = ImGuiCond.FirstUseEver;
 
         this.plugin = plugin;
-    }
-
-    public void Dispose()
-    {
-    }
-
-    public override void OnOpen()
-    {
-    }
-
-    public override void OnClose()
-    {
     }
 
     public override void PreDraw()
@@ -54,6 +38,19 @@ public class ChangelogWindow : Window, IDisposable
             plugin.PluginThemeEnabled = false;
         }
     }
+
+    public override void OnOpen()
+    {
+    }
+
+    public override void OnClose()
+    {
+    }
+
+    public void Dispose()
+    {
+    }
+
 
     public override void Draw()
     {

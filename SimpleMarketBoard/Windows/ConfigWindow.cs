@@ -16,15 +16,10 @@ namespace SimpleMarketBoard;
 
 public class ConfigWindow : Window, IDisposable
 {
-
-    private Plugin plugin;
+    private readonly Plugin plugin;
 
     public ConfigWindow(Plugin plugin) : base(
         "SimpleMarketBoard Configuration"
-    // ImGuiWindowFlags.NoResize |
-    // ImGuiWindowFlags.NoCollapse |
-    // ImGuiWindowFlags.NoScrollbar |
-    // ImGuiWindowFlags.NoScrollWithMouse
     )
     {
         Size = new Vector2(450, 600);
@@ -32,80 +27,6 @@ public class ConfigWindow : Window, IDisposable
 
         this.plugin = plugin;
     }
-
-    private string? currHotkeyBoxName;
-    private string? currHotkeyName;
-    public List<VirtualKey> NewHotkey = new();
-    private ulong playerId = 0;
-    public List<(string, string)> worldList = new List<(string, string)>();
-
-    public void Dispose()
-    {
-
-    }
-
-    public override void OnOpen()
-    {
-    }
-
-    public void UpdateWorld()
-    {
-        Service.PluginLog.Debug($"[Config] Update player's current world");
-        if (Service.ClientState.LocalContentId != 0 && playerId != Service.ClientState.LocalContentId)
-        {
-            var localPlayer = Service.ClientState.LocalPlayer;
-            if (localPlayer == null) return;
-
-            var currentDc = localPlayer.CurrentWorld.GameData.DataCenter;
-            var currentDcName = currentDc.Value.Name;
-            var currentWorldName = localPlayer.CurrentWorld.GameData.Name;
-
-            var dcWorlds = Service.Data.GetExcelSheet<World>()!
-                .Where(w => w.DataCenter.Row == currentDc.Row && w.IsPublic)
-                .OrderBy(w => (string)w.Name)
-                .Where(w => localPlayer.CurrentWorld.Id != w.RowId)
-                .Select(w =>
-                {
-                    return ((string)w.Name, (string)w.Name);
-                });
-
-            var currentRegionName = localPlayer.CurrentWorld.GameData.DataCenter.Value.Region switch
-            {
-                1 => "Japan",
-                2 => "North-America",
-                3 => "Europe",
-                4 => "Oceania",
-                _ => string.Empty,
-            };
-
-            worldList.Clear();
-            worldList.Add((currentRegionName, $"{(char)SeIconChar.EurekaLevel}  {currentRegionName} "));
-            worldList.Add((currentDcName, $"{(char)SeIconChar.CrossWorld}  {currentDcName} "));
-            worldList.Add((currentWorldName, $"{(char)SeIconChar.Hyadelyn}  {currentWorldName}"));
-            worldList.AddRange(dcWorlds);
-
-            if (plugin.Config.selectedWorld == "")
-            {
-                plugin.Config.selectedWorld = currentDcName;
-            }
-
-            if (worldList.Count > 1)
-            {
-                playerId = Service.ClientState.LocalContentId;
-            }
-        }
-
-        if (Service.ClientState.LocalContentId == 0)
-        {
-            playerId = 0;
-        }
-    }
-
-    public override void OnClose()
-    {
-        plugin.Config.Save();
-    }
-
 
     public override void PreDraw()
     {
@@ -124,6 +45,24 @@ public class ConfigWindow : Window, IDisposable
             plugin.PluginThemeEnabled = false;
         }
     }
+
+    public override void OnOpen()
+    {
+    }
+
+    public override void OnClose()
+    {
+        plugin.Config.Save();
+    }
+
+    public void Dispose()
+    {
+    }
+
+
+    private string? currHotkeyBoxName;
+    private string? currHotkeyName;
+    public List<VirtualKey> NewHotkey = new();
 
 
     public override void Draw()

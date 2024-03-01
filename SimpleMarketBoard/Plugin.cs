@@ -85,7 +85,7 @@ public sealed class Plugin : IDalamudPlugin
         Service.ClientState.Login += OnLogin;
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
         Service.Framework.Update += OnFrameUpdate;
-        ConfigWindow.UpdateWorld();
+        MainWindow.UpdateWorld();
 
         // load command handlers
         Service.Commands.AddHandler(CommandMain, new CommandInfo(OnCommandMain)
@@ -159,12 +159,12 @@ public sealed class Plugin : IDalamudPlugin
 
     public void OnLogin()
     {
-        ConfigWindow.UpdateWorld();
+        MainWindow.UpdateWorld();
     }
 
     public void OnTerritoryChanged(ushort territoryId)
     {
-        ConfigWindow.UpdateWorld();
+        MainWindow.UpdateWorld();
     }
 
     public void OnFrameUpdate(IFramework framework)

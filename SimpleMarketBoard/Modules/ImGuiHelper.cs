@@ -66,7 +66,18 @@ public class ImGuiHelper
         ImGui.Text("");
     }
 
+    public void AlignRight(string text)
+    {
+        var posX = ImGui.GetCursorPosX()
+            + ImGui.GetColumnWidth()
+            - ImGui.CalcTextSize(text).X
+            - ImGui.GetScrollX()
+            - (1 * ImGui.GetStyle().ItemSpacing.X);
+        ImGui.SetCursorPosX(posX);
+    }
 
+
+    // -------------------------------- ffxiv utils --------------------------------
     public void RenderSeString(SeString seString)
     {
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetStyle().ItemSpacing.X);

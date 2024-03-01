@@ -1,8 +1,11 @@
 ﻿using Dalamud.Game.ClientState.Keys;
+using Dalamud.Game.Text;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface.Windowing;
 using Dalamud.Interface;
 using ImGuiNET;
+using Lumina.Excel.GeneratedSheets;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
@@ -13,8 +16,54 @@ namespace SimpleMarketBoard;
 
 public class MainWindow : Window, IDisposable
 {
-    // private IDalamudTextureWrap goatImage;
-    private Plugin plugin;
+    private readonly Plugin plugin;
+
+    public MainWindow(Plugin plugin) : base(
+        "SimpleMarketBoard",
+        ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+    {
+        Size = new Vector2(350, 450);
+        SizeCondition = ImGuiCond.FirstUseEver;
+
+        this.plugin = plugin;
+
+        CurrentItem.Id = 4691;
+        CurrentItem.InGame = plugin.ItemSheet.GetRow(4691)!;
+        CurrentItemLabel = "(/ω＼)";
+        CurrentItemIcon = Service.TextureProvider.GetIcon(CurrentItem.InGame.Icon)!;
+        if (plugin.Config.selectedWorld != "") lastSelectedWorld = plugin.Config.selectedWorld;
+
+    }
+
+    public override void PreDraw()
+    {
+        if (plugin.Config.EnableTheme)
+        {
+            plugin.PluginTheme.Push();
+            plugin.PluginThemeEnabled = true;
+        }
+    }
+
+    public override void PostDraw()
+    {
+        if (plugin.PluginThemeEnabled)
+        {
+            plugin.PluginTheme.Pop();
+            plugin.PluginThemeEnabled = false;
+        }
+    }
+
+    public override void OnClose()
+    {
+        plugin.PriceChecker.SearchHistoryClean();
+    }
+
+    public void Dispose()
+    {
+        CurrentItemIcon?.Dispose();
+    }
+
+
     public ulong LastItemId = 0;
     public PriceChecker.GameItem CurrentItem { get; set; } = new PriceChecker.GameItem();
     public IDalamudTextureWrap CurrentItemIcon = null!;
@@ -37,59 +86,14 @@ public class MainWindow : Window, IDisposable
 
     public int LoadingQueue = 0;
 
+    private ulong playerId = 0;
+    public List<(string, string)> worldList = new List<(string, string)>();
+
     private Vector4 textColourHq = new Vector4(247f, 202f, 111f, 255f) / 255f;
     private Vector4 textColourHqOnly = new Vector4(62f, 186f, 240f, 255f) / 255f;
     private Vector4 textColourHigherThanVendor = new Vector4(230f, 90f, 80f, 255f) / 255f;
     private Vector4 textColourWhite = new Vector4(1f, 1f, 1f, 1f);
 
-    public MainWindow(Plugin plugin) : base(
-        "SimpleMarketBoard",
-        ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
-    {
-        Size = new Vector2(350, 450);
-        SizeCondition = ImGuiCond.FirstUseEver;
-        // SizeConstraints = new WindowSizeConstraints
-        // {
-        //     MinimumSize = new Vector2(100, 100),
-        //     MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
-        // };
-
-        this.plugin = plugin;
-        CurrentItem.Id = 4691;
-        CurrentItem.InGame = plugin.ItemSheet.GetRow(4691)!;
-        CurrentItemLabel = "(/ω＼)";
-        CurrentItemIcon = Service.TextureProvider.GetIcon(CurrentItem.InGame.Icon)!;
-        if (plugin.Config.selectedWorld != "") lastSelectedWorld = plugin.Config.selectedWorld;
-
-    }
-
-    public void Dispose()
-    {
-        CurrentItemIcon?.Dispose();
-    }
-
-    public override void OnClose()
-    {
-        plugin.PriceChecker.SearchHistoryClean();
-    }
-
-    public override void PreDraw()
-    {
-        if (plugin.Config.EnableTheme)
-        {
-            plugin.PluginTheme.Push();
-            plugin.PluginThemeEnabled = true;
-        }
-    }
-
-    public override void PostDraw()
-    {
-        if (plugin.PluginThemeEnabled)
-        {
-            plugin.PluginTheme.Pop();
-            plugin.PluginThemeEnabled = false;
-        }
-    }
 
 
 
@@ -161,7 +165,7 @@ public class MainWindow : Window, IDisposable
         ImGui.SetNextItemWidth(130 * scale);
         if (ImGui.BeginCombo($"{suffix}worldCombo", plugin.Config.selectedWorld))
         {
-            foreach (var world in plugin.ConfigWindow.worldList)
+            foreach (var world in worldList)
             {
                 var isSelected = world.Item1 == plugin.Config.selectedWorld;
                 if (ImGui.Selectable(world.Item2, isSelected))
@@ -526,7 +530,7 @@ public class MainWindow : Window, IDisposable
             ImGui.NextColumn();
 
 
-            alignRight($"{(int)i.Value}");
+            plugin.ImGuiHelper.AlignRight($"{(int)i.Value}");
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 0.5f * ImGui.GetStyle().ItemSpacing.Y);
 
             ImGui.Text($"{(int)i.Value}");
@@ -546,13 +550,59 @@ public class MainWindow : Window, IDisposable
         ImGui.EndGroup();  // for all elements in the right column
     }
 
-    public void alignRight(string text)
+
+    public void UpdateWorld()
     {
-        var posX = ImGui.GetCursorPosX()
-            + ImGui.GetColumnWidth()
-            - ImGui.CalcTextSize(text).X
-            - ImGui.GetScrollX()
-            - (1 * ImGui.GetStyle().ItemSpacing.X);
-        ImGui.SetCursorPosX(posX);
+        Service.PluginLog.Debug($"[Config] Update player's current world");
+        if (Service.ClientState.LocalContentId != 0 && playerId != Service.ClientState.LocalContentId)
+        {
+            var localPlayer = Service.ClientState.LocalPlayer;
+            if (localPlayer == null) return;
+            if (localPlayer.CurrentWorld.GameData == null) return;
+            if (localPlayer.CurrentWorld.GameData.DataCenter.Value == null) return;
+
+            var currentDc = localPlayer.CurrentWorld.GameData.DataCenter;
+            var currentDcName = currentDc.Value.Name;
+            var currentWorldName = localPlayer.CurrentWorld.GameData.Name;
+
+            var dcWorlds = Service.Data.GetExcelSheet<World>()!
+                .Where(w => w.DataCenter.Row == currentDc.Row && w.IsPublic)
+                .OrderBy(w => (string)w.Name)
+                .Where(w => localPlayer.CurrentWorld.Id != w.RowId)
+                .Select(w =>
+                {
+                    return ((string)w.Name, (string)w.Name);
+                });
+
+            var currentRegionName = localPlayer.CurrentWorld.GameData.DataCenter.Value.Region switch
+            {
+                1 => "Japan",
+                2 => "North-America",
+                3 => "Europe",
+                4 => "Oceania",
+                _ => string.Empty,
+            };
+
+            worldList.Clear();
+            worldList.Add((currentRegionName, $"{(char)SeIconChar.EurekaLevel}  {currentRegionName} "));
+            worldList.Add((currentDcName, $"{(char)SeIconChar.CrossWorld}  {currentDcName} "));
+            worldList.Add((currentWorldName, $"{(char)SeIconChar.Hyadelyn}  {currentWorldName}"));
+            worldList.AddRange(dcWorlds);
+
+            if (plugin.Config.selectedWorld == "")
+            {
+                plugin.Config.selectedWorld = currentDcName;
+            }
+
+            if (worldList.Count > 1)
+            {
+                playerId = Service.ClientState.LocalContentId;
+            }
+        }
+
+        if (Service.ClientState.LocalContentId == 0)
+        {
+            playerId = 0;
+        }
     }
 }
