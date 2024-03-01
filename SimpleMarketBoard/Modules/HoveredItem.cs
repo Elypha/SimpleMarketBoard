@@ -5,32 +5,24 @@ namespace SimpleMarketBoard;
 
 public class HoveredItem
 {
-    public ulong HoverItemId;
-    public ulong LastItemId;
-    public bool LastItemIsHQ;
-
-    private Plugin plugin;
+    private readonly Plugin plugin;
 
     public HoveredItem(Plugin plugin)
     {
         this.plugin = plugin;
-    }
-
-    public void Enable()
-    {
         Service.GameGui.HoveredItemChanged += OnHoveredItemChanged;
-    }
-
-    public void ResetLastItem()
-    {
-        LastItemId = 0;
-        LastItemIsHQ = false;
     }
 
     public void Dispose()
     {
         Service.GameGui.HoveredItemChanged -= OnHoveredItemChanged;
     }
+
+
+    // -------------------------------- hovered item --------------------------------
+    public ulong HoverItemId;
+    public ulong LastItemId;
+    public bool LastItemIsHQ;
 
     private void OnHoveredItemChanged(object? sender, ulong thisItemId)
     {
@@ -72,7 +64,7 @@ public class HoveredItem
             Service.PluginLog.Verbose($"[UI] ItemID, RealID, RowID: | {thisItemId,7} | {realItemId,7} | {rowid?.RowId,7} |");
 
             // check if keybinding is pressed
-            bool isKeybindingPressed = plugin.PluginHotkey.CheckHotkeyState(plugin.Config.BindingHotkey);
+            var isKeybindingPressed = plugin.PluginHotkey.CheckHotkeyState(plugin.Config.BindingHotkey);
 
             if (plugin.Config.KeybindingEnabled)
             {
@@ -126,5 +118,11 @@ public class HoveredItem
                 ResetLastItem();
             }
         }
+    }
+
+    public void ResetLastItem()
+    {
+        LastItemId = 0;
+        LastItemIsHQ = false;
     }
 }

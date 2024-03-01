@@ -18,6 +18,7 @@ public sealed class Plugin : IDalamudPlugin
 {
     // dalamud plugin
     public string Name => "SimpleMarketBoard";
+    public string NameShort => "SMB";
     private const string CommandMain = "/smb";
 
     // fonts and data resources
@@ -84,7 +85,6 @@ public sealed class Plugin : IDalamudPlugin
         Service.ClientState.Login += OnLogin;
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
         Service.Framework.Update += OnFrameUpdate;
-        HoveredItem.Enable();
         ConfigWindow.UpdateWorld();
 
         // load command handlers

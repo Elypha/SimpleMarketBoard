@@ -1,11 +1,6 @@
-using Dalamud.Game.ClientState.Keys;
-using Dalamud.Game.Text;
-using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System;
 
@@ -73,6 +68,15 @@ public class ChangelogWindow : Window, IDisposable
             "If any of the descriptions are unclear, please refer to the documentation on the plugin's configuration window."
         );
         ImGui.Text("");
+
+        plugin.ImGuiHelper.ChangelogList(
+            "1.4.0.0 - 02 March 2024",
+            new List<string>
+            {
+                "· Breaking change: the command entry has been changed to /smb and /smb c|config to avoid potential conflicts.",
+                "· New button: search for item that is in your clipboard.",
+            }
+        );
 
         plugin.ImGuiHelper.ChangelogList(
             "1.3.0.0 - 22 February 2024",

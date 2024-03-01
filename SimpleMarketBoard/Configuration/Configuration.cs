@@ -13,30 +13,32 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
 {
     public int Version { get; set; } = 0;
 
-    // ----------------- General -----------------
+
+    // -------------------------------- General --------------------------------
     public int HoverDelayIn100MS { get; set; } = 10;
     public int MaxCacheItems { get; set; } = 30;
-
     public bool EnableRecentHistory { get; set; } = true;
     public bool TotalIncludeTax { get; set; } = true;
     public bool MarkHigherThanVendor { get; set; } = false;
     public bool CleanCacheAsYouGo { get; set; } = true;
 
-    // ----------------- Keybinding -----------------
+
+    // -------------------------------- Keybinding --------------------------------
     public bool KeybindingEnabled { get; set; } = true;
     public bool AllowKeybindingAfterHover { get; set; } = true;
     public VirtualKey[] BindingHotkey { get; set; } = new VirtualKey[] { VirtualKey.CONTROL, VirtualKey.X };
     public bool KeybindingToOpenWindow { get; set; } = false;
     public bool KeybindingToCloseWindow { get; set; } = false;
 
-    // ----------------- API -----------------
+
+    // -------------------------------- API --------------------------------
     public int RequestTimeout { get; set; } = 20;
     public bool UniversalisHqOnly { get; set; } = false;
     public int UniversalisListings { get; set; } = 70;
     public int UniversalisEntries { get; set; } = 70;
 
 
-    // ----------------- UI -----------------
+    // -------------------------------- UI --------------------------------
     public bool EnableTheme { get; set; } = true;
     public bool EnableChatLog { get; set; } = true;
     public bool EnableToastLog { get; set; } = false;
@@ -44,11 +46,13 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
     public int rightColWidth { get; set; } = 102;
     public int[] WorldUpdateColWidthOffset { get; set; } = new int[] { 0, 0 };
 
-    // ----------------- Cache -----------------
+
+    // -------------------------------- Cache --------------------------------
     public List<ulong> SearchHistoryId { get; set; } = new List<ulong>();
     public string selectedWorld { get; set; } = "";
 
     public bool FilterHq { get; set; } = false;
+
 
     // the below exist just to make saving less cumbersome
     [NonSerialized]
