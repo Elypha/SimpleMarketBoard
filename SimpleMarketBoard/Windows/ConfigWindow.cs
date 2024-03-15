@@ -1,6 +1,4 @@
-﻿#pragma warning disable CS8602
-
-using Dalamud.Game.ClientState.Keys;
+﻿using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
@@ -67,10 +65,7 @@ public class ConfigWindow : Window, IDisposable
 
     public override void Draw()
     {
-        var scale = ImGui.GetIO().FontGlobalScale;
         var padding = 0.8f;
-        var fontsize = ImGui.GetFontSize();
-        var titleColour = new Vector4(0.9f, 0.7f, 0.55f, 1);
         string suffix;
 
 
@@ -78,9 +73,9 @@ public class ConfigWindow : Window, IDisposable
         {
             ImGui.TextColored(
                 new Vector4(245f, 220f, 80f, 255f) / 255f,
-                "Below is a detailed manual.\n" +
-                "I recommend to read only the sections you are interested.\n" +
-                "Please checkout the changelog so that you can keep up with all the new features."
+                "Below is a detailed manual. Read the sections you are interested.\n" +
+                "It covers my design intension and helps you use this plugin to its fullest.\n" +
+                "Please checkout the Changelog Window below to know what's been recently added."
             );
 
             if (ImGui.Button($"Open Changelog Window"))
@@ -94,12 +89,12 @@ public class ConfigWindow : Window, IDisposable
                 "Keybinding",
                 "you can configure it below",
                 new List<string> {
-                    "This is intended to cater your preference. By design there are 3 ways to start a check.\n" +
-                    "1. Hover over an item, then press the keybinding.\n" +
-                    "2. Press the keybinding first, then hover over an item.\n" +
+                    "This is intended to cater your preference. By design there are 3 ways to start a check.",
+                    "1. Hover over an item, then press the keybinding.",
+                    "2. Press the keybinding first, then hover over an item.",
                     "3. Just hover over an item.",
                     "All these can be configured with an optional delay.",
-                    "With that said, my recommendation is to set the delay to 0, and use a simple keybinding like 'Ctrl'. This way you can just hover over an item and press 'Ctrl' to get the market data, which is the most efficient way IMO.",
+                    "With that said, my recommendation in terms of efficiency is to set the delay to 0, and use a simple keybinding like 'Ctrl/Tab'. Then the work flow is to point on an item and press the trigger key (then you get the data).",
                     "Remember you can search multiple items without waiting for the previous ones to finish. All your query will be added to the cache sequentially.",
                 }
             );
@@ -109,6 +104,7 @@ public class ConfigWindow : Window, IDisposable
                 "on the top left corner",
                 new List<string> {
                     "· Click: Copy the item name to clipboard.",
+                    "· Alt + Click: Search for a new item based on the text from your clipboard. It should be the item's full name. If you use another plugin that allows you Ctrl+C to copy the item name, this feature can be useful.",
                 }
             );
 
@@ -117,7 +113,7 @@ public class ConfigWindow : Window, IDisposable
                 "to the right of the Item Icon",
                 new List<string> {
                     "The item name is followed by an orange loading icon when there are still requests going on.",
-                    "This place is also used to display the status of the market data query request.\n" +
+                    "This place is also used to display the status of the market data query request.",
                     "If it says 'timedout' or 'failed', just use the Refresh button and usually it will be fine.",
                 }
             );
@@ -144,10 +140,9 @@ public class ConfigWindow : Window, IDisposable
                 "History Panel",
                 "on the right side, the 1st button from left",
                 new List<string> {
-                    "Items you searched are stored in the cache. If this button is on (by default) you will see a list under it. You can click in the list to quick review them without having to wait for the request again.\n" +
-                    "I'm still planning what to present in that area when this panel is switched off.\n" +
-                    "To refresh the data, use the Refresh button.\n" +
-                    "To remove from the history, use the Remove button.",
+                    "Items you searched are stored in the cache. If this button is on (by default) you will see a list under it. You can click in the list to quick review them without having to wait for the request again.",
+                    "I'm still planning what to present in that area when this panel is switched off.",
+                    "To refresh an item, use the Refresh button.",
                 }
             );
 
@@ -198,28 +193,24 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Text("");
 
-            ImGui.TextColored(titleColour, "PS");
-            var _ending_width = ImGui.GetContentRegionAvail().X;
-            ImGui.PushTextWrapPos(ImGui.GetCursorPosX() + _ending_width * 0.9f);
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + _ending_width * 0.05f);
-            ImGui.TextColored(
-                titleColour,
-                "This plugin is still in active development.\n" +
-                "If you have any suggestions or issues, please let me know on Discord or GitHub, and I will appreciate it.\n" +
-                "Elypha."
+            plugin.UiHelper.BulletTextList(
+                "PS",
+                null,
+                new List<string> {
+                    "This plugin is still in active development.",
+                    "If you have any suggestions or issues please let me know on Discord or GitHub. I appreciate it!",
+                    "Elypha"
+                }
             );
-            ImGui.PopTextWrapPos();
-
-            ImGui.Text("");
 
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X / 2 - ImGui.CalcTextSize("- END -").X / 2);
-            ImGui.TextColored(titleColour, "- END -");
+            ImGui.TextColored(plugin.UiHelper.ColourKhaki, "- END -");
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (4 * ImGui.GetTextLineHeight()));
         }
 
         // ----------------- General -----------------
         suffix = $"###{plugin.Name}[General]";
-        ImGui.TextColored(titleColour, "General");
+        ImGui.TextColored(plugin.UiHelper.ColourKhaki, "General");
         ImGui.Separator();
 
 
@@ -228,7 +219,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.SameLine();
 
         var HoverDelayIn100MS = plugin.Config.HoverDelayIn100MS;
-        ImGui.SetNextItemWidth(200 * scale);
+        ImGui.SetNextItemWidth(200);
         if (ImGui.SliderInt($"{suffix}HoverDelayIn100MS", ref HoverDelayIn100MS, 0, 20, $"{HoverDelayIn100MS * 100} ms"))
         {
             plugin.Config.HoverDelayIn100MS = HoverDelayIn100MS;
@@ -242,7 +233,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.SameLine();
 
         var MaxCacheItems = plugin.Config.MaxCacheItems;
-        ImGui.SetNextItemWidth(200 * scale);
+        ImGui.SetNextItemWidth(200);
         if (ImGui.SliderInt($"{suffix}MaxCacheItems", ref MaxCacheItems, 1, 30, $"{MaxCacheItems} items"))
         {
             plugin.Config.MaxCacheItems = MaxCacheItems;
@@ -308,7 +299,7 @@ public class ConfigWindow : Window, IDisposable
 
         // ----------------- Keybinding -----------------
         suffix = $"###{plugin.Name}[Keybinding]";
-        ImGui.TextColored(titleColour, "Key bindings");
+        ImGui.TextColored(plugin.UiHelper.ColourKhaki, "Key bindings");
         ImGui.Separator();
 
 
@@ -377,7 +368,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 2);
         }
 
-        ImGui.SetNextItemWidth(150 * scale);
+        ImGui.SetNextItemWidth(150);
         ImGui.InputText($"{suffix}BindingHotkey-input-init", ref strBindingHotkey, 100, ImGuiInputTextFlags.ReadOnly);
         var active = ImGui.IsItemActive();
         if (currHotkeyName == "BindingHotkey")
@@ -457,7 +448,7 @@ public class ConfigWindow : Window, IDisposable
 
         // ----------------- API -----------------
         suffix = $"###{plugin.Name}[API]";
-        ImGui.TextColored(titleColour, "API settings");
+        ImGui.TextColored(plugin.UiHelper.ColourKhaki, "API settings");
         ImGui.Separator();
 
 
@@ -465,7 +456,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Text("Request timeout");
         ImGui.SameLine();
         var RequestTimeout = plugin.Config.RequestTimeout;
-        ImGui.SetNextItemWidth(150 * scale);
+        ImGui.SetNextItemWidth(150);
         if (ImGui.InputInt($"seconds{suffix}RequestTimeout", ref RequestTimeout))
         {
             plugin.Config.RequestTimeout = RequestTimeout;
@@ -482,7 +473,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Text("Current listings to request");
         ImGui.SameLine();
         var UniversalisListings = plugin.Config.UniversalisListings;
-        ImGui.SetNextItemWidth(150 * scale);
+        ImGui.SetNextItemWidth(150);
         if (ImGui.InputInt($"{suffix}UniversalisListings", ref UniversalisListings))
         {
             plugin.Config.UniversalisListings = UniversalisListings;
@@ -498,7 +489,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Text("Historical entries to request");
         ImGui.SameLine();
         var UniversalisEntries = plugin.Config.UniversalisEntries;
-        ImGui.SetNextItemWidth(150 * scale);
+        ImGui.SetNextItemWidth(150);
         if (ImGui.InputInt($"{suffix}UniversalisEntries", ref UniversalisEntries))
         {
             plugin.Config.UniversalisEntries = UniversalisEntries;
@@ -516,7 +507,7 @@ public class ConfigWindow : Window, IDisposable
 
         // ----------------- UI -----------------
         suffix = $"###{plugin.Name}[UI]";
-        ImGui.TextColored(titleColour, "UI settings");
+        ImGui.TextColored(plugin.UiHelper.ColourKhaki, "UI settings");
         ImGui.Separator();
 
 
@@ -530,6 +521,19 @@ public class ConfigWindow : Window, IDisposable
         ImGuiComponents.HelpMarker(
             "Enable: A bundled theme will apply to this plugin so that it can be more compact and compatible.\n" +
             "Disable: Your own (default) dalamud theme will be used."
+        );
+
+
+        // EnableSearchFromClipboard
+        var EnableSearchFromClipboard = plugin.Config.EnableSearchFromClipboard;
+        if (ImGui.Checkbox($"Enable search from clipboard{suffix}EnableSearchFromClipboard", ref EnableSearchFromClipboard))
+        {
+            plugin.Config.EnableSearchFromClipboard = EnableSearchFromClipboard;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: When you hold 'Alt' and left-click the item icon, the plugin will use the item name from your clipboard and fetch its data.\n" +
+            "Disable: The above will not happen."
         );
 
 
@@ -564,7 +568,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.SameLine();
         var ChatLogChannel = plugin.Config.ChatLogChannel;
         // ImGui.SetNextItemWidth(ImGui.GetWindowSize().X / 3);
-        ImGui.SetNextItemWidth(200 * scale);
+        ImGui.SetNextItemWidth(200);
         if (ImGui.BeginCombo($"{suffix}ChatLogChannel", ChatLogChannel.ToString()))
         {
             foreach (var type in Enum.GetValues(typeof(XivChatType)).Cast<XivChatType>())
@@ -588,7 +592,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Text("Right column width");
         ImGui.SameLine();
         var rightColWidth = plugin.Config.rightColWidth;
-        ImGui.SetNextItemWidth(150 * scale);
+        ImGui.SetNextItemWidth(150);
         if (ImGui.InputInt($"px{suffix}rightColWidth", ref rightColWidth))
         {
             plugin.Config.rightColWidth = rightColWidth;
@@ -601,7 +605,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Text("World last update table column width offset");
         ImGui.SameLine();
         var WorldUpdateColWidthOffset = plugin.Config.WorldUpdateColWidthOffset;
-        ImGui.SetNextItemWidth(150 * scale);
+        ImGui.SetNextItemWidth(150);
         if (ImGui.InputInt2($"px{suffix}WorldUpdateColWidthOffset", ref WorldUpdateColWidthOffset[0]))
         {
             plugin.Config.WorldUpdateColWidthOffset = WorldUpdateColWidthOffset;
@@ -615,7 +619,7 @@ public class ConfigWindow : Window, IDisposable
 
         // ----------------- Cache -----------------
         suffix = $"###{plugin.Name}[Cache]";
-        ImGui.TextColored(titleColour, "Cache");
+        ImGui.TextColored(plugin.UiHelper.ColourKhaki, "Cache");
         ImGui.Separator();
 
 
@@ -623,7 +627,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Text("Currently selected world: ");
         ImGui.SameLine();
         var selectedWorld = plugin.Config.selectedWorld;
-        ImGui.SetNextItemWidth(150 * scale);
+        ImGui.SetNextItemWidth(150);
         ImGui.Text(plugin.Config.selectedWorld);
         // if (ImGui.InputText($"{suffix}selectedWorld", ref selectedWorld, 100, ImGuiInputTextFlags.ReadOnly))
         // {

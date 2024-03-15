@@ -58,17 +58,16 @@ public class ChangelogWindow : Window, IDisposable
         var fontsize = ImGui.GetFontSize();
 
         ImGui.TextWrapped(
-            "This is to give you a quick overview of what has changed.\n" +
-            "If any of the descriptions are unclear, please refer to the documentation on the plugin's configuration window."
+            "If any of the descriptions are unclear, please refer to 'Features & UI Introduction' on the Config Window."
         );
         ImGui.Text("");
 
         plugin.UiHelper.ChangelogList(
-            "1.4.0.0 - 02 March 2024",
+            "1.4.0.0 - 15 March 2024",
             new List<string>
             {
-                "· Breaking change: the command entry has been changed to /smb and /smb c|config to avoid potential conflicts.",
-                "· New button: search for item that is in your clipboard.",
+                "· Notice: the main (stable) command entry has been renamed to /smb and /smb c|config. The previous '/mb' will continue to work, but may suffer sudden change/removal if there's any conflict in the future.",
+                "· New function: [Config > UI > Enable search from clipboard] Alt + left-click the item icon to search for item by text from your clipboard.",
             }
         );
 

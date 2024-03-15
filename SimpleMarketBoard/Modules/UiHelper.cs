@@ -28,14 +28,23 @@ public class UiHelper
     public Vector4 textColourDim = HSLA_to_Decimal(0, 0.0, 0.6, 1.0);
     public Vector4 bulletTitleColour = HSLA_to_Decimal(35, 0.75, 0.75, 1.0);
     public Vector4 bulletListColour = HSLA_to_Decimal(0, 0.0, 0.8, 1.0);
+    public Vector4 ColourHq = HSLA_to_Decimal(40, 0.9, 0.7, 1.0);
+    public Vector4 ColourCyan = HSLA_to_Decimal(200, 0.85, 0.6, 1.0);
+    public Vector4 ColourRedLight = HSLA_to_Decimal(5, 0.75, 0.6, 1.0);
+    public Vector4 ColourWhite = HSLA_to_Decimal(0, 0, 1.0, 1.0);
+    public Vector4 ColourKhaki = HSLA_to_Decimal(25, 0.65, 0.75, 1.0);
 
-    public void BulletTextList(string title, string description, List<string> list)
+
+    public void BulletTextList(string title, string? description, List<string> list)
     {
 
         ImGui.TextColored(bulletTitleColour, title);
 
-        ImGui.SameLine();
-        ImGuiComponents.HelpMarker(description);
+        if (description is not null)
+        {
+            ImGui.SameLine();
+            ImGuiComponents.HelpMarker(description);
+        }
 
         ImGui.Indent();
 
