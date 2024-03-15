@@ -75,7 +75,7 @@ public class ConfigWindow : Window, IDisposable
                 new Vector4(245f, 220f, 80f, 255f) / 255f,
                 "Below is a detailed manual. Read the sections you are interested.\n" +
                 "It covers my design intention and helps you use this plugin to its fullest.\n" +
-                "Please checkout the Changelog Window below to know what's been recently added."
+                "In the Changelog below you find brief points on what's been recently added."
             );
 
             if (ImGui.Button($"Open Changelog Window"))
@@ -122,7 +122,7 @@ public class ConfigWindow : Window, IDisposable
                 "Refresh Button",
                 "the two-arrow button under the item name",
                 new List<string> {
-                    "· Click: (Force) Refresh the market data of the current item.",
+                    "· Click: (Force) Refresh the market data of the current item, or the selected item on the History Panel.",
                 }
             );
 
@@ -142,7 +142,6 @@ public class ConfigWindow : Window, IDisposable
                 new List<string> {
                     "Items you searched are stored in the cache. If this button is on (by default) you will see a list under it. You can click in the list to quick review them without having to wait for the request again.",
                     "I'm still planning what to present in that area when this panel is switched off.",
-                    "To refresh an item, use the Refresh button.",
                 }
             );
 
@@ -150,8 +149,8 @@ public class ConfigWindow : Window, IDisposable
                 "Delete Button",
                 "on the right side, the 2nd button from left",
                 new List<string> {
-                    "· Click: Remove the current item from the history panel.",
-                    "· Ctrl + Click: Remove all items from the history panel.",
+                    "· Click: Remove the current item from the History Panel.",
+                    "· Ctrl + Click: Remove all items from the History Panel.",
                 }
             );
 
@@ -198,7 +197,7 @@ public class ConfigWindow : Window, IDisposable
                 null,
                 new List<string> {
                     "This plugin is still in active development.",
-                    "If you have any suggestions or issues please let me know on Discord or GitHub. I appreciate it!",
+                    "If you have any suggestions or issues please let me know on Discord (XIVLauncher/plugin-help-forum/Simple Market Board) or GitHub (Elypha/SimpleMarketBoard). I appreciate it!",
                     "Elypha"
                 }
             );
