@@ -40,6 +40,7 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
 
     // -------------------------------- UI --------------------------------
     public bool EnableTheme { get; set; } = true;
+    public bool EnableSearchFromClipboard { get; set; } = false;
     public bool EnableChatLog { get; set; } = true;
     public bool EnableToastLog { get; set; } = false;
     public XivChatType ChatLogChannel { get; set; } = XivChatType.None;
