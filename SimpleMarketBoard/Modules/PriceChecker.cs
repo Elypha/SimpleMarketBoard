@@ -76,7 +76,7 @@ public class PriceChecker
             catch (Exception ex)
             {
                 Service.PluginLog.Error($"[PriceChecker] CheckNewAsync failed, {ex.Message}");
-                plugin.MainWindow.CurrentItemLabel = "Plugin error";
+                plugin.MainWindow.CurrentItemLabel = "Error";
                 ItemCancellationTokenSource = null;
             }
         });
@@ -161,7 +161,7 @@ public class PriceChecker
             catch (Exception ex)
             {
                 Service.PluginLog.Error($"[PriceChecker] CheckRefreshAsync failed, {ex.Message}");
-                plugin.MainWindow.CurrentItemLabel = "Plugin error";
+                plugin.MainWindow.CurrentItemLabel = "Error";
             }
         });
     }
@@ -210,7 +210,7 @@ public class PriceChecker
         }
         if (UniversalisResponse.Status == UniversalisResponseStatus.UnknownError)
         {
-            plugin.MainWindow.CurrentItemLabel = "Plugin error";
+            plugin.MainWindow.CurrentItemLabel = "Error";
             gameItem.Result = GameItemResult.APIError;
             Service.PluginLog.Error($"[PriceChecker] UnknownError, {gameItem.Id}.");
             plugin.MainWindow.LoadingQueue -= 1;
