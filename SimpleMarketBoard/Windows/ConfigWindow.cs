@@ -74,7 +74,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.TextColored(
                 new Vector4(245f, 220f, 80f, 255f) / 255f,
                 "Below is a detailed manual. Read the sections you are interested.\n" +
-                "It covers my design intension and helps you use this plugin to its fullest.\n" +
+                "It covers my design intention and helps you use this plugin to its fullest.\n" +
                 "Please checkout the Changelog Window below to know what's been recently added."
             );
 
