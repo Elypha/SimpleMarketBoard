@@ -20,6 +20,7 @@ public sealed class Plugin : IDalamudPlugin
     public string Name => "SimpleMarketBoard";
     public string NameShort => "SMB";
     private const string CommandMain = "/smb";
+    private const string CommandMainAlt = "/mb";
 
     // fonts and data resources
     public IFontHandle Axis20 { get; set; }
@@ -93,6 +94,10 @@ public sealed class Plugin : IDalamudPlugin
             HelpMessage = "main command entry:\n" +
                 "└ /smb → open the main window (market data table).\n" +
                 "└ /smb c|config → open the configuration window."
+        });
+        Service.Commands.AddHandler(CommandMainAlt, new CommandInfo(OnCommandMain)
+        {
+            HelpMessage = "[ SAME AS ] → /smb"
         });
 
         Service.PluginLog.Info($"[General] Plugin initialised");
