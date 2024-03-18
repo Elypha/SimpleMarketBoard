@@ -63,6 +63,14 @@ public class ChangelogWindow : Window, IDisposable
         ImGui.Text("");
 
         plugin.UiHelper.ChangelogList(
+            "1.5.0.0 - 18 March 2024",
+            new List<string>
+            {
+                "· New option: [Config > UI > Price data to print].",
+            }
+        );
+
+        plugin.UiHelper.ChangelogList(
             "1.4.0.0 - 15 March 2024",
             new List<string>
             {
