@@ -268,7 +268,7 @@ public class PriceChecker
 
 
     // -------------------------------- notification --------------------------------
-    public enum PriceToPrint: uint
+    public enum PriceToPrint : uint
     {
         UniversalisAverage = 0,
         CurrentLow = 1,
@@ -280,11 +280,17 @@ public class PriceChecker
     {
         double price;
         if (plugin.Config.priceToPrint == PriceToPrint.CurrentLow)
+        {
             price = gameItem.UniversalisResponse.Listings[0].PricePerUnit;
+        }
         else if (plugin.Config.priceToPrint == PriceToPrint.HistoricalLow)
-            price = gameItem.UniversalisResponse.Entries[0].PricePerUnit;
+        {
+            price  = gameItem.UniversalisResponse.Entries.OrderBy(entry => entry.PricePerUnit).First().PricePerUnit;
+        }
         else
+        {
             price = gameItem.AvgPrice;
+        }
         plugin.PrintMessage.PrintMessageChat(new List<Payload>
             {
                 new UIForegroundPayload(39),
