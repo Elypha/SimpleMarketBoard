@@ -118,7 +118,7 @@ public class MainWindow : Window, IDisposable
         }
 
         // refresh button
-        float _button_width = 24;
+        float _button_size = 24;
         float _world_combo_width = 130;
 
         ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + (1.1f * spacing.Y));
@@ -126,9 +126,9 @@ public class MainWindow : Window, IDisposable
             ImGui.GetCursorPosX()
             + ImGui.GetContentRegionAvail().X
             - _world_combo_width
-            - 2 * (_button_width + 0.5f * spacing.X)
+            - 2 * (_button_size + 0.5f * spacing.X)
         );
-        DrawRefreshButton(_button_width);
+        DrawRefreshButton(_button_size);
         ImGui.SameLine();
 
         // HQ filter button
@@ -137,9 +137,9 @@ public class MainWindow : Window, IDisposable
             ImGui.GetCursorPosX()
             + ImGui.GetContentRegionAvail().X
             - _world_combo_width
-            - 1 * (_button_width + 0.5f * spacing.X)
+            - 1 * (_button_size + 0.5f * spacing.X)
         );
-        DrawHqFilterButton(_button_width);
+        DrawHqFilterButton(_button_size);
         ImGui.SameLine();
 
         // world selection dropdown
@@ -339,24 +339,24 @@ public class MainWindow : Window, IDisposable
         plugin.Axis20.Pop();
     }
 
-    private void DrawRefreshButton(float width)
+    private void DrawRefreshButton(float size)
     {
         ImGui.PushFont(UiBuilder.IconFont);
-        if (ImGui.Button($"{(char)FontAwesomeIcon.Repeat}", new Vector2(width, ImGui.GetItemRectSize().Y)))
+        if (ImGui.Button($"{(char)FontAwesomeIcon.Repeat}", new Vector2(size, size)))
         {
             plugin.PriceChecker.CheckRefreshAsync(CurrentItem);
         }
         ImGui.PopFont();
     }
 
-    private void DrawHqFilterButton(float width)
+    private void DrawHqFilterButton(float size)
     {
         var _iconColour = plugin.UiHelper.ColourWhite;
         if (plugin.Config.FilterHq) _iconColour = plugin.UiHelper.ColourHq;
         if (plugin.Config.UniversalisHqOnly) _iconColour = plugin.UiHelper.ColourCyan;
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.PushStyleColor(ImGuiCol.Text, _iconColour);
-        if (ImGui.Button($"{(char)FontAwesomeIcon.Splotch}", new Vector2(width, ImGui.GetItemRectSize().Y)))
+        if (ImGui.Button($"{(char)FontAwesomeIcon.Splotch}", new Vector2(size, size)))
         {
             if (plugin.PluginHotkey.CheckHotkeyState(new VirtualKey[] { VirtualKey.CONTROL }))
             {
