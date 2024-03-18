@@ -163,7 +163,7 @@ public class MainWindow : Window, IDisposable
                 ImGui.Separator();
                 ImGui.Text("History");
 
-                DrawHistoryEntryTable(priceTableHeight);
+                DrawHistoryEntryTable(priceTableHeight - ImGui.GetTextLineHeightWithSpacing());
             }
         }
 
