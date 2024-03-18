@@ -562,8 +562,31 @@ public class ConfigWindow : Window, IDisposable
         );
 
 
+        // priceToPrint
+        ImGui.Text("Price data to print");
+        ImGui.SameLine();
+        ImGui.SetNextItemWidth(200);
+        if (ImGui.BeginCombo($"{suffix}priceToPrint", plugin.Config.priceToPrint.ToString()))
+        {
+            foreach (var type in Enum.GetValues(typeof(PriceChecker.PriceToPrint)).Cast<PriceChecker.PriceToPrint>())
+            {
+                if (ImGui.Selectable(type.ToString(), type == plugin.Config.priceToPrint))
+                {
+                    plugin.Config.priceToPrint = type;
+                    plugin.Config.Save();
+                }
+            }
+
+            ImGui.EndCombo();
+        }
+        ImGuiComponents.HelpMarker(
+            "Which price data you want to print to your Chat/Toast log.\n" +
+            "PS UniversalisAverage is an original value returned from Universalis by their algorithm."
+        );
+
+
         // ChatLogChannel
-        ImGui.Text("Channel");
+        ImGui.Text("Channel to print");
         ImGui.SameLine();
         var ChatLogChannel = plugin.Config.ChatLogChannel;
         // ImGui.SetNextItemWidth(ImGui.GetWindowSize().X / 3);
@@ -588,7 +611,7 @@ public class ConfigWindow : Window, IDisposable
 
 
         // rightColWidth
-        ImGui.Text("Right column width");
+        ImGui.Text("Main window right panel width");
         ImGui.SameLine();
         var rightColWidth = plugin.Config.rightColWidth;
         ImGui.SetNextItemWidth(150);
@@ -601,7 +624,7 @@ public class ConfigWindow : Window, IDisposable
 
 
         // WorldUpdateColWidthOffset
-        ImGui.Text("World last update table column width offset");
+        ImGui.Text("World last update column width offset");
         ImGui.SameLine();
         var WorldUpdateColWidthOffset = plugin.Config.WorldUpdateColWidthOffset;
         ImGui.SetNextItemWidth(150);

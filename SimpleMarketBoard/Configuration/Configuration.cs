@@ -43,6 +43,7 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
     public bool EnableSearchFromClipboard { get; set; } = false;
     public bool EnableChatLog { get; set; } = true;
     public bool EnableToastLog { get; set; } = false;
+    public PriceChecker.PriceToPrint priceToPrint { get; set; } = PriceChecker.PriceToPrint.UniversalisAverage;
     public XivChatType ChatLogChannel { get; set; } = XivChatType.None;
     public int rightColWidth { get; set; } = 102;
     public int[] WorldUpdateColWidthOffset { get; set; } = new int[] { 0, 0 };

@@ -268,15 +268,30 @@ public class PriceChecker
 
 
     // -------------------------------- notification --------------------------------
+    public enum PriceToPrint: uint
+    {
+        UniversalisAverage = 0,
+        CurrentLow = 1,
+        HistoricalLow = 2,
+    }
+
+
     public void SendChatMessage(GameItem gameItem)
     {
+        double price;
+        if (plugin.Config.priceToPrint == PriceToPrint.CurrentLow)
+            price = gameItem.UniversalisResponse.Listings[0].PricePerUnit;
+        else if (plugin.Config.priceToPrint == PriceToPrint.HistoricalLow)
+            price = gameItem.UniversalisResponse.Entries[0].PricePerUnit;
+        else
+            price = gameItem.AvgPrice;
         plugin.PrintMessage.PrintMessageChat(new List<Payload>
             {
                 new UIForegroundPayload(39),
                 new ItemPayload((uint)gameItem.Id, gameItem.IsHQ),
                 new TextPayload($"{(char)SeIconChar.LinkMarker} {gameItem.InGame.Name}"),
                 RawPayload.LinkTerminator,
-                new TextPayload($" [{gameItem.TargetRegion}] {(char)SeIconChar.Gil} {gameItem.AvgPrice:N0}"),
+                new TextPayload($" [{gameItem.TargetRegion}] {(char)SeIconChar.Gil} {price:N0}"),
                 new UIForegroundPayload(0)
             });
     }
