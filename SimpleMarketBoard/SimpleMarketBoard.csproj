@@ -10,7 +10,7 @@
     <Version>1.5.1.0</Version>
     <LangVersion>latest</LangVersion>
     <Platforms>x64</Platforms>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <PackageProjectUrl>https://github.com/Elypha/SimpleMarketBoard</PackageProjectUrl>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
