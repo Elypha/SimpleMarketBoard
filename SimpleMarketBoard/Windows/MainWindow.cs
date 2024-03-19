@@ -305,7 +305,7 @@ public class MainWindow : Window, IDisposable
 
         if (ImGui.ImageButton(CurrentItemIcon.ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
         {
-            if (plugin.Config.EnableSearchFromClipboard && plugin.PluginHotkey.CheckHotkeyState(new VirtualKey[] { VirtualKey.MENU }))
+            if (plugin.Config.EnableSearchFromClipboard && Miosuke.Hotkey.IsActive(new VirtualKey[] { VirtualKey.MENU }))
             {
                 var clipboardItemId = ParseItemId(ImGui.GetClipboardText());
                 plugin.PriceChecker.CheckNewAsync(clipboardItemId, false);
@@ -330,7 +330,7 @@ public class MainWindow : Window, IDisposable
         {
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
-            ImGui.PushStyleColor(ImGuiCol.Text, plugin.UiHelper.ColourHq);
+            ImGui.PushStyleColor(ImGuiCol.Text, Miosuke.UI.ColourHq);
             ImGui.Text($"{(char)FontAwesomeIcon.Spinner}");
             ImGui.PopStyleColor();
             ImGui.PopFont();
@@ -351,14 +351,14 @@ public class MainWindow : Window, IDisposable
 
     private void DrawHqFilterButton(float size)
     {
-        var _iconColour = plugin.UiHelper.ColourWhite;
-        if (plugin.Config.FilterHq) _iconColour = plugin.UiHelper.ColourHq;
-        if (plugin.Config.UniversalisHqOnly) _iconColour = plugin.UiHelper.ColourCyan;
+        var _iconColour = Miosuke.UI.ColourWhite;
+        if (plugin.Config.FilterHq) _iconColour = Miosuke.UI.ColourHq;
+        if (plugin.Config.UniversalisHqOnly) _iconColour = Miosuke.UI.ColourCyan;
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.PushStyleColor(ImGuiCol.Text, _iconColour);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Splotch}", new Vector2(size, size)))
         {
-            if (plugin.PluginHotkey.CheckHotkeyState(new VirtualKey[] { VirtualKey.CONTROL }))
+            if (Miosuke.Hotkey.IsActive(new VirtualKey[] { VirtualKey.CONTROL }))
             {
                 plugin.Config.UniversalisHqOnly = !plugin.Config.UniversalisHqOnly;
             }
@@ -445,12 +445,12 @@ public class MainWindow : Window, IDisposable
                 isColourPushed = false;
                 if (plugin.Config.MarkHigherThanVendor && (CurrentItem.VendorSelling > 0) && (listing.PricePerUnit >= CurrentItem.VendorSelling))
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, plugin.UiHelper.ColourRedLight);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Miosuke.UI.ColourRedLight);
                     isColourPushed = true;
                 }
                 else if (listing.Hq)
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, plugin.UiHelper.ColourHq);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Miosuke.UI.ColourHq);
                     isColourPushed = true;
                 }
 
@@ -526,7 +526,7 @@ public class MainWindow : Window, IDisposable
         {
             foreach (var entry in marketDataEntries)
             {
-                if (entry.Hq) ImGui.PushStyleColor(ImGuiCol.Text, plugin.UiHelper.ColourHq);
+                if (entry.Hq) ImGui.PushStyleColor(ImGuiCol.Text, Miosuke.UI.ColourHq);
 
                 // Sold
                 var index = marketDataEntries.IndexOf(entry);
@@ -563,7 +563,7 @@ public class MainWindow : Window, IDisposable
     private void DrawHistoryButton()
     {
         ImGui.PushFont(UiBuilder.IconFont);
-        ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? plugin.UiHelper.ColourHq : plugin.UiHelper.ColourWhite);
+        ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? Miosuke.UI.ColourHq : Miosuke.UI.ColourWhite);
         if (ImGui.Button($"{(char)FontAwesomeIcon.List}", new Vector2(24, ImGui.GetItemRectSize().Y)))
         {
             searchHistoryOpen = !searchHistoryOpen;
@@ -577,7 +577,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PushFont(UiBuilder.IconFont);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Trash}", new Vector2(24, ImGui.GetItemRectSize().Y)))
         {
-            if (plugin.PluginHotkey.CheckHotkeyState(new VirtualKey[] { VirtualKey.CONTROL }))
+            if (Miosuke.Hotkey.IsActive(new VirtualKey[] { VirtualKey.CONTROL }))
             {
                 plugin.PriceChecker.GameItemCacheList.Clear();
             }
@@ -616,7 +616,7 @@ public class MainWindow : Window, IDisposable
             ImGui.NextColumn();
 
 
-            plugin.UiHelper.AlignRight($"{(int)i.Value}");
+            Miosuke.UI.AlignRight($"{(int)i.Value}");
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.5f * spacing.Y));
 
             ImGui.Text($"{(int)i.Value}");

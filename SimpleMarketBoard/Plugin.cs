@@ -39,12 +39,10 @@ public sealed class Plugin : IDalamudPlugin
     public ChangelogWindow ChangelogWindow { get; init; }
 
     // modules
-    public PrintMessage PrintMessage { get; set; } = null!;
-    public PluginHotkey PluginHotkey { get; init; }
     public Universalis Universalis { get; set; } = null!;
     public HoveredItem HoveredItem { get; set; } = null!;
     public PriceChecker PriceChecker { get; set; } = null!;
-    public UiHelper UiHelper { get; set; } = null!;
+    public Miosuke.MiosukeHelper MiosukeHelper { get; set; } = null!;
 
 
     public Plugin(DalamudPluginInterface pluginInterface)
@@ -72,12 +70,10 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(ChangelogWindow);
 
         // load modules
-        PrintMessage = new PrintMessage(this);
-        PluginHotkey = new PluginHotkey(this);
         Universalis = new Universalis(this);
         HoveredItem = new HoveredItem(this);
         PriceChecker = new PriceChecker(this);
-        UiHelper = new UiHelper(this);
+        MiosukeHelper = new Miosuke.MiosukeHelper(Service.PluginInterface, this);
 
         // load event handlers
         Service.PluginInterface.UiBuilder.Draw += DrawUI;
@@ -126,12 +122,10 @@ public sealed class Plugin : IDalamudPlugin
         Service.Framework.Update -= OnFrameUpdate;
 
         // unload modules
-        PrintMessage.Dispose();
-        PluginHotkey.Dispose();
         Universalis.Dispose();
         HoveredItem.Dispose();
         PriceChecker.Dispose();
-        UiHelper.Dispose();
+        MiosukeHelper.Dispose();
     }
 
     public void DrawUI()
@@ -175,7 +169,7 @@ public sealed class Plugin : IDalamudPlugin
     public void OnFrameUpdate(IFramework framework)
     {
         if (!Config.KeybindingEnabled) return;
-        if (!PluginHotkey.CheckHotkeyState(Config.BindingHotkey)) return;
+        if (!Miosuke.Hotkey.IsActive(Config.BindingHotkey)) return;
 
         if (Config.KeybindingToOpenWindow && !MainWindow.IsOpen && (HoveredItem.HoverItemId != 0))
         {

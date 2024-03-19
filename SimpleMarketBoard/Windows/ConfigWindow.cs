@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System;
+using Miosuke.HotkeyExtensions;
 
 
 namespace SimpleMarketBoard;
@@ -85,7 +86,7 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Text("");
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "Keybinding",
                 "you can configure it below",
                 new List<string> {
@@ -99,7 +100,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "Item Icon",
                 "on the top left corner",
                 new List<string> {
@@ -108,7 +109,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "Item Name",
                 "to the right of the Item Icon",
                 new List<string> {
@@ -118,7 +119,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "Refresh Button",
                 "the two-arrow button under the item name",
                 new List<string> {
@@ -126,7 +127,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "HQ Filter Button",
                 "the star button under the item name",
                 new List<string> {
@@ -136,7 +137,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "History Panel",
                 "on the right side, the 1st button from left",
                 new List<string> {
@@ -145,7 +146,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "Delete Button",
                 "on the right side, the 2nd button from left",
                 new List<string> {
@@ -154,7 +155,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "Config Button",
                 "on the right side, the 3rd button from left",
                 new List<string> {
@@ -162,7 +163,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "Market Data Table",
                 "on the left bottom",
                 new List<string> {
@@ -172,7 +173,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "Popularity",
                 "on the right side, the one-line text in between the two tables",
                 new List<string> {
@@ -181,7 +182,7 @@ public class ConfigWindow : Window, IDisposable
                 }
             );
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "Update Information per World",
                 "on the right side, the table under the Popularity",
                 new List<string> {
@@ -192,7 +193,7 @@ public class ConfigWindow : Window, IDisposable
 
             ImGui.Text("");
 
-            plugin.UiHelper.BulletTextList(
+            Miosuke.UI.BulletTextList(
                 "PS",
                 null,
                 new List<string> {
@@ -203,13 +204,13 @@ public class ConfigWindow : Window, IDisposable
             );
 
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X / 2 - ImGui.CalcTextSize("- END -").X / 2);
-            ImGui.TextColored(plugin.UiHelper.ColourKhaki, "- END -");
+            ImGui.TextColored(Miosuke.UI.ColourKhaki, "- END -");
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (4 * ImGui.GetTextLineHeight()));
         }
 
         // ----------------- General -----------------
         suffix = $"###{plugin.Name}[General]";
-        ImGui.TextColored(plugin.UiHelper.ColourKhaki, "General");
+        ImGui.TextColored(Miosuke.UI.ColourKhaki, "General");
         ImGui.Separator();
 
 
@@ -298,7 +299,7 @@ public class ConfigWindow : Window, IDisposable
 
         // ----------------- Keybinding -----------------
         suffix = $"###{plugin.Name}[Keybinding]";
-        ImGui.TextColored(plugin.UiHelper.ColourKhaki, "Key bindings");
+        ImGui.TextColored(Miosuke.UI.ColourKhaki, "Key bindings");
         ImGui.Separator();
 
 
@@ -331,6 +332,7 @@ public class ConfigWindow : Window, IDisposable
         // BindingHotkey
         ImGui.Text("Check market data");
         ImGui.SameLine();
+
         var strBindingHotkey = string.Join("+", plugin.Config.BindingHotkey.Select(k => k.GetKeyName()));
 
         if (currHotkeyName == "BindingHotkey")
@@ -447,7 +449,7 @@ public class ConfigWindow : Window, IDisposable
 
         // ----------------- API -----------------
         suffix = $"###{plugin.Name}[API]";
-        ImGui.TextColored(plugin.UiHelper.ColourKhaki, "API settings");
+        ImGui.TextColored(Miosuke.UI.ColourKhaki, "API settings");
         ImGui.Separator();
 
 
@@ -506,7 +508,7 @@ public class ConfigWindow : Window, IDisposable
 
         // ----------------- UI -----------------
         suffix = $"###{plugin.Name}[UI]";
-        ImGui.TextColored(plugin.UiHelper.ColourKhaki, "UI settings");
+        ImGui.TextColored(Miosuke.UI.ColourKhaki, "UI settings");
         ImGui.Separator();
 
 
@@ -641,7 +643,7 @@ public class ConfigWindow : Window, IDisposable
 
         // ----------------- Cache -----------------
         suffix = $"###{plugin.Name}[Cache]";
-        ImGui.TextColored(plugin.UiHelper.ColourKhaki, "Cache");
+        ImGui.TextColored(Miosuke.UI.ColourKhaki, "Cache");
         ImGui.Separator();
 
 

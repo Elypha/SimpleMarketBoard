@@ -9,6 +9,7 @@ using System.Threading;
 using System;
 
 using SimpleMarketBoard.UniversalisModels;
+using Miosuke;
 
 
 namespace SimpleMarketBoard;
@@ -285,13 +286,18 @@ public class PriceChecker
         }
         else if (plugin.Config.priceToPrint == PriceToPrint.HistoricalLow)
         {
-            price  = gameItem.UniversalisResponse.Entries.OrderBy(entry => entry.PricePerUnit).First().PricePerUnit;
+            price = gameItem.UniversalisResponse.Entries.OrderBy(entry => entry.PricePerUnit).First().PricePerUnit;
         }
         else
         {
             price = gameItem.AvgPrice;
         }
-        plugin.PrintMessage.PrintMessageChat(new List<Payload>
+
+        Miosuke.PrintMessage.Chat(
+            plugin.Config.ChatLogChannel,
+            $"[{plugin.NameShort}] ",
+            557,
+            new List<Payload>
             {
                 new UIForegroundPayload(39),
                 new ItemPayload((uint)gameItem.Id, gameItem.IsHQ),
@@ -304,6 +310,6 @@ public class PriceChecker
 
     public void SendToast(GameItem gameItem)
     {
-        plugin.PrintMessage.PrintMessageToast($"{gameItem.InGame.Name} [{gameItem.TargetRegion}] {(char)SeIconChar.Gil} {gameItem.AvgPrice:N0}");
+        Miosuke.PrintMessage.ToastNormal($"{gameItem.InGame.Name} [{gameItem.TargetRegion}] {(char)SeIconChar.Gil} {gameItem.AvgPrice:N0}");
     }
 }
