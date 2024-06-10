@@ -1,3 +1,0 @@
-{
-    "make": "dotnet build SimpleMarketBoard/SimpleMarketBoard.csproj -c Release -o 'D:/apps/dalamud_jp_dev/SimpleMarketBoard'"
-}
