@@ -305,7 +305,7 @@ public class MainWindow : Window, IDisposable
 
         if (ImGui.ImageButton(CurrentItemIcon.ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
         {
-            if (plugin.Config.EnableSearchFromClipboard && Miosuke.Hotkey.IsActive(new VirtualKey[] { VirtualKey.MENU }))
+            if (plugin.Config.EnableSearchFromClipboard && Miosuke.Hotkey.IsActive([VirtualKey.MENU], !plugin.Config.KeybindingLooseEnabled))
             {
                 var clipboardItemId = ParseItemId(ImGui.GetClipboardText());
                 plugin.PriceChecker.CheckNewAsync(clipboardItemId, false);
@@ -358,7 +358,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PushStyleColor(ImGuiCol.Text, _iconColour);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Splotch}", new Vector2(size, size)))
         {
-            if (Miosuke.Hotkey.IsActive(new VirtualKey[] { VirtualKey.CONTROL }))
+            if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.KeybindingLooseEnabled))
             {
                 plugin.Config.UniversalisHqOnly = !plugin.Config.UniversalisHqOnly;
             }
@@ -577,7 +577,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PushFont(UiBuilder.IconFont);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Trash}", new Vector2(24, ImGui.GetItemRectSize().Y)))
         {
-            if (Miosuke.Hotkey.IsActive(new VirtualKey[] { VirtualKey.CONTROL }))
+            if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.KeybindingLooseEnabled))
             {
                 plugin.PriceChecker.GameItemCacheList.Clear();
             }

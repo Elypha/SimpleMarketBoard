@@ -169,7 +169,7 @@ public sealed class Plugin : IDalamudPlugin
     public void OnFrameUpdate(IFramework framework)
     {
         if (!Config.KeybindingEnabled) return;
-        if (!Miosuke.Hotkey.IsActive(Config.BindingHotkey)) return;
+        if (!Miosuke.Hotkey.IsActive(Config.BindingHotkey, !Config.KeybindingLooseEnabled)) return;
 
         if (Config.KeybindingToOpenWindow && !MainWindow.IsOpen && (HoveredItem.HoverItemId != 0))
         {

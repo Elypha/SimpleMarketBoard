@@ -63,6 +63,14 @@ public class ChangelogWindow : Window, IDisposable
         ImGui.Text("");
 
         Miosuke.UI.ChangelogList(
+            "1.6.0.0 - 18 March 2024",
+            new List<string>
+            {
+                "· New option: [Config > Keybinding > KeybindingLooseEnabled].",
+            }
+        );
+
+        Miosuke.UI.ChangelogList(
             "1.5.0.0 - 18 March 2024",
             new List<string>
             {
