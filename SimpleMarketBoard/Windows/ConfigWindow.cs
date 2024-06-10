@@ -316,6 +316,19 @@ public class ConfigWindow : Window, IDisposable
         );
 
 
+        // KeybindingLooseEnabled
+        var KeybindingLooseEnabled = plugin.Config.KeybindingLooseEnabled;
+        if (ImGui.Checkbox($"Loose match keybinding{suffix}KeybindingLooseEnabled", ref KeybindingLooseEnabled))
+        {
+            plugin.Config.KeybindingLooseEnabled = KeybindingLooseEnabled;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: The hotkey will work no matter other keys are pressed or not. For example, you can press the hotkey while you are already pressing W (walk).\n" +
+            "Disable: Your hotkey is matched strictly. It won't work if any other keys are pressed."
+        );
+
+
         // AllowKeybindingAfterHover
         var AllowKeybindingAfterHover = plugin.Config.AllowKeybindingAfterHover;
         if (ImGui.Checkbox($"Allow keybinding after hover{suffix}AllowKeybindingAfterHover", ref AllowKeybindingAfterHover))

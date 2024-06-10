@@ -25,6 +25,7 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
 
     // -------------------------------- Keybinding --------------------------------
     public bool KeybindingEnabled { get; set; } = true;
+    public bool KeybindingLooseEnabled { get; set; } = false;
     public bool AllowKeybindingAfterHover { get; set; } = true;
     public VirtualKey[] BindingHotkey { get; set; } = new VirtualKey[] { VirtualKey.CONTROL, VirtualKey.X };
     public bool KeybindingToOpenWindow { get; set; } = false;
