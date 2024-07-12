@@ -45,7 +45,7 @@ public sealed class Plugin : IDalamudPlugin
     public Miosuke.MiosukeHelper MiosukeHelper { get; set; } = null!;
 
 
-    public Plugin(DalamudPluginInterface pluginInterface)
+    public Plugin(IDalamudPluginInterface pluginInterface)
     {
         // load plugin services
         pluginInterface.Create<Service>();

@@ -3,6 +3,7 @@ using Dalamud.Game.Text;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface.Windowing;
 using Dalamud.Interface;
+using Dalamud.Interface.Textures.TextureWraps;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System;
+using Dalamud.Interface.Textures;
 
 
 namespace SimpleMarketBoard;
@@ -30,7 +32,7 @@ public class MainWindow : Window, IDisposable
         CurrentItem.Id = 4691;
         CurrentItem.InGame = plugin.ItemSheet.GetRow(4691)!;
         CurrentItemLabel = "(/ω＼)";
-        CurrentItemIcon = Service.TextureProvider.GetIcon(CurrentItem.InGame.Icon)!;
+        CurrentItemIcon = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(CurrentItem.InGame.Icon));
         if (plugin.Config.selectedWorld != "") lastSelectedWorld = plugin.Config.selectedWorld;
 
     }
@@ -60,20 +62,19 @@ public class MainWindow : Window, IDisposable
 
     public void Dispose()
     {
-        CurrentItemIcon?.Dispose();
     }
 
 
     public ulong LastItemId = 0;
     public PriceChecker.GameItem CurrentItem { get; set; } = new PriceChecker.GameItem();
-    public IDalamudTextureWrap CurrentItemIcon = null!;
+    public ISharedImmediateTexture CurrentItemIcon = null!;
     public string CurrentItemLabel = "";
 
     public void CurrentItemUpdate(PriceChecker.GameItem gameItem)
     {
         LastItemId = CurrentItem.Id;
         CurrentItem = gameItem;
-        CurrentItemIcon = Service.TextureProvider.GetIcon(CurrentItem.InGame.Icon)!;
+        CurrentItemIcon = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(CurrentItem.InGame.Icon))!;
         CurrentItem.Name = CurrentItem.InGame.Name.ToString();
         CurrentItemLabel = CurrentItem.Name;
     }
@@ -303,7 +304,7 @@ public class MainWindow : Window, IDisposable
     {
         ImGui.SetCursorPosY(0);
 
-        if (ImGui.ImageButton(CurrentItemIcon.ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
+        if (ImGui.ImageButton(CurrentItemIcon.GetWrapOrEmpty().ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
         {
             if (plugin.Config.EnableSearchFromClipboard && Miosuke.Hotkey.IsActive([VirtualKey.MENU], !plugin.Config.KeybindingLooseEnabled))
             {

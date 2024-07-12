@@ -10,6 +10,7 @@ using System;
 
 using SimpleMarketBoard.UniversalisModels;
 using Miosuke;
+using Dalamud.Interface.Textures;
 
 
 namespace SimpleMarketBoard;
@@ -181,7 +182,7 @@ public class PriceChecker
 
         // lookup market data
         plugin.MainWindow.CurrentItemLabel = "Loading";
-        plugin.MainWindow.CurrentItemIcon = Service.TextureProvider.GetIcon(gameItem.InGame.Icon)!;
+        plugin.MainWindow.CurrentItemIcon = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(gameItem.InGame.Icon, gameItem.IsHQ))!;
         var UniversalisResponse = plugin.Universalis.GetDataAsync(gameItem).Result;
 
         // validate
