@@ -22,6 +22,81 @@ A simple but ultimate market board plugin caters for me at present, and potentia
 - **HQ filter**, to display HQ only if you wish
 - **Colour highlight**, so you tell HQ items visually instead of textually, and this can also work for price higher than vendor NPC, etc.
 
+## Manual
+
+Please feel free to send a request if any feature you want is not yet available via:
+- GitHub Issues
+- Discord (Dalamud Official Discord > PLUGINS > plugin-help-forum > Simple Market Board)
+
+**Data**
+
+Listings
+- Price per unit in Selling and History are tax *excluded*, the same as what you see from the in-game marketboard & the number you will fill to sell via retainers.
+- An option is provided to include tax in the total price column, to give you an idea about how much you'll actually pay.
+- An option is provided to colour the record in red, if vendor NPC sells cheaper. This takes priority over HQ.
+
+Popularity
+- The Universalis Velocity.
+- The higher the number, the more items sold in recent time.
+
+World Updated
+- How many hours has passed since the market data of this item was last updated for each world in the selected Region/DC/World.
+- You may want to visit the most outdated worlds to update and upload the public data, so that your overall result will be more accurate.
+
+**Search**
+
+Please note that you can trigger multiple search without waiting for previous ones to finish. A loading icon will show after the item name if there's any on-going request at the moment.
+
+There are 3 typical ways to trigger a search:
+
+1. Hover over an item.
+2. Press the hotkey first, then hover over an item.
+3. Press the hotkey first, then hover over an item; Hover over an item, then press the hotkey.
+4. Optionally, you can wait for a configurable delay starting from 0 ms, together with any of the above.
+
+You can set a hotkey to open the plugin window. If you set it as the same hotkey as search, when you press the hotkey, the window will show up + do the search.
+
+**Icon**
+
+The item icon is interactive in the following ways:
+
+- Click: Copy the name to clipboard.
+- Ctrl + Click: Set the name from clipboard.
+  - This will trigger a new search using the item name, and can be useful if you don't have the item right now but have its name in your clipboard from somewhere else.
+
+**Buttons**
+
+On the left:
+
+- Refresh
+  - Click: Force refresh the market data for the current item.
+- HQ Filter
+  - Click: Toggle to show only HQ data records. When enabled, the button will be in orange.
+  - Ctrl + Click: Toggle to request only HQ data records from the server. When enabled, the button will be in cyan.
+    - It can be helpful when you are looking for HQ items but the table is flooded with low-priced NQs, e.g., Commanding Craftsman's Draught.
+    - Use the Refresh button to trigger a refresh.
+- Worlds
+  - Select the Region/DC/World for later search requests.
+  - Use the Refresh button to trigger a refresh.
+
+On the right:
+
+- List
+  - Click: Switch between History and Stats.
+- Delete
+  - Click: Delete this record.
+  - Ctrl + Click: Delete all records.
+- Config
+  - Click: Toggle to show config window.
+
+**History**
+
+A list for all items and results in your cache.
+
+Click to review without making another web request.
+
+Use the refresh button if you need to.
+
 ## Whydunit
 
 Popular plugins are great indeed but power users do have very distinct requirements that even if being coded into functionality, seamlessly incorporating them while respecting the original design of the project proves to be a real challenge. This will also lead to a plugin ending up packed with a ton of features that require tons of time to maintain. It's also against my personal work philosophy which revolves around constructing a toolkit with tools that excel in single functions, as opposed to settling for compromises among multifunctional tools.
