@@ -1,5 +1,7 @@
 using System;
-
+using System.Threading;
+using System.Threading.Tasks;
+using Miosuke;
 
 namespace SimpleMarketBoard;
 
@@ -20,103 +22,65 @@ public class HoveredItem
 
 
     // -------------------------------- hovered item --------------------------------
-    public ulong HoverItemId;
-    public ulong LastItemId;
+    public ulong HoverItemId = 0;
+    public ulong SavedItemId = 0;
+    public ulong LastCheckItemId = 0;
+    public CancellationTokenSource? ItemCts;
 
     private void OnHoveredItemChanged(object? sender, ulong thisItemId)
     {
+        HoverItemId = thisItemId % 1000000;
+
+        // cancel existing request
+        if (ItemCts != null && !ItemCts.IsCancellationRequested) ItemCts.Cancel();
+        // reset if not hovering
+        if (HoverItemId == 0) { SavedItemId = 0; return; }
+
+        if (plugin.Config.SearchHotkeyEnabled)
+        {
+            SavedItemId = HoverItemId;
+        }
+        else
+        {
+            Service.Log.Info($"Start Check {HoverItemId} {ItemCts?.IsCancellationRequested}");
+            CheckItem(HoverItemId);
+        }
+    }
+
+    public void CheckItem(ulong itemId)
+    {
+        // cancel existing request
+        if (ItemCts != null && !ItemCts.IsCancellationRequested) ItemCts.Cancel();
+
+        ItemCts = new CancellationTokenSource();
+        CheckItemAsync(itemId, ItemCts.Token);
+    }
+
+    private async void CheckItemAsync(ulong itemId, CancellationToken token)
+    {
+        // wait for hover delay, raise TaskCanceledException if cancelled
         try
         {
-            HoverItemId = thisItemId;
-
-            // cancel in-flight request
-            if (plugin.PriceChecker.ItemCancellationTokenSource != null)
-            {
-                if (!plugin.PriceChecker.ItemCancellationTokenSource.IsCancellationRequested)
-                    plugin.PriceChecker.ItemCancellationTokenSource.Cancel();
-                plugin.PriceChecker.ItemCancellationTokenSource.Dispose();
-            }
-
-            // stop if invalid itemId
-            if (thisItemId == 0)
-            {
-                ResetLastItem();
-                plugin.PriceChecker.ItemCancellationTokenSource = null;
-                return;
-            };
-
-            // capture itemId/quality
-            ulong realItemId;
-            if (thisItemId >= 1000000)
-            {
-                realItemId = thisItemId - 1000000;
-            }
-            else
-            {
-                realItemId = thisItemId;
-            }
-
-            var rowid = plugin.ItemSheet.GetRow((uint)realItemId);
-            Service.PluginLog.Verbose($"[UI] ItemID, RealID, RowID: | {thisItemId,7} | {realItemId,7} | {rowid?.RowId,7} |");
-
-            // check if keybinding is pressed
-            var isKeybindingPressed = Miosuke.Hotkey.IsActive(plugin.Config.SearchHotkey, !plugin.Config.SearchHotkeyLoose);
-
-            if (plugin.Config.SearchHotkeyEnabled)
-            {
-                if (plugin.Config.SearchHotkeyAfterHover)
-                {
-                    if (isKeybindingPressed)
-                    {
-                        // call immediately
-                        Service.PluginLog.Debug($"[UI] (A) Check by keybinding after hover: {realItemId}");
-                        plugin.PriceChecker.CheckNewAsync(realItemId);
-                        return;
-                    }
-                    else
-                    {
-                        // save for next keybinding press
-                        Service.PluginLog.Verbose($"[UI] Save for keybinding after hover: {realItemId}");
-                        LastItemId = realItemId;
-                    }
-                }
-                else
-                {
-                    if (!isKeybindingPressed) return;
-                    Service.PluginLog.Debug($"[UI] (B) Check by hover after keybinding: {realItemId}");
-                    plugin.PriceChecker.CheckNewAsync(realItemId);
-                    return;
-                }
-            }
-            else
-            {
-                Service.PluginLog.Debug($"[UI] (C) Check by hover without keybinding: {realItemId}");
-                plugin.PriceChecker.CheckNewAsync(realItemId);
-            }
+            await Task.Delay(plugin.Config.HoverDelayMs, token).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (TaskCanceledException)
         {
-            Service.PluginLog.Error($"[UI] Failed to do price check, {ex.Message}");
-            ResetLastItem();
-            plugin.PriceChecker.ItemCancellationTokenSource = null;
+            Service.Log.Info($"Got Cancel {itemId} {SavedItemId}");
+            return;
         }
-    }
 
-    public void CheckLastItem()
-    {
-        if (plugin.Config.SearchHotkeyEnabled && plugin.Config.SearchHotkeyAfterHover && Miosuke.Hotkey.IsActive(plugin.Config.SearchHotkey, !plugin.Config.SearchHotkeyLoose))
+        // show window if needed before search
+        if (plugin.Config.ShowWindowOnSearch && !plugin.MainWindow.IsOpen)
         {
-            if (LastItemId != 0)
-            {
-                Service.PluginLog.Verbose($"[UI] (D) Check by keybinding after hover for the current item: {LastItemId}");
-                plugin.PriceChecker.CheckNewAsync(LastItemId);
-                ResetLastItem();
-            }
+            plugin.MainWindow.IsOpen = true;
         }
+
+        // check new item
+        plugin.PriceChecker.DoCheckAsync(itemId);
+
+        // clean up
+        SavedItemId = 0;
+        LastCheckItemId = itemId;
     }
 
-    public void ResetLastItem()
-    {
-        LastItemId = 0;
-    }
 }

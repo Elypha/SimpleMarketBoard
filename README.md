@@ -50,9 +50,11 @@ Please note that you can trigger multiple search without waiting for previous on
 There are 3 typical ways to trigger a search:
 
 1. Hover over an item.
-2. Press the hotkey first, then hover over an item.
-3. Press the hotkey first, then hover over an item; Hover over an item, then press the hotkey.
+2. When the hotkey is pressed, hover over an item.
+3. Hover over an item, then press the hotkey.
 4. Optionally, you can wait for a configurable delay starting from 0 ms, together with any of the above.
+
+If the hotkey is disabled, only 1 will work. If enabled, 2 & 3 will work. If you use a delay, you don't need to long-hold the hotkey but just press the hotkey and keep your mouse on that item for the configured time.
 
 You can set a hotkey to open the plugin window. If you set it as the same hotkey as search, when you press the hotkey, the window will show up + do the search.
 

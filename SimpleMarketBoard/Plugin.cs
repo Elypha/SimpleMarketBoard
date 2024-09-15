@@ -8,8 +8,12 @@ using Dalamud.Plugin;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Excel;
 using System.Collections.Generic;
+using Miosuke;
 
 using SimpleMarketBoard.UniversalisModels;
+using Dalamud.Interface.ImGuiNotification;
+using Dalamud.Game.Text;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 
 
 namespace SimpleMarketBoard;
@@ -48,7 +52,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         // load plugin services
         pluginInterface.Create<Service>();
-        Service.PluginLog.Info($"[General] Plugin loading...");
+        Service.Log.Info($"[General] Plugin loading...");
 
         // load fonts and data resources
         PluginTheme = StyleModel.Deserialize("DS1H4sIAAAAAAAACq1XS3PbOAz+LzpnMnpQlORbE2+bQ7uTadLpbm+MzdiqFcsry27TTP97CZIgIcr2etLqIojChxcBEHyJRDRJLuOL6CGavET/RBMOH//q98+LaBZNGCzMo0kMb2m5YssVX+aK61HJuIgWdnlpJdb2WzxY4qsFMwvOtIpVNElhobFcT4EhhmsdYJlebYPVVK9uRkbC6n/qt7arU/bpX1sL7NWC0nIR7awpe/vjm/3+bmU9O8E58f7HQXVC2OVs4MesVX6+RPfye2//J/a/fn+x78/6rfiBcVpvxUMj52PtGqDfDvC5Xs/bb1cLb1RRsizJCgSRbw0m30pIfGk/mZJ1vaybORWFIhBqIaD3tt3sNpS3ROYSuUvLXoHsq7aby86xs8yyA0GcMiE2zHdLoVw7y5q3nXiSxJq0ssxAaG4gjHzm+W/avexooBlGmqFVzMII6s2sr/e+MjiCOII4gngBW1r3DbUtSQrOiphblP/UWP9prC3LNMszLyZQnlUsLqoUg5nHPCmd8ayKk4q7fRjJum6bRmy2JACvE/dBrndXoqM+YkyAMH4xkrR3s06pfhhATm2v43/XQXdBYxMLAUJjgBgrAVC40wyxQBjvjmKDkOcIBcIkCYVeL+Vs9UF0KwcocauB0AAgvK6mVsk+8OxoHoaIMBULTMUCU7EguKtd37fYWVXloyNAaG4gXLYb7jBwWZUmOS9RUZ5WLEmw5HlaMBsMKPs8rsrYiwpTl+lcx77BEPyFJNdY1I0UtI/kWOhAGCQWepY49lGdH2yoal8cIgwsxhUdpbshN6ITfXtuc3P8rw8t6dlO2qgxvGKfPspt/UO+62p/pBYYYCBMkmCA03wACd0pcGeBMMiS9kWP/BOm35PySTH+QJjuj5lUcsP7G7GH9pxXRsyrLR9I+bR+bGc72odjjsFLVM9VDwpJWBmrxxVGkbJARmBSkuUWbyLCtTjMY5bSvjJtZ6t6vbjt5L6W/uBNeVhjIM644VF/PW36Z3oEo0bcAqLotmn79/Vabn2BYS8CwoQrOQQY7hvOUqTSsjyA3dTbvl2ok9vpchk9OGkOII4pw+gNBjcY2UzvoOcg6gJiFAaNsbNO37XrxamjLT8MfF8vlv2pzB/hPg7HxRPHrmd/0/zf+Ao5a+fXO9nIWS/pJHkihTLoItNOLKZdu7kX3UIeU+WNg7r5W+xvlO/N0P9jeoz/CmPmZZWvIfi4Y0WAnNZPxDWsLKxQ9CuFwaidi8bgzgOpYMDlR42Z0SSSzfNmKSJ1GzOXCDFKxGFcjI++DRZBntNRQF30zuA67woiz7rZPHrn3cmgKRMAezYY3sXI0yLGDaUyl6M05gc01yMu100z/RBevLOCRphB2IlIr47mKW2qjZcYhrriNIy+QaFSN3gTLj++qenpYHkYPrwqe6dZZkI4DI4/6Tn8N80jdhYOgqOu1MG25DH2JyrTT0Klm33VvQIbe0632h8BpTukcHu0dMupWFUzVqs/fwHiVFw/xBAAAA==")!;
@@ -59,6 +63,18 @@ public sealed class Plugin : IDalamudPlugin
         // load configuration
         Config = Service.PluginInterface.GetPluginConfig() as SimpleMarketBoardConfig ?? new SimpleMarketBoardConfig();
         Config.Initialize(Service.PluginInterface);
+        if (Config.Version < 1)
+        {
+            Miosuke.PrintMessage.Chat(
+                XivChatType.None,
+                $"[{NameShort}] ",
+                557,
+                [
+                    new UIForegroundPayload(39),
+                    new TextPayload($"Your current configuration version is outdated due to a refactor of this plugin. Please consider resetting your configuration to start fresh. You can do this in the plugin installer. Find this plugin, and right click > Reset plugin data and reload."),
+                    new UIForegroundPayload(0),
+                ]);
+        }
 
         // load windows
         MainWindow = new MainWindow(this);
@@ -78,7 +94,8 @@ public sealed class Plugin : IDalamudPlugin
         Service.PluginInterface.UiBuilder.OpenMainUi += DrawMainUI;
         Service.ClientState.Login += OnLogin;
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
-        Service.Framework.Update += OnFrameUpdate;
+        Service.Framework.Update += OnFrameUpdateWindow;
+        Service.Framework.Update += OnFrameUpdateSearch;
         MainWindow.UpdateWorld();
 
         // load command handlers
@@ -93,7 +110,7 @@ public sealed class Plugin : IDalamudPlugin
             HelpMessage = "[ SAME AS ] → /smb"
         });
 
-        Service.PluginLog.Info($"[General] Plugin initialised");
+        Service.Log.Info($"[General] Plugin initialised");
     }
 
     public void Dispose()
@@ -115,7 +132,8 @@ public sealed class Plugin : IDalamudPlugin
         Service.PluginInterface.UiBuilder.OpenMainUi -= DrawMainUI;
         Service.ClientState.Login -= OnLogin;
         Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
-        Service.Framework.Update -= OnFrameUpdate;
+        Service.Framework.Update -= OnFrameUpdateWindow;
+        Service.Framework.Update -= OnFrameUpdateSearch;
 
         // unload modules
         Universalis.Dispose();
@@ -162,21 +180,53 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.UpdateWorld();
     }
 
-    public void OnFrameUpdate(IFramework framework)
+    private bool windowHotkeyHandled = false;
+    public void OnFrameUpdateWindow(IFramework framework)
     {
-        if (!Config.SearchHotkeyEnabled) return;
-        if (!Miosuke.Hotkey.IsActive(Config.SearchHotkey, !Config.SearchHotkeyLoose)) return;
-
-        if (Config.WindowHotkeyCanShow && !MainWindow.IsOpen && (HoveredItem.HoverItemId != 0))
+        if (!Config.WindowHotkeyEnabled) return;
+        if (!Miosuke.Hotkey.IsActive(Config.WindowHotkey, true))
         {
-            MainWindow.Toggle();
+            windowHotkeyHandled = false;
             return;
         }
 
-        if (Config.WindowHotkeyCanHide && MainWindow.IsOpen && (HoveredItem.HoverItemId == 0))
+        if (!windowHotkeyHandled)
         {
-            MainWindow.Toggle();
+            if (Config.WindowHotkeyCanShow && !MainWindow.IsOpen)
+            {
+                windowHotkeyHandled = true;
+                MainWindow.IsOpen = true;
+            }
+            else if (Config.WindowHotkeyCanHide && MainWindow.IsOpen)
+            {
+                windowHotkeyHandled = true;
+                MainWindow.IsOpen = false;
+            }
+        }
+    }
+
+    private bool searchHotkeyHandled = false;
+    public void OnFrameUpdateSearch(IFramework framework)
+    {
+        if (!Config.SearchHotkeyEnabled) return;
+        if (!Miosuke.Hotkey.IsActive(Config.SearchHotkey, !Config.SearchHotkeyLoose))
+        {
+            searchHotkeyHandled = false;
             return;
+        }
+
+        if (!searchHotkeyHandled)
+        {
+            if (Config.SearchHotkeyCanHide && MainWindow.IsOpen && (HoveredItem.HoverItemId == 0))
+            {
+                searchHotkeyHandled = true;
+                MainWindow.IsOpen = false;
+            }
+            else if (HoveredItem.SavedItemId != 0)
+            {
+                searchHotkeyHandled = true;
+                HoveredItem.CheckItem(HoveredItem.SavedItemId);
+            }
         }
     }
 }

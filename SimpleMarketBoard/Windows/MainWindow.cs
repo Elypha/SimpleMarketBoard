@@ -33,7 +33,7 @@ public class MainWindow : Window, IDisposable
         CurrentItem.Id = 4691;
         CurrentItem.InGame = plugin.ItemSheet.GetRow(4691)!;
         CurrentItemLabel = "(/ω＼)";
-        CurrentItemIcon = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(CurrentItem.InGame.Icon));
+        CurrentItemIcon = Service.Texture.GetFromGameIcon(new GameIconLookup(CurrentItem.InGame.Icon));
         if (plugin.Config.selectedWorld != "") lastSelectedWorld = plugin.Config.selectedWorld;
 
     }
@@ -66,16 +66,14 @@ public class MainWindow : Window, IDisposable
     }
 
 
-    public ulong LastItemId = 0;
     public PriceChecker.GameItem CurrentItem { get; set; } = new PriceChecker.GameItem();
     public ISharedImmediateTexture CurrentItemIcon = null!;
     public string CurrentItemLabel = "";
 
     public void CurrentItemUpdate(PriceChecker.GameItem gameItem)
     {
-        LastItemId = CurrentItem.Id;
         CurrentItem = gameItem;
-        CurrentItemIcon = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(CurrentItem.InGame.Icon))!;
+        CurrentItemIcon = Service.Texture.GetFromGameIcon(new GameIconLookup(CurrentItem.InGame.Icon))!;
         CurrentItem.Name = CurrentItem.InGame.Name.ToString();
         CurrentItemLabel = CurrentItem.Name;
     }
@@ -105,7 +103,7 @@ public class MainWindow : Window, IDisposable
         var LeftColWidth = ImGui.GetWindowWidth() - rightColWidth;
 
         // -------------------------------- [  run check  ] --------------------------------
-        plugin.HoveredItem.CheckLastItem();
+        // plugin.HoveredItem.CheckLastItem();
 
 
         // -------------------------------- [  column left  ] --------------------------------
@@ -239,7 +237,7 @@ public class MainWindow : Window, IDisposable
 
     public void UpdateWorld()
     {
-        Service.PluginLog.Debug($"[Config] Update player's current world");
+        Service.Log.Debug($"[Config] Update player's current world");
         if (Service.ClientState.LocalContentId != 0 && playerId != Service.ClientState.LocalContentId)
         {
             var localPlayer = Service.ClientState.LocalPlayer;
@@ -312,7 +310,7 @@ public class MainWindow : Window, IDisposable
             if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
             {
                 var clipboardItemId = ParseItemId(ImGui.GetClipboardText());
-                plugin.PriceChecker.CheckNewAsync(clipboardItemId);
+                plugin.PriceChecker.DoCheckAsync(clipboardItemId);
             }
             else
             {
@@ -348,7 +346,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PushFont(UiBuilder.IconFont);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Repeat}", new Vector2(size, size)))
         {
-            plugin.PriceChecker.CheckRefreshAsync(CurrentItem);
+            plugin.PriceChecker.DoCheckRefreshAsync(CurrentItem);
         }
         ImGui.PopFont();
     }
@@ -388,11 +386,11 @@ public class MainWindow : Window, IDisposable
                     plugin.Config.selectedWorld = world.Item1;
                     plugin.Config.Save();
 
-                    Service.PluginLog.Debug($"[UI] Selected world: {lastSelectedWorld} -> {plugin.Config.selectedWorld}");
+                    Service.Log.Debug($"[UI] Selected world: {lastSelectedWorld} -> {plugin.Config.selectedWorld}");
                     if (plugin.Config.selectedWorld != lastSelectedWorld)
                     {
-                        Service.PluginLog.Info($"[UI] Fetch data of {plugin.Config.selectedWorld}");
-                        plugin.PriceChecker.CheckRefreshAsync(CurrentItem);
+                        Service.Log.Info($"[UI] Fetch data of {plugin.Config.selectedWorld}");
+                        plugin.PriceChecker.DoCheckRefreshAsync(CurrentItem);
                     }
 
                     lastSelectedWorld = plugin.Config.selectedWorld;
@@ -726,7 +724,7 @@ public class MainWindow : Window, IDisposable
             {
                 if (ImGui.Selectable($"{item.Name}", (uint)CurrentItem.Id == item.Id))
                 {
-                    plugin.PriceChecker.CheckNewAsync(item.Id);
+                    plugin.PriceChecker.DoCheckAsync(item.Id);
                 }
             }
         }

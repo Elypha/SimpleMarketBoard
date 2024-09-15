@@ -83,7 +83,7 @@ public class MarketDataListing
     /// </summary>
     [JsonPropertyName("materia")]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Setter required for JSON deserialization")]
-    public IList<object> Materia { get; set; } = new List<object>();
+    public IList<object> Materia { get; set; } = [];
 
     /// <summary>
     /// Gets or sets a value indicating whether the item is on a mannequin.

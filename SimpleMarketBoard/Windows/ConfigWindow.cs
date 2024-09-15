@@ -107,6 +107,17 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.TextColored(UI.ColourSubtitle, "Search");
 
+        // ShowWindowOnSearch
+        var ShowWindowOnSearch = plugin.Config.ShowWindowOnSearch;
+        if (ImGui.Checkbox($"Show main window on search{suffix}ShowWindowOnSearch", ref ShowWindowOnSearch))
+        {
+            plugin.Config.ShowWindowOnSearch = ShowWindowOnSearch;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: The main window will show up, if it's not already shown, when you trigger a search."
+        );
+
         // HoverDelayMs
         ImGui.Text("Hover delay");
         ImGuiComponents.HelpMarker("you hover over an item > wait for this time > plugin starts to fetch the market data.");
@@ -119,7 +130,6 @@ public class ConfigWindow : Window, IDisposable
             plugin.Config.HoverDelayMs = HoverDelayMs;
             plugin.Config.Save();
         }
-
 
         // SearchHotkeyEnabled
         var SearchHotkeyEnabled = plugin.Config.SearchHotkeyEnabled;
@@ -139,19 +149,6 @@ public class ConfigWindow : Window, IDisposable
             plugin.Config.Save();
         }
 
-        // SearchHotkeyAfterHover
-        ImGui.Text("┗");
-        ImGui.SameLine();
-        var SearchHotkeyAfterHover = plugin.Config.SearchHotkeyAfterHover;
-        if (ImGui.Checkbox($"Hotkey after hover also works{suffix}SearchHotkeyAfterHover", ref SearchHotkeyAfterHover))
-        {
-            plugin.Config.SearchHotkeyAfterHover = SearchHotkeyAfterHover;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: In addition, you can also hover over an item first, then press the keybinding to get the market data of it."
-        );
-
         // SearchHotkeyLoose
         ImGui.Text("┗");
         ImGui.SameLine();
@@ -166,6 +163,20 @@ public class ConfigWindow : Window, IDisposable
             "Disable: Your hotkey is checked strictly. It won't work if any extra keys are pressed."
         );
 
+        // SearchHotkeyCanHide
+        ImGui.Text("┗");
+        ImGui.SameLine();
+        var SearchHotkeyCanHide = plugin.Config.SearchHotkeyCanHide;
+        if (ImGui.Checkbox($"... to hide the window{suffix}SearchHotkeyCanHide", ref SearchHotkeyCanHide))
+        {
+            plugin.Config.SearchHotkeyCanHide = SearchHotkeyCanHide;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: the hotkey will also hide the main window, if it's already shown and you are not hovering over an item.\n" +
+            "Disable: the hotkey will not be able to hide the main window."
+        );
+
 
         ImGui.TextColored(UI.ColourSubtitle, "Data window");
 
@@ -177,7 +188,7 @@ public class ConfigWindow : Window, IDisposable
             plugin.Config.Save();
         }
         ImGuiComponents.HelpMarker(
-            "Enable: You can use a hotkey to show/hide the plugin window."
+            "Enable: You can use a hotkey to show/hide the plugin window. Unlike the one above, this works in any situation."
         );
         ImGui.SameLine();
         var WindowHotkey = plugin.Config.WindowHotkey;
@@ -533,7 +544,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(UI.ColourSubtitle, "Position Offset");
 
 
-        ImGui.BeginChild("table DrawUi Position Offset", new Vector2(table_width, table_height * 4), false);
+        ImGui.BeginChild("table DrawUi Position Offset", new Vector2(table_width, table_height * 6), false);
         ImGui.Columns(2);
         ImGui.SetColumnWidth(0, col_name_width);
         ImGui.SetColumnWidth(1, col_value_width);

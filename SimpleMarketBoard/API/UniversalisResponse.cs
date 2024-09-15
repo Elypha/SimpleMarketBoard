@@ -11,7 +11,7 @@ public class UniversalisResponseStatus
 {
     public const ulong Success = 0;
     public const ulong ServerError = 1;
-    public const ulong InvalidItemId = 2;
+    public const ulong InvalidData = 2;
     public const ulong UserCancellation = 3;
     public const ulong UnknownError = 99;
 }
@@ -37,7 +37,7 @@ public class UniversalisResponse
     /// <summary>
     /// An edited entry to get how many hours have passed since last update for each world.
     /// </summary>
-    public Dictionary<string, long> WorldOutOfDate { get; set; } = new Dictionary<string, long>();
+    public Dictionary<string, long> WorldOutOfDate { get; set; } = [];
 
     /// <summary>
     /// Gets the total amount of items currently for sale.
@@ -86,12 +86,12 @@ public class UniversalisResponse
     /// </summary>
     [JsonPropertyName("listings")]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Setter required for JSON deserialization")]
-    public IList<MarketDataListing> Listings { get; set; } = new List<MarketDataListing>();
+    public IList<MarketDataListing> Listings { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the recent history.
     /// </summary>
     [JsonPropertyName("entries")]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Setter required for JSON deserialization")]
-    public IList<MarketDataEntry> Entries { get; set; } = new List<MarketDataEntry>();
+    public IList<MarketDataEntry> Entries { get; set; } = [];
 }

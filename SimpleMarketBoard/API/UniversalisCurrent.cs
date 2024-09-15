@@ -29,14 +29,14 @@ public class MarketDataCurrent
     /// </summary>
     [JsonPropertyName("listings")]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Setter required for JSON deserialization")]
-    public IList<MarketDataListing> Listings { get; set; } = new List<MarketDataListing>();
+    public IList<MarketDataListing> Listings { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the recent history.
     /// </summary>
     [JsonPropertyName("recentHistory")]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Setter required for JSON deserialization")]
-    public IList<MarketDataEntry> Entries { get; set; } = new List<MarketDataEntry>();
+    public IList<MarketDataEntry> Entries { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the name of the datacenter.
@@ -84,19 +84,19 @@ public class MarketDataCurrent
     /// Gets the stack size histogram.
     /// </summary>
     [JsonPropertyName("stackSizeHistogram")]
-    public Dictionary<string, long> StackSizeHistogram { get; set; } = new Dictionary<string, long>();
+    public Dictionary<string, long> StackSizeHistogram { get; set; } = [];
 
     /// <summary>
     /// Gets the stack size histogram of the NQ items.
     /// </summary>
     [JsonPropertyName("stackSizeHistogramNQ")]
-    public Dictionary<string, long> StackSizeHistogramNq { get; set; } = new Dictionary<string, long>();
+    public Dictionary<string, long> StackSizeHistogramNq { get; set; } = [];
 
     /// <summary>
     /// Gets the stack size histogram of the HQ items.
     /// </summary>
     [JsonPropertyName("stackSizeHistogramHQ")]
-    public Dictionary<string, long> StackSizeHistogramHq { get; set; } = new Dictionary<string, long>();
+    public Dictionary<string, long> StackSizeHistogramHq { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the name of the world.
@@ -108,7 +108,7 @@ public class MarketDataCurrent
     /// (cross-world query only) Gets the last upload times for each world.
     /// </summary>
     [JsonPropertyName("worldUploadTimes")]
-    public Dictionary<string, long> WorldUploadTimes { get; set; } = new Dictionary<string, long>();
+    public Dictionary<string, long> WorldUploadTimes { get; set; } = [];
 
     /// <summary>
     /// Gets the total amount of items currently for sale.

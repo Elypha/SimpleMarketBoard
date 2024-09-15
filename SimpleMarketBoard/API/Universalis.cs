@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System;
+using Miosuke;
 
 using SimpleMarketBoard.UniversalisModels;
 
@@ -42,7 +43,7 @@ public class Universalis
         {
             Timeout = TimeSpan.FromSeconds(plugin.Config.RequestTimeout),
         };
-        httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36");
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "SimpleMarketBoard/1.0 (Dalamud; FFXIV)");
     }
 
 
@@ -58,90 +59,73 @@ public class Universalis
         {
             // build url
             var _hq = plugin.Config.UniversalisHqOnly ? "&hq=1" : "";
-            var API_URL = new UriBuilder(
-                $"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings={plugin.Config.UniversalisListings}&entries={plugin.Config.UniversalisEntries}{_hq}"
-            ).Uri.ToString();
+            var API_URL = new UriBuilder($"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings={plugin.Config.UniversalisListings}&entries={plugin.Config.UniversalisEntries}{_hq}").Uri.ToString();
 
             // get response
-            Service.PluginLog.Info($"[Universalis] Fetch: {API_URL}");
-            HttpResponseMessage API_Response = await httpClient.GetAsync(API_URL);
-            API_Response.EnsureSuccessStatusCode();
+            Service.Log.Info($"[Universalis] Fetch: {API_URL}");
+            var response = await httpClient.GetAsync(API_URL);
+            if (response.IsSuccessStatusCode == false)
+            {
+                Service.Log.Warning($"[Universalis] HTTP request not successful: {response.StatusCode}");
+                return new UniversalisResponse { Status = UniversalisResponseStatus.ServerError };
+            }
 
             // decode response
-            var API_ResponseDict = await API_Response.Content.ReadFromJsonAsync<MarketDataCurrent>();
-
-            // validate response
-            if (API_ResponseDict!.ItemId == 0 || API_ResponseDict!.ItemId != gameItem.Id)
+            var data = await response.Content.ReadFromJsonAsync<MarketDataCurrent>();
+            if (data == null)
             {
-                throw new JsonException();
+                Service.Log.Warning($"[Universalis] Parse JSON failed");
+                return new UniversalisResponse { Status = UniversalisResponseStatus.InvalidData };
             }
 
             // update if there's world data
-            var worldOutOfDateDict = new Dictionary<string, long>();
-            if (API_ResponseDict.WorldUploadTimes.Count > 0)
+            var worldUpdatedData = new Dictionary<string, long>();
+            if (data.WorldUploadTimes.Count > 0)
             {
-                var worldUploadTimes = API_ResponseDict.WorldUploadTimes.OrderByDescending(w => w.Value).ToList();
-                foreach (var i in worldUploadTimes ?? new List<KeyValuePair<string, long>>() { })
+                var worldUploadTimes = data.WorldUploadTimes.OrderByDescending(w => w.Value).ToList();
+                foreach (var i in worldUploadTimes ?? [])
                 {
                     var worldRow = plugin.WorldSheet.GetRow(uint.Parse(i.Key));
                     if (worldRow == null) continue;
                     var worldName = worldRow.Name.ToString();
-                    // name = name.Substring(0, Math.Min(4, name.Length));
                     var hours = (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - i.Value) / 1000 / 3600;
-                    // var hoursStr = hours.ToString("0.0");
-                    worldOutOfDateDict.Add(worldName, hours);
+                    worldUpdatedData.Add(worldName, hours);
                 }
             }
             else
             {
-                worldOutOfDateDict.Add(gameItem.TargetRegion, (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - API_ResponseDict.LastUploadTime) / 1000 / 3600);
+                worldUpdatedData.Add(gameItem.TargetRegion, (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - data.LastUploadTime) / 1000 / 3600);
             }
 
-
-            var response = new UniversalisResponse
+            var universalisResponse = new UniversalisResponse
             {
                 Status = UniversalisResponseStatus.Success,
-                ItemId = API_ResponseDict.ItemId,
-                IsCrossWorld = API_ResponseDict.WorldUploadTimes.Count > 0,
-                WorldOutOfDate = worldOutOfDateDict,
-                UnitsForSale = API_ResponseDict.UnitsForSale,
-                AveragePrice = API_ResponseDict.AveragePrice,
-                AveragePriceNq = API_ResponseDict.AveragePriceNq,
-                AveragePriceHq = API_ResponseDict.AveragePriceHq,
-                Velocity = API_ResponseDict.Velocity,
-                VelocityNq = API_ResponseDict.VelocityNq,
-                VelocityHq = API_ResponseDict.VelocityHq,
-                Listings = API_ResponseDict.Listings,
-                Entries = API_ResponseDict.Entries,
+                ItemId = data.ItemId,
+                IsCrossWorld = data.WorldUploadTimes.Count > 0,
+                WorldOutOfDate = worldUpdatedData,
+                UnitsForSale = data.UnitsForSale,
+                AveragePrice = data.AveragePrice,
+                AveragePriceNq = data.AveragePriceNq,
+                AveragePriceHq = data.AveragePriceHq,
+                Velocity = data.Velocity,
+                VelocityNq = data.VelocityNq,
+                VelocityHq = data.VelocityHq,
+                Listings = data.Listings,
+                Entries = data.Entries,
             };
+            Service.Log.Debug($"[Universalis] UniversalisResponse: {JsonSerializer.Serialize(universalisResponse)}");
 
-
-            Service.PluginLog.Debug($"[Universalis] UniversalisResponse: {JsonSerializer.Serialize(response)}");
-
-            return response;
-
-        }
-        catch (HttpRequestException ex)
-        {
-            Service.PluginLog.Warning(ex, $"[Universalis] HTTP request not successful");
-            Service.PluginLog.Debug(ex.Message);
-            return new UniversalisResponse { Status = UniversalisResponseStatus.ServerError };
-        }
-        catch (JsonException ex)
-        {
-            Service.PluginLog.Warning($"[Universalis] Invalid item ID");
-            Service.PluginLog.Debug(ex.Message);
-            return new UniversalisResponse { Status = UniversalisResponseStatus.InvalidItemId };
+            return universalisResponse;
         }
         catch (TaskCanceledException ex)
         {
-            Service.PluginLog.Warning($"[Universalis] HTTP request cancelled by user configured timeout");
-            Service.PluginLog.Debug(ex.Message);
+            Service.Log.Warning($"[Universalis] HTTP request cancelled by user configured timeout");
+            Service.Log.Debug(ex.Message);
             return new UniversalisResponse { Status = UniversalisResponseStatus.UserCancellation };
         }
         catch (Exception ex)
         {
-            Service.PluginLog.Error(ex, $"[Universalis] Unknown error: {ex.Message}");
+            Service.Log.Error(ex, $"[Universalis] Unknown error: {ex.Message}");
             return new UniversalisResponse { Status = UniversalisResponseStatus.UnknownError };
         }
     }
