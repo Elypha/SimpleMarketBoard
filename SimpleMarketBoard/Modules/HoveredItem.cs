@@ -64,11 +64,11 @@ public class HoveredItem
             Service.PluginLog.Verbose($"[UI] ItemID, RealID, RowID: | {thisItemId,7} | {realItemId,7} | {rowid?.RowId,7} |");
 
             // check if keybinding is pressed
-            var isKeybindingPressed = Miosuke.Hotkey.IsActive(plugin.Config.BindingHotkey, !plugin.Config.KeybindingLooseEnabled);
+            var isKeybindingPressed = Miosuke.Hotkey.IsActive(plugin.Config.SearchHotkey, !plugin.Config.SearchHotkeyLoose);
 
-            if (plugin.Config.KeybindingEnabled)
+            if (plugin.Config.SearchHotkeyEnabled)
             {
-                if (plugin.Config.AllowKeybindingAfterHover)
+                if (plugin.Config.SearchHotkeyAfterHover)
                 {
                     if (isKeybindingPressed)
                     {
@@ -109,7 +109,7 @@ public class HoveredItem
 
     public void CheckLastItem()
     {
-        if (plugin.Config.KeybindingEnabled && plugin.Config.AllowKeybindingAfterHover && Miosuke.Hotkey.IsActive(plugin.Config.BindingHotkey, !plugin.Config.KeybindingLooseEnabled))
+        if (plugin.Config.SearchHotkeyEnabled && plugin.Config.SearchHotkeyAfterHover && Miosuke.Hotkey.IsActive(plugin.Config.SearchHotkey, !plugin.Config.SearchHotkeyLoose))
         {
             if (LastItemId != 0)
             {

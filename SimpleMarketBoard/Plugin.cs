@@ -36,7 +36,6 @@ public sealed class Plugin : IDalamudPlugin
     public WindowSystem WindowSystem = new("SimpleMarketBoard");
     public MainWindow MainWindow { get; init; }
     public ConfigWindow ConfigWindow { get; init; }
-    public ChangelogWindow ChangelogWindow { get; init; }
 
     // modules
     public Universalis Universalis { get; set; } = null!;
@@ -66,8 +65,6 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(MainWindow);
         ConfigWindow = new ConfigWindow(this);
         WindowSystem.AddWindow(ConfigWindow);
-        ChangelogWindow = new ChangelogWindow(this);
-        WindowSystem.AddWindow(ChangelogWindow);
 
         // load modules
         Universalis = new Universalis(this);
@@ -108,7 +105,6 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
         MainWindow.Dispose();
         ConfigWindow.Dispose();
-        ChangelogWindow.Dispose();
 
         // unload fonts and data resources
         Axis20.Dispose();
@@ -168,16 +164,16 @@ public sealed class Plugin : IDalamudPlugin
 
     public void OnFrameUpdate(IFramework framework)
     {
-        if (!Config.KeybindingEnabled) return;
-        if (!Miosuke.Hotkey.IsActive(Config.BindingHotkey, !Config.KeybindingLooseEnabled)) return;
+        if (!Config.SearchHotkeyEnabled) return;
+        if (!Miosuke.Hotkey.IsActive(Config.SearchHotkey, !Config.SearchHotkeyLoose)) return;
 
-        if (Config.KeybindingToOpenWindow && !MainWindow.IsOpen && (HoveredItem.HoverItemId != 0))
+        if (Config.WindowHotkeyCanShow && !MainWindow.IsOpen && (HoveredItem.HoverItemId != 0))
         {
             MainWindow.Toggle();
             return;
         }
 
-        if (Config.KeybindingToCloseWindow && MainWindow.IsOpen && (HoveredItem.HoverItemId == 0))
+        if (Config.WindowHotkeyCanHide && MainWindow.IsOpen && (HoveredItem.HoverItemId == 0))
         {
             MainWindow.Toggle();
             return;

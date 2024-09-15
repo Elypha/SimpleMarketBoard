@@ -94,7 +94,7 @@ public class PriceChecker
             ItemCancellationTokenSource.Dispose();
         }
         // +10 to ensure it's not cancelled before the task starts
-        ItemCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(plugin.Config.HoverDelayIn100MS * 100 + 10));
+        ItemCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(plugin.Config.HoverDelayMs * 100 + 10));
 
         // start checking task
         var gameItem = new GameItem();
@@ -140,11 +140,11 @@ public class PriceChecker
         }
 
         // run price check
-        if (plugin.Config.HoverDelayIn100MS > 0)
+        if (plugin.Config.HoverDelayMs > 0)
         {
             Task.Run(async () =>
             {
-                await Task.Delay(plugin.Config.HoverDelayIn100MS * 100, ItemCancellationTokenSource!.Token).ConfigureAwait(false);
+                await Task.Delay(plugin.Config.HoverDelayMs * 100, ItemCancellationTokenSource!.Token).ConfigureAwait(false);
             });
         }
         Check(gameItem);
@@ -258,7 +258,7 @@ public class PriceChecker
 
         if (GameItemCacheList.Count < plugin.Config.MaxCacheItems) return;
 
-        if (plugin.Config.CleanCacheAsYouGo || (!plugin.Config.CleanCacheAsYouGo && !plugin.MainWindow.IsOpen))
+        if (plugin.Config.CleanCacheASAP || (!plugin.Config.CleanCacheASAP && !plugin.MainWindow.IsOpen))
         {
             GameItemCacheList.RemoveRange(
                 plugin.Config.MaxCacheItems - 1,
@@ -273,19 +273,19 @@ public class PriceChecker
     public enum PriceToPrint : uint
     {
         UniversalisAverage = 0,
-        CurrentLow = 1,
-        HistoricalLow = 2,
+        SellingLow = 1,
+        SoldLow = 2,
     }
 
 
     public void SendChatMessage(GameItem gameItem)
     {
         double price;
-        if (plugin.Config.priceToPrint == PriceToPrint.CurrentLow)
+        if (plugin.Config.priceToPrint == PriceToPrint.SellingLow)
         {
             price = gameItem.UniversalisResponse.Listings[0].PricePerUnit;
         }
-        else if (plugin.Config.priceToPrint == PriceToPrint.HistoricalLow)
+        else if (plugin.Config.priceToPrint == PriceToPrint.SoldLow)
         {
             price = gameItem.UniversalisResponse.Entries.OrderBy(entry => entry.PricePerUnit).First().PricePerUnit;
         }

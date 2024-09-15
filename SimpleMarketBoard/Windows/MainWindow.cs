@@ -12,6 +12,7 @@ using System.Linq;
 using System.Numerics;
 using System;
 using Dalamud.Interface.Textures;
+using Miosuke;
 
 
 namespace SimpleMarketBoard;
@@ -156,15 +157,17 @@ public class MainWindow : Window, IDisposable
             var tileToRender = plugin.Config.EnableRecentHistory ? 2 : 1;
             var priceTableHeight = ImGui.GetContentRegionAvail().Y / tileToRender;
 
-            DrawCurrentListingTable(priceTableHeight);
+            DrawCurrentListingTable(priceTableHeight + plugin.Config.soldTableOffset);
 
             if (plugin.Config.EnableRecentHistory)
             {
+                if (plugin.Config.spaceBetweenTables > 0)
+                {
+                    ImGui.Separator();
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.spaceBetweenTables);
+                }
                 // header in between
-                ImGui.Separator();
-                ImGui.Text("History");
-
-                DrawHistoryEntryTable(priceTableHeight - ImGui.GetTextLineHeightWithSpacing());
+                DrawHistoryEntryTable(priceTableHeight);
             }
         }
 
@@ -306,7 +309,7 @@ public class MainWindow : Window, IDisposable
 
         if (ImGui.ImageButton(CurrentItemIcon.GetWrapOrEmpty().ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
         {
-            if (plugin.Config.EnableSearchFromClipboard && Miosuke.Hotkey.IsActive([VirtualKey.MENU], !plugin.Config.KeybindingLooseEnabled))
+            if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
             {
                 var clipboardItemId = ParseItemId(ImGui.GetClipboardText());
                 plugin.PriceChecker.CheckNewAsync(clipboardItemId, false);
@@ -359,7 +362,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PushStyleColor(ImGuiCol.Text, _iconColour);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Splotch}", new Vector2(size, size)))
         {
-            if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.KeybindingLooseEnabled))
+            if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
             {
                 plugin.Config.UniversalisHqOnly = !plugin.Config.UniversalisHqOnly;
             }
@@ -410,21 +413,26 @@ public class MainWindow : Window, IDisposable
         ImGui.BeginChild("col_left current_listings", new Vector2(0, height));
 
         ImGui.Columns(4, "col_left current_listings table");
-        ImGui.SetColumnWidth(0, 70.0f);
-        ImGui.SetColumnWidth(1, 40.0f);
-        ImGui.SetColumnWidth(2, 80.0f);
-        ImGui.SetColumnWidth(3, 80.0f);
+        ImGui.SetColumnWidth(0, 70.0f + plugin.Config.sellingColWidthOffset[0]);
+        ImGui.SetColumnWidth(1, 40.0f + plugin.Config.sellingColWidthOffset[1]);
+        ImGui.SetColumnWidth(2, 80.0f + plugin.Config.sellingColWidthOffset[2]);
+        ImGui.SetColumnWidth(3, 80.0f + plugin.Config.sellingColWidthOffset[3]);
 
         ImGui.Separator();
-        ImGui.Text("Selling");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        ImGui.TextColored(UI.ColourSubtitle, "Selling");
         ImGui.NextColumn();
-        ImGui.Text("Qty");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        ImGui.TextColored(UI.ColourSubtitle, "Q");
         ImGui.NextColumn();
-        ImGui.Text("Total");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        ImGui.TextColored(UI.ColourSubtitle, "Total");
         ImGui.NextColumn();
-        ImGui.Text("World");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        ImGui.TextColored(UI.ColourSubtitle, "World");
         ImGui.NextColumn();
 
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
         ImGui.Separator();
 
         // prepare the data
@@ -457,13 +465,15 @@ public class MainWindow : Window, IDisposable
 
                 // Selling
                 var index = marketDataListings.IndexOf(listing);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
                 if (ImGui.Selectable($"{listing.PricePerUnit}##listing{index}", selectedListing == index, ImGuiSelectableFlags.SpanAllColumns))
                 {
                     selectedListing = index;
                 }
                 ImGui.NextColumn();
 
-                // Qty
+                // Q
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
                 ImGui.Text($"{listing.Quantity:##,###}");
                 ImGui.NextColumn();
 
@@ -471,16 +481,19 @@ public class MainWindow : Window, IDisposable
                 double totalPrice = plugin.Config.TotalIncludeTax
                   ? (listing.PricePerUnit * listing.Quantity) + listing.Tax
                   : listing.PricePerUnit * listing.Quantity;
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
                 ImGui.Text(totalPrice.ToString("N0", CultureInfo.CurrentCulture));
                 ImGui.NextColumn();
 
                 if (isColourPushed) ImGui.PopStyleColor();
 
                 // World
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
                 ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? listing.WorldName : plugin.Config.selectedWorld)}");
                 ImGui.NextColumn();
 
                 // Finish
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
                 ImGui.Separator();
             }
         }
@@ -495,21 +508,26 @@ public class MainWindow : Window, IDisposable
         ImGui.BeginChild("col_left history_entries", new Vector2(0, height));
 
         ImGui.Columns(4, "col_left history_entries table");
-        ImGui.SetColumnWidth(0, 70.0f);
-        ImGui.SetColumnWidth(1, 40.0f);
-        ImGui.SetColumnWidth(2, 80.0f);
-        ImGui.SetColumnWidth(3, 80.0f);
+        ImGui.SetColumnWidth(0, 70.0f + plugin.Config.soldColWidthOffset[0]);
+        ImGui.SetColumnWidth(1, 40.0f + plugin.Config.soldColWidthOffset[1]);
+        ImGui.SetColumnWidth(2, 80.0f + plugin.Config.soldColWidthOffset[2]);
+        ImGui.SetColumnWidth(3, 80.0f + plugin.Config.soldColWidthOffset[3]);
 
         ImGui.Separator();
-        ImGui.Text("Sold");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        ImGui.TextColored(UI.ColourSubtitle, "Sold");
         ImGui.NextColumn();
-        ImGui.Text("Qty");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        ImGui.TextColored(UI.ColourSubtitle, "Q");
         ImGui.NextColumn();
-        ImGui.Text("Date");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        ImGui.TextColored(UI.ColourSubtitle, "Date");
         ImGui.NextColumn();
-        ImGui.Text("World");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        ImGui.TextColored(UI.ColourSubtitle, "World");
         ImGui.NextColumn();
 
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
         ImGui.Separator();
 
         // prepare the data
@@ -531,26 +549,30 @@ public class MainWindow : Window, IDisposable
 
                 // Sold
                 var index = marketDataEntries.IndexOf(entry);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
                 if (ImGui.Selectable($"{entry.PricePerUnit}##history{index}", selectedHistory == index, ImGuiSelectableFlags.SpanAllColumns))
                 {
                     selectedHistory = index;
                 }
                 ImGui.NextColumn();
 
-                // Qty
+                // Q
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
                 ImGui.Text($"{entry.Quantity:##,###}");
                 ImGui.NextColumn();
 
                 // Date
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
                 ImGui.Text($"{DateTimeOffset.FromUnixTimeSeconds(entry.Timestamp).LocalDateTime:MM-dd HH:mm}");
                 ImGui.NextColumn();
 
                 // World
-                ImGui.Text(
-                  $"{(CurrentItem.UniversalisResponse.IsCrossWorld ? entry.WorldName : plugin.Config.selectedWorld)}");
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+                ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? entry.WorldName : plugin.Config.selectedWorld)}");
                 ImGui.NextColumn();
 
                 // Finish
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
                 ImGui.Separator();
 
                 if (entry.Hq) ImGui.PopStyleColor();
@@ -578,7 +600,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PushFont(UiBuilder.IconFont);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Trash}", new Vector2(24, ImGui.GetItemRectSize().Y)))
         {
-            if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.KeybindingLooseEnabled))
+            if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
             {
                 plugin.PriceChecker.GameItemCacheList.Clear();
             }
@@ -604,23 +626,26 @@ public class MainWindow : Window, IDisposable
     {
         ImGui.Columns(2, "col_right world_outdated table");
 
-        ImGui.SetColumnWidth(0, rightColTableWidth - ImGui.CalcTextSize("0000").X - (2 * spacing.X) + plugin.Config.WorldUpdateColWidthOffset[0]);
-        ImGui.SetColumnWidth(1, ImGui.CalcTextSize("0000").X + plugin.Config.WorldUpdateColWidthOffset[1]);
+        // ImGui.SetColumnWidth(0, rightColTableWidth - ImGui.CalcTextSize("0000").X - (2 * spacing.X) + plugin.Config.WorldUpdateColWidthOffset[0]);
+        // ImGui.SetColumnWidth(1, ImGui.CalcTextSize("0000").X + plugin.Config.WorldUpdateColWidthOffset[1]);
+        ImGui.SetColumnWidth(0, ImGui.CalcTextSize("0000").X + plugin.Config.WorldUpdateColWidthOffset[0]);
+        ImGui.SetColumnWidth(1, rightColTableWidth - ImGui.CalcTextSize("0000").X + plugin.Config.WorldUpdateColWidthOffset[1]);
 
         var worldOutOfDateIndex = 0;
         foreach (var i in CurrentItem.WorldOutOfDate)
         {
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.WorldUpdateColPaddingOffset[0]);
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.5f * spacing.Y));
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() - spacing.X);
 
-            ImGui.Text($"{i.Key}");
+            Miosuke.UI.AlignRight($"{(int)i.Value}");
+            ImGui.Text($"{(int)i.Value}");
             ImGui.NextColumn();
 
 
-            Miosuke.UI.AlignRight($"{(int)i.Value}");
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.WorldUpdateColPaddingOffset[1]);
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.5f * spacing.Y));
 
-            ImGui.Text($"{(int)i.Value}");
+            ImGui.Text($"{i.Key}");
             ImGui.NextColumn();
 
             worldOutOfDateIndex += 1;

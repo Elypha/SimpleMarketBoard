@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System;
-using Miosuke.HotkeyExtensions;
+using Miosuke;
 
 
 namespace SimpleMarketBoard;
@@ -16,6 +16,8 @@ namespace SimpleMarketBoard;
 public class ConfigWindow : Window, IDisposable
 {
     private readonly Plugin plugin;
+    private readonly HotkeyUi search_hotkey_helper;
+    private readonly HotkeyUi window_hotkey_helper;
 
     public ConfigWindow(Plugin plugin) : base(
         "SimpleMarketBoard Configuration"
@@ -25,6 +27,8 @@ public class ConfigWindow : Window, IDisposable
         SizeCondition = ImGuiCond.FirstUseEver;
 
         this.plugin = plugin;
+        search_hotkey_helper = new HotkeyUi();
+        window_hotkey_helper = new HotkeyUi();
     }
 
     public override void PreDraw()
@@ -58,527 +62,165 @@ public class ConfigWindow : Window, IDisposable
     {
     }
 
-
-    private string? currHotkeyBoxName;
-    private string? currHotkeyName;
     public List<VirtualKey> NewHotkey = new();
 
 
     public override void Draw()
     {
         var padding = 0.8f;
-        string suffix;
 
-
-        if (ImGui.CollapsingHeader("Features & UI Introduction"))
+        if (ImGui.Button("Open Manual in browser"))
         {
-            ImGui.TextColored(
-                new Vector4(245f, 220f, 80f, 255f) / 255f,
-                "Below is a detailed manual. Read the sections you are interested.\n" +
-                "It covers my design intention and helps you use this plugin to its fullest.\n" +
-                "In the Changelog below you find brief points on what's been recently added."
-            );
-
-            if (ImGui.Button($"Open Changelog Window"))
+            var url = $"https://github.com/Elypha/SimpleMarketBoard#manual";
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url)
             {
-                plugin.ChangelogWindow.Toggle();
-            }
-
-            ImGui.Text("");
-
-            Miosuke.UI.BulletTextList(
-                "Keybinding",
-                "you can configure it below",
-                new List<string> {
-                    "This is intended to cater your preference. By design there are 3 ways to start a check.",
-                    "1. Hover over an item, then press the keybinding.",
-                    "2. Press the keybinding first, then hover over an item.",
-                    "3. Just hover over an item.",
-                    "All these can be configured with an optional delay.",
-                    "With that said, my recommendation in terms of efficiency is to set the delay to 0, and use a simple keybinding like 'Ctrl/Tab'. Then the work flow is to point on an item and press the trigger key (then you get the data).",
-                    "Remember you can search multiple items without waiting for the previous ones to finish. All your query will be added to the cache sequentially.",
-                }
-            );
-
-            Miosuke.UI.BulletTextList(
-                "Item Icon",
-                "on the top left corner",
-                new List<string> {
-                    "· Click: Copy the item name to clipboard.",
-                    "· Alt + Click: Search for a new item based on the text from your clipboard. It should be the item's full name. If you use another plugin that allows you Ctrl+C to copy the item name, this feature can be useful.",
-                }
-            );
-
-            Miosuke.UI.BulletTextList(
-                "Item Name",
-                "to the right of the Item Icon",
-                new List<string> {
-                    "The item name is followed by an orange loading icon when there are still requests going on.",
-                    "This place is also used to display the status of the market data query request.",
-                    "If it says 'timedout' or 'failed', just use the Refresh button and usually it will be fine.",
-                }
-            );
-
-            Miosuke.UI.BulletTextList(
-                "Refresh Button",
-                "the two-arrow button under the item name",
-                new List<string> {
-                    "· Click: (Force) Refresh the market data of the current item, or the selected item on the History Panel.",
-                }
-            );
-
-            Miosuke.UI.BulletTextList(
-                "HQ Filter Button",
-                "the star button under the item name",
-                new List<string> {
-                    "HQ items are by default coloured in orange in the market data table. You can further filter the results by",
-                    "· Click: Toggle whether to show only HQ items in the table. When enabled the icon will be coloured in orange.",
-                    "· Ctrl + Click: Toggle whether to request only HQ items from the server. When enabled the icon will be coloured in cyan. This has a higher priority. It can be helpful when you are looking for HQ items but the table is flooded with low-priced NQs, e.g., Commanding Craftsman's Draught.",
-                }
-            );
-
-            Miosuke.UI.BulletTextList(
-                "History Panel",
-                "on the right side, the 1st button from left",
-                new List<string> {
-                    "Items you searched are stored in the cache. If this button is on (by default) you will see a list under it. You can click in the list to quick review them without having to wait for the request again.",
-                    "I'm still planning what to present in that area when this panel is switched off.",
-                }
-            );
-
-            Miosuke.UI.BulletTextList(
-                "Delete Button",
-                "on the right side, the 2nd button from left",
-                new List<string> {
-                    "· Click: Remove the current item from the History Panel.",
-                    "· Ctrl + Click: Remove all items from the History Panel.",
-                }
-            );
-
-            Miosuke.UI.BulletTextList(
-                "Config Button",
-                "on the right side, the 3rd button from left",
-                new List<string> {
-                    "· Click: Show/Hide the configuration window.",
-                }
-            );
-
-            Miosuke.UI.BulletTextList(
-                "Market Data Table",
-                "on the left bottom",
-                new List<string> {
-                    "· Selling and history prices are tax excluded (i.e., the price as you see in the game).",
-                    "This serves trading and comparison purposes. There's an option to include tax in the total price which gives you a rough idea of how much you will pay.",
-                    "· The price can be coloured in red if it's higher than the vendor price from NPC (enable via option, takes priority over HQ colouring).",
-                }
-            );
-
-            Miosuke.UI.BulletTextList(
-                "Popularity",
-                "on the right side, the one-line text in between the two tables",
-                new List<string> {
-                    "· This number incicates how many items are sold in a certain period of time.",
-                    "It is calculated based on the data per request, so theoretically the more data you require, the more accurate it is. To help reduce the impact of the API server this plugin limits the size to 75. Therefore, for popular items this number may be sampled from a much shorter period of time and thus this number is not proportional across items. However, it's still true that the higher the number, the more popular the item is.",
-                }
-            );
-
-            Miosuke.UI.BulletTextList(
-                "Update Information per World",
-                "on the right side, the table under the Popularity",
-                new List<string> {
-                    "· The table shows how long ago the market data was updated for each world in hours.",
-                    "This is to help you understand how fresh the data is. You can check any world on your decision but you are always encouraged to visit the least updated worlds so that the public data can get updated which benefits us all.",
-                }
-            );
-
-            ImGui.Text("");
-
-            Miosuke.UI.BulletTextList(
-                "PS",
-                null,
-                new List<string> {
-                    "This plugin is still in active development.",
-                    "If you have any suggestions or issues please let me know on Discord (XIVLauncher/plugin-help-forum/Simple Market Board) or GitHub (Elypha/SimpleMarketBoard). I appreciate it!",
-                    "Elypha"
-                }
-            );
-
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X / 2 - ImGui.CalcTextSize("- END -").X / 2);
-            ImGui.TextColored(Miosuke.UI.ColourKhaki, "- END -");
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (4 * ImGui.GetTextLineHeight()));
+                UseShellExecute = true,
+            });
         }
+        ImGuiComponents.HelpMarker(
+            "Click to open in your browser.\n" +
+            "Check the 'Manual' section for a detailed introduction of all the features and how to use them."
+        );
 
-        // ----------------- General -----------------
-        suffix = $"###{plugin.Name}[General]";
-        ImGui.TextColored(Miosuke.UI.ColourKhaki, "General");
+        // General
+        DrawGeneral(padding);
+
+        // Data
+        DrawData(padding);
+
+        // UI
+        DrawUi(padding);
+    }
+
+    private void DrawGeneral(float padding)
+    {
+        // setup
+        // float table_width = ImGui.GetWindowSize().X;
+        // float table_height = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y * 2;
+        // float col_name_width = ImGui.CalcTextSize("　Action name translation　").X + 2 * ImGui.GetStyle().ItemSpacing.X;
+        // float col_value_width = 150.0f;
+        // float col_value_content_width = 120.0f;
+        var suffix = $"###{plugin.Name}[General]";
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
+        ImGui.TextColored(UI.ColourTitle, "General");
         ImGui.Separator();
 
+        ImGui.TextColored(UI.ColourSubtitle, "Search");
 
-        // HoverDelayIn100MS
+        // HoverDelayMs
         ImGui.Text("Hover delay");
+        ImGuiComponents.HelpMarker("you hover over an item > wait for this time > plugin starts to fetch the market data.");
         ImGui.SameLine();
 
-        var HoverDelayIn100MS = plugin.Config.HoverDelayIn100MS;
-        ImGui.SetNextItemWidth(200);
-        if (ImGui.SliderInt($"{suffix}HoverDelayIn100MS", ref HoverDelayIn100MS, 0, 20, $"{HoverDelayIn100MS * 100} ms"))
+        var HoverDelayMs = plugin.Config.HoverDelayMs;
+        ImGui.SetNextItemWidth(250);
+        if (ImGui.SliderInt($"{suffix}HoverDelayMS", ref HoverDelayMs, 0, 2000, $"{HoverDelayMs} ms"))
         {
-            plugin.Config.HoverDelayIn100MS = HoverDelayIn100MS;
+            plugin.Config.HoverDelayMs = HoverDelayMs;
             plugin.Config.Save();
         }
-        ImGuiComponents.HelpMarker("How long to wait in ms, after you hover over an item, before the plugin starts to check the market data.");
 
 
-        // MaxCacheItems
-        ImGui.Text("Cache size");
+        // SearchHotkeyEnabled
+        var SearchHotkeyEnabled = plugin.Config.SearchHotkeyEnabled;
+        if (ImGui.Checkbox($"Require a search hotkey{suffix}SearchHotkeyEnabled", ref SearchHotkeyEnabled))
+        {
+            plugin.Config.SearchHotkeyEnabled = SearchHotkeyEnabled;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: You need to press the hotkey before you hover over an item to get the market data."
+        );
         ImGui.SameLine();
-
-        var MaxCacheItems = plugin.Config.MaxCacheItems;
-        ImGui.SetNextItemWidth(200);
-        if (ImGui.SliderInt($"{suffix}MaxCacheItems", ref MaxCacheItems, 1, 30, $"{MaxCacheItems} items"))
+        var SearchHotkey = plugin.Config.SearchHotkey;
+        if (search_hotkey_helper.DrawConfigUi("SearchHotkey", ref SearchHotkey, 100))
         {
-            plugin.Config.MaxCacheItems = MaxCacheItems;
+            plugin.Config.SearchHotkey = SearchHotkey;
             plugin.Config.Save();
         }
-        ImGuiComponents.HelpMarker("How many items you want to keep in cache. Items more than this number will be removed from the oldest when you close the window.");
 
-
-
-
-        // EnableRecentHistory
-        var EnableRecentHistory = plugin.Config.EnableRecentHistory;
-        if (ImGui.Checkbox($"Include recent history entries{suffix}EnableRecentHistory", ref EnableRecentHistory))
-        {
-            plugin.Config.EnableRecentHistory = EnableRecentHistory;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: Display recent history entries under current listings.\n" +
-            "Disable: The above will not happen."
-        );
-
-
-        // TotalIncludeTax
-        var TotalIncludeTax = plugin.Config.TotalIncludeTax;
-        if (ImGui.Checkbox($"Total price include tax{suffix}TotalIncludeTax", ref TotalIncludeTax))
-        {
-            plugin.Config.TotalIncludeTax = TotalIncludeTax;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: Total price will include tax.\n" +
-            "Disable: The above will not happen."
-        );
-
-        // MarkHigherThanVendor
-        var MarkHigherThanVendor = plugin.Config.MarkHigherThanVendor;
-        if (ImGui.Checkbox($"Colour red if higher than vendor{suffix}MarkHigherThanVendor", ref MarkHigherThanVendor))
-        {
-            plugin.Config.MarkHigherThanVendor = MarkHigherThanVendor;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: The listing will be coloured in red if it sells higher than vendor NPC in game.\n" +
-            "Disable: The above will not happen."
-        );
-
-        // CleanCacheAsYouGo
-        var CleanCacheAsYouGo = plugin.Config.CleanCacheAsYouGo;
-        if (ImGui.Checkbox($"Clean cache ASAP{suffix}CleanCacheAsYouGo", ref CleanCacheAsYouGo))
-        {
-            plugin.Config.CleanCacheAsYouGo = CleanCacheAsYouGo;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: The cache clean will also run right after a new one comes in.\n" +
-            "Disable: The above will not happen."
-        );
-
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
-
-
-
-        // ----------------- Keybinding -----------------
-        suffix = $"###{plugin.Name}[Keybinding]";
-        ImGui.TextColored(Miosuke.UI.ColourKhaki, "Key bindings");
-        ImGui.Separator();
-
-
-        // KeybindingEnabled
-        var KeybindingEnabled = plugin.Config.KeybindingEnabled;
-        if (ImGui.Checkbox($"Use a keybinding{suffix}KeybindingEnabled", ref KeybindingEnabled))
-        {
-            plugin.Config.KeybindingEnabled = KeybindingEnabled;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: You need to press the keybinding before you hover over an item to get the market data.\n" +
-            "Disable: Pressing a keybinding will not be required."
-        );
-
-
-        // KeybindingLooseEnabled
-        var KeybindingLooseEnabled = plugin.Config.KeybindingLooseEnabled;
-        if (ImGui.Checkbox($"Loose match keybinding{suffix}KeybindingLooseEnabled", ref KeybindingLooseEnabled))
-        {
-            plugin.Config.KeybindingLooseEnabled = KeybindingLooseEnabled;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: The hotkey will work no matter other keys are pressed or not. For example, you can press the hotkey while you are already pressing W (walk).\n" +
-            "Disable: Your hotkey is matched strictly. It won't work if any other keys are pressed."
-        );
-
-
-        // AllowKeybindingAfterHover
-        var AllowKeybindingAfterHover = plugin.Config.AllowKeybindingAfterHover;
-        if (ImGui.Checkbox($"Allow keybinding after hover{suffix}AllowKeybindingAfterHover", ref AllowKeybindingAfterHover))
-        {
-            plugin.Config.AllowKeybindingAfterHover = AllowKeybindingAfterHover;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: In addition, you can also hover over an item first, then press the keybinding to get the market data of it.\n" +
-            "Disable: The above will not work."
-        );
-
-
-        // BindingHotkey
-        ImGui.Text("Check market data");
+        // SearchHotkeyAfterHover
+        ImGui.Text("┗");
         ImGui.SameLine();
-
-        var strBindingHotkey = string.Join("+", plugin.Config.BindingHotkey.Select(k => k.GetKeyName()));
-
-        if (currHotkeyName == "BindingHotkey")
+        var SearchHotkeyAfterHover = plugin.Config.SearchHotkeyAfterHover;
+        if (ImGui.Checkbox($"Hotkey after hover also works{suffix}SearchHotkeyAfterHover", ref SearchHotkeyAfterHover))
         {
-            if (ImGui.GetIO().KeyAlt && !NewHotkey.Contains(VirtualKey.MENU)) NewHotkey.Add(VirtualKey.MENU);
-            if (ImGui.GetIO().KeyShift && !NewHotkey.Contains(VirtualKey.SHIFT)) NewHotkey.Add(VirtualKey.SHIFT);
-            if (ImGui.GetIO().KeyCtrl && !NewHotkey.Contains(VirtualKey.CONTROL)) NewHotkey.Add(VirtualKey.CONTROL);
-
-            for (var k = 0; k < ImGui.GetIO().KeysDown.Count && k < 160; k++)
-            {
-                if (ImGui.GetIO().KeysDown[k])
-                {
-                    if (!NewHotkey.Contains((VirtualKey)k))
-                    {
-                        if ((VirtualKey)k == VirtualKey.ESCAPE)
-                        {
-                            currHotkeyName = null;
-                            NewHotkey.Clear();
-                            currHotkeyBoxName = null;
-                            break;
-                        }
-                        NewHotkey.Add((VirtualKey)k);
-                    }
-                }
-            }
-
-            NewHotkey.Sort();
-            strBindingHotkey = string.Join("+", NewHotkey.Select(k => k.GetKeyName()));
-        }
-
-        if (currHotkeyName == "BindingHotkey")
-        {
-            ImGui.PushStyleColor(ImGuiCol.Border, 0xFF00A5FF);
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 2);
-        }
-
-        ImGui.SetNextItemWidth(150);
-        ImGui.InputText($"{suffix}BindingHotkey-input-init", ref strBindingHotkey, 100, ImGuiInputTextFlags.ReadOnly);
-        var active = ImGui.IsItemActive();
-        if (currHotkeyName == "BindingHotkey")
-        {
-
-            ImGui.PopStyleColor(1);
-            ImGui.PopStyleVar();
-
-            if (currHotkeyBoxName != "BindingHotkey")
-            {
-                ImGui.SetKeyboardFocusHere(-1);
-                currHotkeyBoxName = "BindingHotkey";
-            }
-            else
-            {
-                ImGui.SameLine();
-                if (ImGui.Button(NewHotkey.Count > 0 ? $"Confirm{suffix}BindingHotkey-button-confirm" : $"Cancel{suffix}BindingHotkey-button-cancel"))
-                {
-                    currHotkeyName = null;
-                    if (NewHotkey.Count > 0) plugin.Config.BindingHotkey = NewHotkey.ToArray();
-                    plugin.Config.Save();
-                    NewHotkey.Clear();
-                }
-                else
-                {
-                    if (!active)
-                    {
-                        currHotkeyBoxName = null;
-                        currHotkeyName = null;
-                        if (NewHotkey.Count > 0) plugin.Config.BindingHotkey = NewHotkey.ToArray();
-                        plugin.Config.Save();
-                        NewHotkey.Clear();
-                    }
-                }
-            }
-        }
-        else
-        {
-            ImGui.SameLine();
-            if (ImGui.Button($"Set Keybinding{suffix}BindingHotkey-button-change"))
-            {
-                currHotkeyName = "BindingHotkey";
-            }
-        }
-        ImGuiComponents.HelpMarker(
-            "Press the button to set a keybinding. Press ESC to cancel."
-        );
-
-
-        // KeybindingToOpenWindow
-        var KeybindingToOpenWindow = plugin.Config.KeybindingToOpenWindow;
-        if (ImGui.Checkbox($"Keybinding can open main window{suffix}KeybindingToOpenWindow", ref KeybindingToOpenWindow))
-        {
-            plugin.Config.KeybindingToOpenWindow = KeybindingToOpenWindow;
+            plugin.Config.SearchHotkeyAfterHover = SearchHotkeyAfterHover;
             plugin.Config.Save();
         }
         ImGuiComponents.HelpMarker(
-            "Enable: If you choose to use a keybinding, now the main window will show up automatically when you press the keybinding to check an item\n" +
-            "Disable: The above will not work."
+            "Enable: In addition, you can also hover over an item first, then press the keybinding to get the market data of it."
         );
 
-        // KeybindingToCloseWindow
-        var KeybindingToCloseWindow = plugin.Config.KeybindingToCloseWindow;
-        if (ImGui.Checkbox($"Keybinding can close main window{suffix}KeybindingToCloseWindow", ref KeybindingToCloseWindow))
-        {
-            plugin.Config.KeybindingToCloseWindow = KeybindingToCloseWindow;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: If you choose to use a keybinding, now the main window will close when you press the keybinding without hovering an item\n" +
-            "Disable: The above will not work."
-        );
-
-
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
-
-
-        // ----------------- API -----------------
-        suffix = $"###{plugin.Name}[API]";
-        ImGui.TextColored(Miosuke.UI.ColourKhaki, "API settings");
-        ImGui.Separator();
-
-
-        // RequestTimeout
-        ImGui.Text("Request timeout");
+        // SearchHotkeyLoose
+        ImGui.Text("┗");
         ImGui.SameLine();
-        var RequestTimeout = plugin.Config.RequestTimeout;
-        ImGui.SetNextItemWidth(150);
-        if (ImGui.InputInt($"seconds{suffix}RequestTimeout", ref RequestTimeout))
+        var SearchHotkeyLoose = plugin.Config.SearchHotkeyLoose;
+        if (ImGui.Checkbox($"Loose match{suffix}SearchHotkeyLoose", ref SearchHotkeyLoose))
         {
-            plugin.Config.RequestTimeout = RequestTimeout;
-            plugin.Universalis.ReloadHttpClient();
+            plugin.Config.SearchHotkeyLoose = SearchHotkeyLoose;
             plugin.Config.Save();
         }
         ImGuiComponents.HelpMarker(
-            "How long to wait in seconds, before the plugin gives up on the market data query.\n" +
-            "Please note that query the whole region (e.g., Japan) may take longer time, so please set a reasonable value."
-            );
+            "Enable: The hotkey will work no matter other keys are pressed or not. For example, you can trigger the hotkey while you are pressing W (to walk).\n" +
+            "Disable: Your hotkey is checked strictly. It won't work if any extra keys are pressed."
+        );
 
 
-        // UniversalisListings
-        ImGui.Text("Current listings to request");
+        ImGui.TextColored(UI.ColourSubtitle, "Data window");
+
+        // WindowHotkeyEnabled
+        var WindowHotkeyEnabled = plugin.Config.WindowHotkeyEnabled;
+        if (ImGui.Checkbox($"Use a window hotkey{suffix}WindowHotkeyEnabled", ref WindowHotkeyEnabled))
+        {
+            plugin.Config.WindowHotkeyEnabled = WindowHotkeyEnabled;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: You can use a hotkey to show/hide the plugin window."
+        );
         ImGui.SameLine();
-        var UniversalisListings = plugin.Config.UniversalisListings;
-        ImGui.SetNextItemWidth(150);
-        if (ImGui.InputInt($"{suffix}UniversalisListings", ref UniversalisListings))
+        var WindowHotkey = plugin.Config.WindowHotkey;
+        if (window_hotkey_helper.DrawConfigUi("WindowHotkey", ref WindowHotkey, 100))
         {
-            plugin.Config.UniversalisListings = UniversalisListings;
+            plugin.Config.WindowHotkey = WindowHotkey;
             plugin.Config.Save();
         }
-        ImGuiComponents.HelpMarker(
-            "How many listings to request from Universalis.\n" +
-            "Please set a reasonable value. Default is 70.\n"
-            );
 
-
-        // UniversalisEntries
-        ImGui.Text("Historical entries to request");
+        // WindowHotkeyCanShow
+        ImGui.Text("┗");
         ImGui.SameLine();
-        var UniversalisEntries = plugin.Config.UniversalisEntries;
-        ImGui.SetNextItemWidth(150);
-        if (ImGui.InputInt($"{suffix}UniversalisEntries", ref UniversalisEntries))
+        var WindowHotkeyCanShow = plugin.Config.WindowHotkeyCanShow;
+        if (ImGui.Checkbox($"... to show the window{suffix}WindowHotkeyCanShow", ref WindowHotkeyCanShow))
         {
-            plugin.Config.UniversalisEntries = UniversalisEntries;
+            plugin.Config.WindowHotkeyCanShow = WindowHotkeyCanShow;
             plugin.Config.Save();
         }
         ImGuiComponents.HelpMarker(
-            "How many historical entries to request from Universalis.\n" +
-            "Please set a reasonable value. Default is 70.\n" +
-            "The more you request, the more accurate the popularity number is."
-            );
+            "Enable: the hotkey will bring up the main window, if it's not already shown.\n" +
+            "Disable: the hotkey will not be able to show the main window."
+        );
 
-
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
-
-
-        // ----------------- UI -----------------
-        suffix = $"###{plugin.Name}[UI]";
-        ImGui.TextColored(Miosuke.UI.ColourKhaki, "UI settings");
-        ImGui.Separator();
-
-
-        // EnableTheme
-        var EnableTheme = plugin.Config.EnableTheme;
-        if (ImGui.Checkbox($"Enable bundled theme{suffix}EnableTheme", ref EnableTheme))
+        // WindowHotkeyCanHide
+        ImGui.Text("┗");
+        ImGui.SameLine();
+        var WindowHotkeyCanHide = plugin.Config.WindowHotkeyCanHide;
+        if (ImGui.Checkbox($"... to hide the window{suffix}WindowHotkeyCanHide", ref WindowHotkeyCanHide))
         {
-            plugin.Config.EnableTheme = EnableTheme;
+            plugin.Config.WindowHotkeyCanHide = WindowHotkeyCanHide;
             plugin.Config.Save();
         }
         ImGuiComponents.HelpMarker(
-            "Enable: A bundled theme will apply to this plugin so that it can be more compact and compatible.\n" +
-            "Disable: Your own (default) dalamud theme will be used."
+            "Enable: the hotkey will hide the main window, if it's already shown.\n" +
+            "Disable: the hotkey will not be able to hide the main window."
         );
 
 
-        // EnableSearchFromClipboard
-        var EnableSearchFromClipboard = plugin.Config.EnableSearchFromClipboard;
-        if (ImGui.Checkbox($"Enable search from clipboard{suffix}EnableSearchFromClipboard", ref EnableSearchFromClipboard))
-        {
-            plugin.Config.EnableSearchFromClipboard = EnableSearchFromClipboard;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: When you hold 'Alt' and left-click the item icon, the plugin will use the item name from your clipboard and fetch its data.\n" +
-            "Disable: The above will not happen."
-        );
 
-
-        // EnableChatLog
-        var EnableChatLog = plugin.Config.EnableChatLog;
-        if (ImGui.Checkbox($"Print to Chat{suffix}EnableChatLog", ref EnableChatLog))
-        {
-            plugin.Config.EnableChatLog = EnableChatLog;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: Your query will print to your game chat (make sure you select the right channel so that only you can see it).\n" +
-            "Disable: The above will not happen."
-        );
-
-
-        // EnableToastLog
-        var EnableToastLog = plugin.Config.EnableToastLog;
-        if (ImGui.Checkbox($"Print to Toast{suffix}EnableToastLog", ref EnableToastLog))
-        {
-            plugin.Config.EnableToastLog = EnableToastLog;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: Your query will print to your game toast.\n" +
-            "Disable: The above will not happen."
-        );
-
+        ImGui.TextColored(UI.ColourSubtitle, "Notification");
 
         // priceToPrint
-        ImGui.Text("Price data to print");
+        ImGui.Text("Use the price of");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(200);
         if (ImGui.BeginCombo($"{suffix}priceToPrint", plugin.Config.priceToPrint.ToString()))
@@ -595,16 +237,28 @@ public class ConfigWindow : Window, IDisposable
             ImGui.EndCombo();
         }
         ImGuiComponents.HelpMarker(
-            "Which price data you want to print to your Chat/Toast log.\n" +
-            "PS UniversalisAverage is an original value returned from Universalis by their algorithm."
+            "Which price you want to use for the print.\n" +
+            "PS UniversalisAverage is directly from Universalis by their algorithm."
         );
 
+        // EnableChatLog
+        var EnableChatLog = plugin.Config.EnableChatLog;
+        if (ImGui.Checkbox($"Print to Chat log{suffix}EnableChatLog", ref EnableChatLog))
+        {
+            plugin.Config.EnableChatLog = EnableChatLog;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: Log the result to your game chat.\n" +
+            "Make sure you select the right channel so that only you can see it."
+        );
 
         // ChatLogChannel
-        ImGui.Text("Channel to print");
+        ImGui.Text("┗");
+        ImGui.SameLine();
+        ImGui.Text("... in channel");
         ImGui.SameLine();
         var ChatLogChannel = plugin.Config.ChatLogChannel;
-        // ImGui.SetNextItemWidth(ImGui.GetWindowSize().X / 3);
         ImGui.SetNextItemWidth(200);
         if (ImGui.BeginCombo($"{suffix}ChatLogChannel", ChatLogChannel.ToString()))
         {
@@ -616,63 +270,331 @@ public class ConfigWindow : Window, IDisposable
                     plugin.Config.Save();
                 }
             }
-
             ImGui.EndCombo();
         }
         ImGuiComponents.HelpMarker(
-            "Which in-game chat channel you want to print your query to.\n" +
-            "PS \"None\" is also a channel name."
+            "The chat channel to print the result.\n" +
+            "PS 'None' is also a name of a channel."
         );
 
 
-        // rightColWidth
-        ImGui.Text("Main window right panel width");
+        // EnableToastLog
+        var EnableToastLog = plugin.Config.EnableToastLog;
+        if (ImGui.Checkbox($"Print to Toast{suffix}EnableToastLog", ref EnableToastLog))
+        {
+            plugin.Config.EnableToastLog = EnableToastLog;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: The result will print in common toast."
+        );
+
+    }
+
+
+    private void DrawData(float padding)
+    {
+        // setup
+        float table_width = ImGui.GetWindowSize().X;
+        float table_height = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y * 2;
+        float col_name_width = ImGui.CalcTextSize("　Selling records numbers　").X + 2 * ImGui.GetStyle().ItemSpacing.X;
+        float col_value_width = 150.0f;
+        float col_value_content_width = 120.0f;
+        var suffix = $"###{plugin.Name}[Data]";
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
+        ImGui.TextColored(UI.ColourTitle, "Data");
+        ImGui.Separator();
+
+
+        // TotalIncludeTax
+        var TotalIncludeTax = plugin.Config.TotalIncludeTax;
+        if (ImGui.Checkbox($"Include tax in total price{suffix}TotalIncludeTax", ref TotalIncludeTax))
+        {
+            plugin.Config.TotalIncludeTax = TotalIncludeTax;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: Total price will include tax, i.e., how much you will pay in fact.\n" +
+            "Disable: Total price will simply be amount*price_per_unit."
+        );
+
+
+        // MarkHigherThanVendor
+        var MarkHigherThanVendor = plugin.Config.MarkHigherThanVendor;
+        if (ImGui.Checkbox($"Red if higher than vendor{suffix}MarkHigherThanVendor", ref MarkHigherThanVendor))
+        {
+            plugin.Config.MarkHigherThanVendor = MarkHigherThanVendor;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: A record will be in red if the price is higher than vendor NPC."
+        );
+
+        ImGui.TextColored(UI.ColourSubtitle, "Cache");
+
+        // MaxCacheItems
+        ImGui.Text("Cached items");
+        ImGuiComponents.HelpMarker(
+            "How many items you want to keep in cache.\n" +
+            "Cache clean will run when you close the window, and items more than this number will be removed from the oldest."
+        );
         ImGui.SameLine();
+
+        var MaxCacheItems = plugin.Config.MaxCacheItems;
+        ImGui.SetNextItemWidth(250);
+        if (ImGui.SliderInt($"{suffix}MaxCacheItems", ref MaxCacheItems, 1, 50, $"{MaxCacheItems} items"))
+        {
+            plugin.Config.MaxCacheItems = MaxCacheItems;
+            plugin.Config.Save();
+        }
+
+        // CleanCacheASAP
+        var CleanCacheASAP = plugin.Config.CleanCacheASAP;
+        if (ImGui.Checkbox($"Clean cache ASAP{suffix}CleanCacheASAP", ref CleanCacheASAP))
+        {
+            plugin.Config.CleanCacheASAP = CleanCacheASAP;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: Cache clean will also run immediately when a new item is added."
+        );
+
+        ImGui.TextColored(UI.ColourSubtitle, "Universalis");
+
+
+        ImGui.BeginChild("table DrawData Universalis", new Vector2(table_width, table_height * 3), false);
+        ImGui.Columns(2);
+        ImGui.SetColumnWidth(0, col_name_width);
+        ImGui.SetColumnWidth(1, col_value_width);
+
+        // RequestTimeout
+        ImGui.TextColored(UI.ColourText, "　Request timeout");
+        ImGui.NextColumn();
+        var RequestTimeout = plugin.Config.RequestTimeout;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputInt($"{suffix}RequestTimeout", ref RequestTimeout))
+        {
+            plugin.Config.RequestTimeout = RequestTimeout;
+            plugin.Universalis.ReloadHttpClient();
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "How long to wait in seconds, before the plugin gives up a web request if it's not finished.\n" +
+            "Search on the whole region (e.g., Japan) or during peak times can take notably longer time. Please use a reasonable value.\n" +
+            "Default: 20."
+        );
+        ImGui.NextColumn();
+
+        // UniversalisListings
+        ImGui.TextColored(UI.ColourText, "　Selling records numbers");
+        ImGui.NextColumn();
+        var UniversalisListings = plugin.Config.UniversalisListings;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputInt($"{suffix}UniversalisListings", ref UniversalisListings))
+        {
+            plugin.Config.UniversalisListings = UniversalisListings;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "How many lines of selling records to request from Universalis.\n" +
+            "More results take longer time to search. Please use a reasonable value.\n" +
+            "Default: 70."
+        );
+        ImGui.NextColumn();
+
+        // UniversalisEntries
+        ImGui.TextColored(UI.ColourText, "　Sold records numbers");
+        ImGui.NextColumn();
+        var UniversalisEntries = plugin.Config.UniversalisEntries;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputInt($"{suffix}UniversalisEntries", ref UniversalisEntries))
+        {
+            plugin.Config.UniversalisEntries = UniversalisEntries;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "How many lines of sold records to request from Universalis.\n" +
+            "The more you request, the more accurate the Popularity is.\n" +
+            "More results take longer time to search. Please set a reasonable value.\n" +
+            "Default: 70."
+        );
+        ImGui.NextColumn();
+
+        ImGui.Columns(1);
+        ImGui.EndChild();
+    }
+
+
+    private void DrawUi(float padding)
+    {
+        // setup
+        float table_width = ImGui.GetWindowSize().X;
+        float table_height = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y * 2;
+        float col_name_width = ImGui.CalcTextSize("　Selling records numbers　").X + 2 * ImGui.GetStyle().ItemSpacing.X;
+        float col_value_width = 150.0f;
+        float col_value_content_width = 120.0f;
+        var suffix = $"###{plugin.Name}[UI]";
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
+        ImGui.TextColored(UI.ColourTitle, "UI");
+        ImGui.Separator();
+
+
+        // EnableTheme
+        var EnableTheme = plugin.Config.EnableTheme;
+        if (ImGui.Checkbox($"Use bundled theme{suffix}EnableTheme", ref EnableTheme))
+        {
+            plugin.Config.EnableTheme = EnableTheme;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: Use a bundled theme (more compact and compatible) for this plugin.\n" +
+            "Disable: Use your current Dalamud theme."
+        );
+
+
+        // EnableRecentHistory
+        var EnableRecentHistory = plugin.Config.EnableRecentHistory;
+        if (ImGui.Checkbox($"Show table of sold records (history){suffix}EnableRecentHistory", ref EnableRecentHistory))
+        {
+            plugin.Config.EnableRecentHistory = EnableRecentHistory;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: Display the table of sold records under selling records.\n" +
+            "Disable: Display selling records only."
+        );
+
+
+        // soldTableOffset
+        ImGui.Text("┗");
+        ImGui.SameLine();
+        ImGui.Text("with Y offset");
+        ImGui.SameLine();
+        var soldTableOffset = plugin.Config.soldTableOffset;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputInt($"{suffix}soldTableOffset", ref soldTableOffset))
+        {
+            plugin.Config.soldTableOffset = soldTableOffset;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "For sold table, the new position Y' = Y + offset."
+        );
+
+
+        // spaceBetweenTables
+        ImGui.Text("┗");
+        ImGui.SameLine();
+        ImGui.Text("with space between tables");
+        ImGui.SameLine();
+        var spaceBetweenTables = plugin.Config.spaceBetweenTables;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputFloat($"{suffix}spaceBetweenTables", ref spaceBetweenTables))
+        {
+            if (spaceBetweenTables < 0) spaceBetweenTables = 0;
+            plugin.Config.spaceBetweenTables = spaceBetweenTables;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "The space between the selling table and the sold table.\n" +
+            "0 means no space, and the two tables are sticked together."
+        );
+
+
+        ImGui.TextColored(UI.ColourSubtitle, "Position Offset");
+
+
+        ImGui.BeginChild("table DrawUi Position Offset", new Vector2(table_width, table_height * 4), false);
+        ImGui.Columns(2);
+        ImGui.SetColumnWidth(0, col_name_width);
+        ImGui.SetColumnWidth(1, col_value_width);
+
+
+        // tableRowHeightOffset
+        ImGui.Text("Table row height");
+        ImGui.NextColumn();
+        var tableRowHeightOffset = plugin.Config.tableRowHeightOffset;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputFloat($"{suffix}tableRowHeightOffset", ref tableRowHeightOffset))
+        {
+            plugin.Config.tableRowHeightOffset = tableRowHeightOffset;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker("Offset the height of each row in the table. New height H' = H + offset.");
+        ImGui.NextColumn();
+
+
+        // sellingColWidthOffset
+        ImGui.Text("Selling column width");
+        ImGui.NextColumn();
+        var sellingColWidthOffset = plugin.Config.sellingColWidthOffset;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputInt4($"{suffix}sellingColWidthOffset", ref sellingColWidthOffset[0]))
+        {
+            plugin.Config.sellingColWidthOffset = sellingColWidthOffset;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker("Offset the width of each column in the table. New width W' = W + offset.");
+        ImGui.NextColumn();
+
+
+        // soldColWidthOffset
+        ImGui.Text("Sold column width");
+        ImGui.NextColumn();
+        var soldColWidthOffset = plugin.Config.soldColWidthOffset;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputInt4($"{suffix}soldColWidthOffset", ref soldColWidthOffset[0]))
+        {
+            plugin.Config.soldColWidthOffset = soldColWidthOffset;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker("Offset the width of each column in the table. New width W' = W + offset.");
+        ImGui.NextColumn();
+
+
+        // rightColWidth
+        ImGui.Text("Right panel width");
+        ImGui.NextColumn();
         var rightColWidth = plugin.Config.rightColWidth;
-        ImGui.SetNextItemWidth(150);
-        if (ImGui.InputInt($"px{suffix}rightColWidth", ref rightColWidth))
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputInt($"{suffix}rightColWidth", ref rightColWidth))
         {
             plugin.Config.rightColWidth = rightColWidth;
             plugin.Config.Save();
         }
-        ImGuiComponents.HelpMarker("The width of the column on the right of the main window.");
+        ImGuiComponents.HelpMarker("The width of the panel on the right of the main window.");
+        ImGui.NextColumn();
 
 
         // WorldUpdateColWidthOffset
-        ImGui.Text("World last update column width offset");
-        ImGui.SameLine();
+        ImGui.Text("World Updated width");
+        ImGui.NextColumn();
         var WorldUpdateColWidthOffset = plugin.Config.WorldUpdateColWidthOffset;
-        ImGui.SetNextItemWidth(150);
-        if (ImGui.InputInt2($"px{suffix}WorldUpdateColWidthOffset", ref WorldUpdateColWidthOffset[0]))
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputInt2($"{suffix}WorldUpdateColWidthOffset", ref WorldUpdateColWidthOffset[0]))
         {
             plugin.Config.WorldUpdateColWidthOffset = WorldUpdateColWidthOffset;
             plugin.Config.Save();
         }
-        ImGuiComponents.HelpMarker("The width of the columns of the last updated time for each world on the right bottom. Try changing the two values yourself and you'll know what it does.");
+        ImGuiComponents.HelpMarker("The width of the columns of the last updated time for each world on the right bottom. Try changing the two values and you'll know what it does.");
+        ImGui.NextColumn();
 
 
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
+        // WorldUpdateColPaddingOffset
+        ImGui.Text("World Updated padding");
+        ImGui.NextColumn();
+        var WorldUpdateColPaddingOffset = plugin.Config.WorldUpdateColPaddingOffset;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputInt2($"{suffix}WorldUpdateColPaddingOffset", ref WorldUpdateColPaddingOffset[0]))
+        {
+            plugin.Config.WorldUpdateColPaddingOffset = WorldUpdateColPaddingOffset;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker("The padding of the columns of the last updated time for each world on the right bottom. Try changing the two values and you'll know what it does.");
+        ImGui.NextColumn();
 
-
-        // ----------------- Cache -----------------
-        suffix = $"###{plugin.Name}[Cache]";
-        ImGui.TextColored(Miosuke.UI.ColourKhaki, "Cache");
-        ImGui.Separator();
-
-
-        // selectedWorld
-        ImGui.Text("Currently selected world: ");
-        ImGui.SameLine();
-        var selectedWorld = plugin.Config.selectedWorld;
-        ImGui.SetNextItemWidth(150);
-        ImGui.Text(plugin.Config.selectedWorld);
-        // if (ImGui.InputText($"{suffix}selectedWorld", ref selectedWorld, 100, ImGuiInputTextFlags.ReadOnly))
-        // {
-        //     selectedWorld = plugin.Config.selectedWorld;
-        // }
-        ImGuiComponents.HelpMarker("The world you selected from the drop down menu.");
-
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
+        ImGui.Columns(1);
+        ImGui.EndChild();
 
     }
 }
