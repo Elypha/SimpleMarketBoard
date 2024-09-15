@@ -44,6 +44,8 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
 
     // -------------------------------- UI --------------------------------
     public bool EnableTheme { get; set; } = true;
+    public bool NumbersAlignRight { get; set; } = false;
+    public float NumbersAlignRightOffset { get; set; } = -4.0f;
     public bool EnableChatLog { get; set; } = true;
     public bool EnableToastLog { get; set; } = false;
     public PriceChecker.PriceToPrint priceToPrint { get; set; } = PriceChecker.PriceToPrint.UniversalisAverage;

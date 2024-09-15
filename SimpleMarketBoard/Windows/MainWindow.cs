@@ -312,7 +312,7 @@ public class MainWindow : Window, IDisposable
             if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
             {
                 var clipboardItemId = ParseItemId(ImGui.GetClipboardText());
-                plugin.PriceChecker.CheckNewAsync(clipboardItemId, false);
+                plugin.PriceChecker.CheckNewAsync(clipboardItemId);
             }
             else
             {
@@ -420,12 +420,27 @@ public class MainWindow : Window, IDisposable
 
         ImGui.Separator();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        if (plugin.Config.NumbersAlignRight)
+        {
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+            Miosuke.UI.AlignRight("Selling");
+        }
         ImGui.TextColored(UI.ColourSubtitle, "Selling");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        if (plugin.Config.NumbersAlignRight)
+        {
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+            Miosuke.UI.AlignRight("Q");
+        }
         ImGui.TextColored(UI.ColourSubtitle, "Q");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        if (plugin.Config.NumbersAlignRight)
+        {
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+            Miosuke.UI.AlignRight("Total");
+        }
         ImGui.TextColored(UI.ColourSubtitle, "Total");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
@@ -465,24 +480,42 @@ public class MainWindow : Window, IDisposable
 
                 // Selling
                 var index = marketDataListings.IndexOf(listing);
+                var selling = $"{listing.PricePerUnit}";
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                if (ImGui.Selectable($"{listing.PricePerUnit}##listing{index}", selectedListing == index, ImGuiSelectableFlags.SpanAllColumns))
+                if (plugin.Config.NumbersAlignRight)
+                {
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+                    Miosuke.UI.AlignRight(selling);
+                }
+                if (ImGui.Selectable($"{selling}##listing{index}", selectedListing == index, ImGuiSelectableFlags.SpanAllColumns))
                 {
                     selectedListing = index;
                 }
                 ImGui.NextColumn();
 
                 // Q
+                var quantity = $"{listing.Quantity:##,###}";
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                ImGui.Text($"{listing.Quantity:##,###}");
+                if (plugin.Config.NumbersAlignRight)
+                {
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+                    Miosuke.UI.AlignRight(quantity);
+                }
+                ImGui.Text(quantity);
                 ImGui.NextColumn();
 
                 // Total
                 double totalPrice = plugin.Config.TotalIncludeTax
                   ? (listing.PricePerUnit * listing.Quantity) + listing.Tax
                   : listing.PricePerUnit * listing.Quantity;
+                var total = totalPrice.ToString("N0", CultureInfo.CurrentCulture);
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                ImGui.Text(totalPrice.ToString("N0", CultureInfo.CurrentCulture));
+                if (plugin.Config.NumbersAlignRight)
+                {
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+                    Miosuke.UI.AlignRight(total);
+                }
+                ImGui.Text(total);
                 ImGui.NextColumn();
 
                 if (isColourPushed) ImGui.PopStyleColor();
@@ -515,9 +548,19 @@ public class MainWindow : Window, IDisposable
 
         ImGui.Separator();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        if (plugin.Config.NumbersAlignRight)
+        {
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+            Miosuke.UI.AlignRight("Sold");
+        }
         ImGui.TextColored(UI.ColourSubtitle, "Sold");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        if (plugin.Config.NumbersAlignRight)
+        {
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+            Miosuke.UI.AlignRight("Q");
+        }
         ImGui.TextColored(UI.ColourSubtitle, "Q");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
@@ -549,7 +592,13 @@ public class MainWindow : Window, IDisposable
 
                 // Sold
                 var index = marketDataEntries.IndexOf(entry);
+                var sold = $"{entry.PricePerUnit}";
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+                if (plugin.Config.NumbersAlignRight)
+                {
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+                    Miosuke.UI.AlignRight(sold);
+                }
                 if (ImGui.Selectable($"{entry.PricePerUnit}##history{index}", selectedHistory == index, ImGuiSelectableFlags.SpanAllColumns))
                 {
                     selectedHistory = index;
@@ -557,8 +606,14 @@ public class MainWindow : Window, IDisposable
                 ImGui.NextColumn();
 
                 // Q
+                var quantity = $"{entry.Quantity:##,###}";
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                ImGui.Text($"{entry.Quantity:##,###}");
+                if (plugin.Config.NumbersAlignRight)
+                {
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+                    Miosuke.UI.AlignRight(quantity);
+                }
+                ImGui.Text(quantity);
                 ImGui.NextColumn();
 
                 // Date
@@ -671,7 +726,7 @@ public class MainWindow : Window, IDisposable
             {
                 if (ImGui.Selectable($"{item.Name}", (uint)CurrentItem.Id == item.Id))
                 {
-                    plugin.PriceChecker.CheckNewAsync(item.Id, item.IsHQ);
+                    plugin.PriceChecker.CheckNewAsync(item.Id);
                 }
             }
         }

@@ -452,6 +452,35 @@ public class ConfigWindow : Window, IDisposable
         );
 
 
+        // NumbersAlignRight
+        var NumbersAlignRight = plugin.Config.NumbersAlignRight;
+        if (ImGui.Checkbox($"Numbers in table align right{suffix}NumbersAlignRight", ref NumbersAlignRight))
+        {
+            plugin.Config.NumbersAlignRight = NumbersAlignRight;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: Numbers in the table, e.g., price, quantity, will align right.\n" +
+            "Disable: Numbers will align left."
+        );
+
+        // NumbersAlignRightOffset
+        ImGui.Text("┗");
+        ImGui.SameLine();
+        ImGui.Text("with X offset");
+        ImGui.SameLine();
+        var NumbersAlignRightOffset = plugin.Config.NumbersAlignRightOffset;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputFloat($"{suffix}NumbersAlignRightOffset", ref NumbersAlignRightOffset))
+        {
+            plugin.Config.NumbersAlignRightOffset = NumbersAlignRightOffset;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Offset the alignment of numbers in the table. New position X' = X + offset."
+        );
+
+
         // EnableRecentHistory
         var EnableRecentHistory = plugin.Config.EnableRecentHistory;
         if (ImGui.Checkbox($"Show table of sold records (history){suffix}EnableRecentHistory", ref EnableRecentHistory))

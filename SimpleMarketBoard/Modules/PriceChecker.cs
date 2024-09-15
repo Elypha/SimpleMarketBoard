@@ -31,12 +31,11 @@ public class PriceChecker
 
 
     // -------------------------------- game item --------------------------------
-    public List<GameItem> GameItemCacheList = new List<GameItem>();
+    public List<GameItem> GameItemCacheList = [];
 
     public class GameItem
     {
         public ulong Id { get; set; }
-        public bool IsHQ { get; set; }
         public string Name { get; set; } = "";
         public string TargetRegion { get; set; } = "";
         public ulong PlayerWorldId { get; set; }
@@ -65,15 +64,15 @@ public class PriceChecker
 
 
     // -------------------------------- price checker --------------------------------
-    public void CheckNewAsync(ulong itemId, bool isHQ)
+    public void CheckNewAsync(ulong itemId)
     {
-        Service.PluginLog.Debug($"[PriceChecker] Start CheckNewAsync: {itemId}, {isHQ}");
+        Service.PluginLog.Debug($"[PriceChecker] Start CheckNewAsync: {itemId}");
 
         Task.Run(() =>
         {
             try
             {
-                CheckNew(itemId, isHQ);
+                CheckNew(itemId);
             }
             catch (Exception ex)
             {
@@ -84,7 +83,7 @@ public class PriceChecker
         });
     }
 
-    public void CheckNew(ulong itemId, bool isHQ)
+    public void CheckNew(ulong itemId)
     {
         // handle hover delay
         if (ItemCancellationTokenSource != null)
@@ -111,7 +110,6 @@ public class PriceChecker
 
         // create new game item object
         gameItem.Id = itemId;
-        gameItem.IsHQ = isHQ;
 
         gameItem.InGame = plugin.ItemSheet.Single(i => i.RowId == (uint)gameItem.Id);
 
@@ -152,7 +150,7 @@ public class PriceChecker
 
     public void CheckRefreshAsync(GameItem gameItem)
     {
-        Service.PluginLog.Debug($"[PriceChecker] Start CheckRefreshAsync: {gameItem.Id}, {gameItem.IsHQ}");
+        Service.PluginLog.Debug($"[PriceChecker] Start CheckRefreshAsync: {gameItem.Id}");
 
         Task.Run(() =>
         {
@@ -182,7 +180,7 @@ public class PriceChecker
 
         // lookup market data
         plugin.MainWindow.CurrentItemLabel = "Loading";
-        plugin.MainWindow.CurrentItemIcon = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(gameItem.InGame.Icon, gameItem.IsHQ))!;
+        plugin.MainWindow.CurrentItemIcon = Service.TextureProvider.GetFromGameIcon(new GameIconLookup(gameItem.InGame.Icon))!;
         var UniversalisResponse = plugin.Universalis.GetDataAsync(gameItem).Result;
 
         // validate
@@ -301,7 +299,7 @@ public class PriceChecker
             new List<Payload>
             {
                 new UIForegroundPayload(39),
-                new ItemPayload((uint)gameItem.Id, gameItem.IsHQ),
+                new ItemPayload((uint)gameItem.Id),
                 new TextPayload($"{(char)SeIconChar.LinkMarker} {gameItem.InGame.Name}"),
                 RawPayload.LinkTerminator,
                 new TextPayload($" [{gameItem.TargetRegion}] {(char)SeIconChar.Gil} {price:N0}"),
