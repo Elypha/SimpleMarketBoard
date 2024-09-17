@@ -28,6 +28,7 @@ public sealed class Plugin : IDalamudPlugin
 
     // fonts and data resources
     public IFontHandle Axis20 { get; set; }
+    public IFontHandle NotoSansJpMedium { get; set; }
     public readonly ExcelSheet<Item> ItemSheet;
     public readonly ExcelSheet<World> WorldSheet;
     public StyleModel PluginTheme { get; set; }
@@ -54,12 +55,6 @@ public sealed class Plugin : IDalamudPlugin
         pluginInterface.Create<Service>();
         Service.Log.Info($"[General] Plugin loading...");
 
-        // load fonts and data resources
-        PluginTheme = StyleModel.Deserialize("DS1H4sIAAAAAAAACq1XS3PbOAz+LzpnMnpQlORbE2+bQ7uTadLpbm+MzdiqFcsry27TTP97CZIgIcr2etLqIojChxcBEHyJRDRJLuOL6CGavET/RBMOH//q98+LaBZNGCzMo0kMb2m5YssVX+aK61HJuIgWdnlpJdb2WzxY4qsFMwvOtIpVNElhobFcT4EhhmsdYJlebYPVVK9uRkbC6n/qt7arU/bpX1sL7NWC0nIR7awpe/vjm/3+bmU9O8E58f7HQXVC2OVs4MesVX6+RPfye2//J/a/fn+x78/6rfiBcVpvxUMj52PtGqDfDvC5Xs/bb1cLb1RRsizJCgSRbw0m30pIfGk/mZJ1vaybORWFIhBqIaD3tt3sNpS3ROYSuUvLXoHsq7aby86xs8yyA0GcMiE2zHdLoVw7y5q3nXiSxJq0ssxAaG4gjHzm+W/avexooBlGmqFVzMII6s2sr/e+MjiCOII4gngBW1r3DbUtSQrOiphblP/UWP9prC3LNMszLyZQnlUsLqoUg5nHPCmd8ayKk4q7fRjJum6bRmy2JACvE/dBrndXoqM+YkyAMH4xkrR3s06pfhhATm2v43/XQXdBYxMLAUJjgBgrAVC40wyxQBjvjmKDkOcIBcIkCYVeL+Vs9UF0KwcocauB0AAgvK6mVsk+8OxoHoaIMBULTMUCU7EguKtd37fYWVXloyNAaG4gXLYb7jBwWZUmOS9RUZ5WLEmw5HlaMBsMKPs8rsrYiwpTl+lcx77BEPyFJNdY1I0UtI/kWOhAGCQWepY49lGdH2yoal8cIgwsxhUdpbshN6ITfXtuc3P8rw8t6dlO2qgxvGKfPspt/UO+62p/pBYYYCBMkmCA03wACd0pcGeBMMiS9kWP/BOm35PySTH+QJjuj5lUcsP7G7GH9pxXRsyrLR9I+bR+bGc72odjjsFLVM9VDwpJWBmrxxVGkbJARmBSkuUWbyLCtTjMY5bSvjJtZ6t6vbjt5L6W/uBNeVhjIM644VF/PW36Z3oEo0bcAqLotmn79/Vabn2BYS8CwoQrOQQY7hvOUqTSsjyA3dTbvl2ok9vpchk9OGkOII4pw+gNBjcY2UzvoOcg6gJiFAaNsbNO37XrxamjLT8MfF8vlv2pzB/hPg7HxRPHrmd/0/zf+Ao5a+fXO9nIWS/pJHkihTLoItNOLKZdu7kX3UIeU+WNg7r5W+xvlO/N0P9jeoz/CmPmZZWvIfi4Y0WAnNZPxDWsLKxQ9CuFwaidi8bgzgOpYMDlR42Z0SSSzfNmKSJ1GzOXCDFKxGFcjI++DRZBntNRQF30zuA67woiz7rZPHrn3cmgKRMAezYY3sXI0yLGDaUyl6M05gc01yMu100z/RBevLOCRphB2IlIr47mKW2qjZcYhrriNIy+QaFSN3gTLj++qenpYHkYPrwqe6dZZkI4DI4/6Tn8N80jdhYOgqOu1MG25DH2JyrTT0Klm33VvQIbe0632h8BpTukcHu0dMupWFUzVqs/fwHiVFw/xBAAAA==")!;
-        Axis20 = Service.PluginInterface.UiBuilder.FontAtlas.NewGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 20.0f));
-        ItemSheet = Service.Data.GetExcelSheet<Item>()!;
-        WorldSheet = Service.Data.GetExcelSheet<World>()!;
-
         // load configuration
         Config = Service.PluginInterface.GetPluginConfig() as SimpleMarketBoardConfig ?? new SimpleMarketBoardConfig();
         Config.Initialize(Service.PluginInterface);
@@ -75,6 +70,39 @@ public sealed class Plugin : IDalamudPlugin
                     new UIForegroundPayload(0),
                 ]);
         }
+
+        // load fonts and data resources
+        PluginTheme = StyleModel.Deserialize("DS1H4sIAAAAAAAACq1XS3PbOAz+LzpnMnpQlORbE2+bQ7uTadLpbm+MzdiqFcsry27TTP97CZIgIcr2etLqIojChzdB8CUS0SS5jC+ih2jyEv0TTTh8/KvfPy+iWTRhsDCPJjG8peWKLVd8mSuuRyXjIlrY5aWVWNtv8WCJrxbMLDjTKlbRJIWFxnI9BYYYrnWAZXq1DVZTvboZGQmr/6nf2q5O2ad/bS2wVwtKy0W0s6bs7Y9v9vu7lfXsBOfE+x8H1Qlhl7OBH7NW+fkS3cvvvf2f2P/6/cW+P+u34gfGab0VD42cj7VrgH47wOd6PW+/XS28UUXJsiQrEES+NZh8KyHxZZlmeVoxJep6WTdzKgklINIiQO1tu9ltKG+JzCVyl5Zdy75qu7nsHDvLLDsQxCcTYcN8txTKs7OseduJJ0msSSvLDITmBsLIZ57/pt3LjsaZYaAZWsUsjKDezPp67zcGRxBHEEcQLyCjdd9Q25Kk4KyIuUX5T431n8baEtKTeTGB8qxicVGlGMw85knpjGdVnFTc5WEk67ptGrHZkgC8TtwHud5diY76iDEBwvjFSM3ezTql+mEAOZVex/+ug+aCxiYWAoTGADFWAqAw0wyxQBjvjmKDkOcIBcIUCYVeL+Vs9UF0KwcoMdVAaAAQXldTq2IfeHa0DkNEWIoFlmKBpVgQ3NWu71tsrPFlgY4AobmBcNVuuMPAZVWa5LxERdA5kgS3PE8LZoMB2z6PqzL2osLSZbrWsW8wBH8hxTUWdSMF7SM5bnQgDBI3epY49tE+P9hPVV4cIgwsxhUdpdmQG9GJvj23uTn+14fWdnBGpY0awyvy9FFu6x/yXVf7E7XAAANhigQDnOYDSOhOgZkFwiBL2hc98k+Yfk+2T4rxB8J0f6ykkhve34g9tOe8MmJebflAyqf1Yzvb0T4ccwxeonquelBIwspYPW5jFCkLZAQmJVlu8SYiXIvDOmYp7SvTdraq14vbTu5r6Q/elId7DMQZNzzqr6dN/0yPYNSIKSCKbpu2f1+v5dZvMOxFQJhwJYcAw7zhKEV2WpYHsJt627cLdXI7Xa6iByfNAcQxZRi9wdwGE5vpHfQcRF1AjMKgMXbW6bt2vTh1tOWHge/rxbI/Vfkj3MfhtHji2PXsb5r/m16hZu34eicbOeslnSRPlFAGXWTaicW0azf3olvIY6q8cbBv/hb7G+V7M/T/mB7jv8KYcVnVawg+7lgRIKf1E3ENdxbuUPQrhcGonYvG4M4DqWDA3UeNmdEkks3zZikidRkzdwgxKsRhXIyPvg0WQZ3TUUDd887gOu8GIs+62Dx6593JoCkTAHs2GN7FyNMixoRSmctRGfMDmusRl+ummX4IL15ZQSPMIOxEpFdH65Q21cZLDENdcRpG36BQqRu8CZcf39T0dHB7GD68KXunWWZCOAyOP+k5/DfNI3YWDoKjbtRBWvIY+xOV6Seh0s2+6l6BjT2nqfZHQOkOKUyPlm45Fatqxmr15y+4vrSZwxAAAA==")!;
+        if (Config.CustomTheme != "")
+        {
+            try
+            {
+                var _PluginTheme = StyleModel.Deserialize(Config.CustomTheme);
+                if (_PluginTheme != null) PluginTheme = _PluginTheme;
+            }
+            catch (System.Exception e)
+            {
+                Config.CustomTheme = "";
+                Config.Save();
+                Service.NotificationManager.AddNotification(new Notification
+                {
+                    Content = $"Your custom theme is invalid and has been reset: {e.Message}",
+                    Type = NotificationType.Error,
+                });
+            }
+        }
+
+        Axis20 = Service.PluginInterface.UiBuilder.FontAtlas.NewGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 20.0f));
+        NotoSansJpMedium = Service.PluginInterface.UiBuilder.FontAtlas.NewDelegateFontHandle(e =>
+        {
+            e.OnPreBuild(tk => tk.AddDalamudAssetFont(Dalamud.DalamudAsset.NotoSansJpMedium, new()
+            {
+                SizePx = 17.0f,
+            }));
+        });
+
+        ItemSheet = Service.Data.GetExcelSheet<Item>()!;
+        WorldSheet = Service.Data.GetExcelSheet<World>()!;
 
         // load windows
         MainWindow = new MainWindow(this);
@@ -125,6 +153,7 @@ public sealed class Plugin : IDalamudPlugin
 
         // unload fonts and data resources
         Axis20.Dispose();
+        NotoSansJpMedium.Dispose();
 
         // unload event handlers
         Service.PluginInterface.UiBuilder.Draw -= DrawUI;

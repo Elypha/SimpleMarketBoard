@@ -43,6 +43,7 @@ public class MainWindow : Window, IDisposable
         if (plugin.Config.EnableTheme)
         {
             plugin.PluginTheme.Push();
+            plugin.NotoSansJpMedium.Push();
             plugin.PluginThemeEnabled = true;
         }
     }
@@ -52,6 +53,7 @@ public class MainWindow : Window, IDisposable
         if (plugin.PluginThemeEnabled)
         {
             plugin.PluginTheme.Pop();
+            plugin.NotoSansJpMedium.Pop();
             plugin.PluginThemeEnabled = false;
         }
     }
@@ -118,34 +120,32 @@ public class MainWindow : Window, IDisposable
         }
 
         // refresh button
-        float _button_size = 24;
-        float _world_combo_width = 130;
 
-        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + (1.1f * spacing.Y));
+        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + (1.1f * spacing.Y) + plugin.Config.ButtonSizeOffset[1]);
         ImGui.SetCursorPosX(
             ImGui.GetCursorPosX()
             + ImGui.GetContentRegionAvail().X
-            - _world_combo_width
-            - 2 * (_button_size + 0.5f * spacing.X)
+            - plugin.Config.WorldComboWidth
+            - 2 * (plugin.Config.ButtonSizeOffset[0] + 0.5f * spacing.X)
         );
-        DrawRefreshButton(_button_size);
+        DrawRefreshButton(plugin.Config.ButtonSizeOffset[0]);
         ImGui.SameLine();
 
         // HQ filter button
-        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + (1.1f * spacing.Y));
+        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + (1.1f * spacing.Y) + plugin.Config.ButtonSizeOffset[1]);
         ImGui.SetCursorPosX(
             ImGui.GetCursorPosX()
             + ImGui.GetContentRegionAvail().X
-            - _world_combo_width
-            - 1 * (_button_size + 0.5f * spacing.X)
+            - plugin.Config.WorldComboWidth
+            - 1 * (plugin.Config.ButtonSizeOffset[0] + 0.5f * spacing.X)
         );
-        DrawHqFilterButton(_button_size);
+        DrawHqFilterButton(plugin.Config.ButtonSizeOffset[0]);
         ImGui.SameLine();
 
         // world selection dropdown
-        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + (1 * spacing.Y));
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - _world_combo_width);
-        DrawWorldCombo(_world_combo_width);
+        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + (1 * spacing.Y) + plugin.Config.ButtonSizeOffset[1]);
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - plugin.Config.WorldComboWidth);
+        DrawWorldCombo(plugin.Config.WorldComboWidth);
 
 
         // price table
@@ -180,7 +180,7 @@ public class MainWindow : Window, IDisposable
         // -------------------------------- [  buttons  ] --------------------------------
         var rightColTableWidth = rightColWidth - (2 * spacing.X);
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.5f * spacing.X));
-        ImGui.BeginChild("col_right buttons", new Vector2(rightColTableWidth, 24 + (2 * spacing.Y)), true, ImGuiWindowFlags.NoScrollbar);
+        ImGui.BeginChild("col_right buttons", new Vector2(rightColTableWidth, 24 + (2 * spacing.Y) + plugin.Config.ButtonSizeOffset[1]), true, ImGuiWindowFlags.NoScrollbar);
 
         // buttons
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.7f * spacing.Y));  // move the cursor up a bit for all buttons
@@ -271,7 +271,8 @@ public class MainWindow : Window, IDisposable
             worldList.Add((currentDcName, $"{(char)SeIconChar.CrossWorld}  {currentDcName} "));
             worldList.Add((currentWorldName, $"{(char)SeIconChar.Hyadelyn}  {currentWorldName}"));
             // add additional worlds
-            for (var i = 0; i < plugin.Config.AdditionalWorlds.Count; i++) {
+            for (var i = 0; i < plugin.Config.AdditionalWorlds.Count; i++)
+            {
                 worldList.Add((plugin.Config.AdditionalWorlds[i], $"{(char)SeIconChar.Collectible}  {plugin.Config.AdditionalWorlds[i]}"));
             }
             worldList.AddRange(dcWorlds);
@@ -643,7 +644,7 @@ public class MainWindow : Window, IDisposable
     {
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? Miosuke.UI.ColourHq : Miosuke.UI.ColourWhite);
-        if (ImGui.Button($"{(char)FontAwesomeIcon.List}", new Vector2(24, ImGui.GetItemRectSize().Y)))
+        if (ImGui.Button($"{(char)FontAwesomeIcon.List}", new Vector2(plugin.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
         {
             searchHistoryOpen = !searchHistoryOpen;
         }
@@ -654,7 +655,7 @@ public class MainWindow : Window, IDisposable
     private void DrawBinButton()
     {
         ImGui.PushFont(UiBuilder.IconFont);
-        if (ImGui.Button($"{(char)FontAwesomeIcon.Trash}", new Vector2(24, ImGui.GetItemRectSize().Y)))
+        if (ImGui.Button($"{(char)FontAwesomeIcon.Trash}", new Vector2(plugin.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
         {
             if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
             {
@@ -671,7 +672,7 @@ public class MainWindow : Window, IDisposable
     private void DrawCOnfigButton()
     {
         ImGui.PushFont(UiBuilder.IconFont);
-        if (ImGui.Button($"{(char)FontAwesomeIcon.Cog}", new Vector2(24, ImGui.GetItemRectSize().Y)))
+        if (ImGui.Button($"{(char)FontAwesomeIcon.Cog}", new Vector2(plugin.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
         {
             plugin.DrawConfigUI();
         }

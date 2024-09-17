@@ -54,6 +54,7 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
 
     // -------------------------------- UI --------------------------------
     public bool EnableTheme { get; set; } = true;
+    public string CustomTheme { get; set; } = "";
     public bool NumbersAlignRight { get; set; } = true;
     public float NumbersAlignRightOffset { get; set; } = -4.0f;
     public bool EnableRecentHistory { get; set; } = true;
@@ -61,12 +62,14 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
     public float spaceBetweenTables { get; set; } = 0;
 
     // position offset
+    public float WorldComboWidth { get; set; } = 130.0f;
     public float tableRowHeightOffset { get; set; } = -2.0f;
     public int[] sellingColWidthOffset { get; set; } = [0, 0, 0, 0];
     public int[] soldColWidthOffset { get; set; } = [0, 0, 0, 0];
-    public int rightColWidth { get; set; } = 110;
+    public int rightColWidth { get; set; } = 102;
     public int[] WorldUpdateColWidthOffset { get; set; } = [4, 0];
     public int[] WorldUpdateColPaddingOffset { get; set; } = [-2, -2];
+    public float[] ButtonSizeOffset { get; set; } = [24.0f, 0.0f];
 
 
     // -------------------------------- Internal --------------------------------

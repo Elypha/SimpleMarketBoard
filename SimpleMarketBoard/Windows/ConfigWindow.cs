@@ -10,6 +10,8 @@ using System.Numerics;
 using System;
 using Miosuke;
 using Dalamud.Interface;
+using Dalamud.Interface.Style;
+using Dalamud.Interface.ImGuiNotification;
 
 
 namespace SimpleMarketBoard;
@@ -38,6 +40,7 @@ public class ConfigWindow : Window, IDisposable
         if (plugin.Config.EnableTheme)
         {
             plugin.PluginTheme.Push();
+            plugin.NotoSansJpMedium.Push();
             plugin.PluginThemeEnabled = true;
         }
     }
@@ -47,6 +50,7 @@ public class ConfigWindow : Window, IDisposable
         if (plugin.PluginThemeEnabled)
         {
             plugin.PluginTheme.Pop();
+            plugin.NotoSansJpMedium.Pop();
             plugin.PluginThemeEnabled = false;
         }
     }
@@ -499,16 +503,51 @@ public class ConfigWindow : Window, IDisposable
 
         // EnableTheme
         var EnableTheme = plugin.Config.EnableTheme;
-        if (ImGui.Checkbox($"Use bundled theme{suffix}EnableTheme", ref EnableTheme))
+        if (ImGui.Checkbox($"Use a theme for this plugin{suffix}EnableTheme", ref EnableTheme))
         {
             plugin.Config.EnableTheme = EnableTheme;
             plugin.Config.Save();
         }
         ImGuiComponents.HelpMarker(
-            "Enable: Use a bundled theme (more compact and compatible) for this plugin.\n" +
-            "Disable: Use your current Dalamud theme."
+            "Enable: Use a bundled/custom theme (more compact and compatible) for this plugin.\n" +
+            "Disable: Use your global Dalamud theme."
         );
 
+        // CustomTheme
+        ImGui.Text("┗");
+        ImGui.SameLine();
+        ImGui.Text("but a custom one");
+        ImGuiComponents.HelpMarker(
+            "Leave it empty to use the bundled theme (for better compatibility).\n" +
+            "Fill this to use your custom theme for this plugin. You can export a theme from: Dalamud Settings > Look & Feel > Open Style Editor > Copy style to clipboard."
+        );
+        ImGui.SameLine();
+        var CustomTheme = plugin.Config.CustomTheme;
+        ImGui.SetNextItemWidth(150);
+        if (ImGui.InputText($"{suffix}-CustomTheme", ref CustomTheme, 4096))
+        {
+            plugin.Config.CustomTheme = CustomTheme;
+            plugin.Config.Save();
+        }
+        ImGui.SameLine();
+        if (ImGui.Button("Apply"))
+        {
+            try
+            {
+                var _theme = StyleModel.Deserialize(CustomTheme) ?? throw new System.ArgumentException("Custom theme failed to deserialize.");
+                plugin.PluginTheme = _theme;
+            }
+            catch (System.Exception e)
+            {
+                plugin.Config.CustomTheme = "";
+                plugin.Config.Save();
+                Service.NotificationManager.AddNotification(new Notification
+                {
+                    Content = $"Your custom theme is invalid and has been reset: {e.Message}",
+                    Type = NotificationType.Error,
+                });
+            }
+        }
 
         // NumbersAlignRight
         var NumbersAlignRight = plugin.Config.NumbersAlignRight;
@@ -591,10 +630,24 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(UI.ColourSubtitle, "Position Offset");
 
 
-        ImGui.BeginChild("table DrawUi Position Offset", new Vector2(table_width, table_height * 6), false);
+        ImGui.BeginChild("table DrawUi Position Offset", new Vector2(table_width, table_height * 8), false);
         ImGui.Columns(2);
         ImGui.SetColumnWidth(0, col_name_width);
         ImGui.SetColumnWidth(1, col_value_width);
+
+
+        // WorldComboWidth
+        ImGui.Text("World menu width");
+        ImGui.NextColumn();
+        var WorldComboWidth = plugin.Config.WorldComboWidth;
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputFloat($"{suffix}WorldComboWidth", ref WorldComboWidth))
+        {
+            plugin.Config.WorldComboWidth = WorldComboWidth;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker("The width of the target world dropdown menu.");
+        ImGui.NextColumn();
 
 
         // tableRowHeightOffset
@@ -663,7 +716,7 @@ public class ConfigWindow : Window, IDisposable
             plugin.Config.WorldUpdateColWidthOffset = WorldUpdateColWidthOffset;
             plugin.Config.Save();
         }
-        ImGuiComponents.HelpMarker("The width of the columns of the last updated time for each world on the right bottom. Try changing the two values and you'll know what it does.");
+        ImGuiComponents.HelpMarker("The width of the columns of the last updated time for each world on the right bottom. Try changing the values to see what it does.");
         ImGui.NextColumn();
 
 
@@ -677,7 +730,20 @@ public class ConfigWindow : Window, IDisposable
             plugin.Config.WorldUpdateColPaddingOffset = WorldUpdateColPaddingOffset;
             plugin.Config.Save();
         }
-        ImGuiComponents.HelpMarker("The padding of the columns of the last updated time for each world on the right bottom. Try changing the two values and you'll know what it does.");
+        ImGuiComponents.HelpMarker("The padding of the columns of the last updated time for each world on the right bottom. Try changing the values to see what it does.");
+        ImGui.NextColumn();
+
+        // ButtonSizeOffset
+        ImGui.Text("Button size");
+        ImGui.NextColumn();
+        var ButtonSizeOffset = new Vector2(plugin.Config.ButtonSizeOffset[0], plugin.Config.ButtonSizeOffset[1]);
+        ImGui.SetNextItemWidth(col_value_content_width);
+        if (ImGui.InputFloat2($"{suffix}ButtonSizeOffset", ref ButtonSizeOffset))
+        {
+            plugin.Config.ButtonSizeOffset = [ButtonSizeOffset.X, ButtonSizeOffset.Y];
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker("The size of the buttons in the main window. Try changing the values to see what it does.");
         ImGui.NextColumn();
 
         ImGui.Columns(1);
