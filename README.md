@@ -58,6 +58,14 @@ If the hotkey is disabled, only 1 will work. If enabled, 2 & 3 will work. If you
 
 You can set a hotkey to open the plugin window. If you set it as the same hotkey as search, when you press the hotkey, the window will show up + do the search.
 
+**Region**
+
+The contents in the world dropdown menu is populated based on the information of your current character.
+
+Apart from the worlds your character can directly travel to, the plugin also adds options for the whole Datacentre and the region (which may contain multiple DCs).
+
+You can manually configure more candidates that will be additionally added to the menu, for example, when you are playing in Mana/JP but want to know the price in OCE to prepare your cross-region DC travel.
+
 **Icon**
 
 The item icon is interactive in the following ways:
