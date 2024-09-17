@@ -9,6 +9,7 @@ using System.Linq;
 using System.Numerics;
 using System;
 using Miosuke;
+using Dalamud.Interface;
 
 
 namespace SimpleMarketBoard;
@@ -18,6 +19,7 @@ public class ConfigWindow : Window, IDisposable
     private readonly Plugin plugin;
     private readonly HotkeyUi search_hotkey_helper;
     private readonly HotkeyUi window_hotkey_helper;
+    private string newAdditionalWorld = string.Empty;
 
     public ConfigWindow(Plugin plugin) : base(
         "SimpleMarketBoard Configuration"
@@ -176,6 +178,51 @@ public class ConfigWindow : Window, IDisposable
             "Enable: the hotkey will also hide the main window, if it's already shown and you are not hovering over an item.\n" +
             "Disable: the hotkey will not be able to hide the main window."
         );
+
+        // AdditionalWorlds
+        // ImGui.BeginChild("table DrawUi Position Offset", new Vector2(table_width, table_height * 6), false);
+        ImGui.Text("Additional Worlds/DCs/Regions");
+        ImGuiComponents.HelpMarker(
+            "Use this to add extra options to the target world dropdown menu to search price in.\n" +
+            "To add a world or datacentre, use its full name in game, e.g., Hades, Mana\n" +
+            "To add a region (supported by Universalis), e.g., Japan, North-America, Europe, Oceania"
+        );
+        for (var i = 0; i < plugin.Config.AdditionalWorlds.Count; i++)
+        {
+            ImGui.PushID($"{suffix}-AdditionalWorlds-{i}");
+            var additionalWorld = plugin.Config.AdditionalWorlds[i];
+            ImGui.SetNextItemWidth(180);
+            if (ImGui.InputText($"{suffix}-AdditionalWorlds", ref additionalWorld, 32))
+            {
+                plugin.Config.AdditionalWorlds[i] = additionalWorld;
+                plugin.Config.Save();
+                plugin.MainWindow.UpdateWorld(true);
+            }
+            ImGui.SameLine();
+            ImGui.PushFont(UiBuilder.IconFont);
+            if (ImGui.Button($"{FontAwesomeIcon.Trash.ToIconString()}{suffix}-del"))
+            {
+                plugin.Config.AdditionalWorlds.RemoveAt(i--);
+                plugin.Config.Save();
+                plugin.MainWindow.UpdateWorld(true);
+            }
+            ImGui.PopFont();
+            ImGui.PopID();
+            if (i < 0) break;
+        }
+        ImGui.SetNextItemWidth(180);
+        ImGui.InputText($"{suffix}-AdditionalWorlds-new", ref newAdditionalWorld, 500);
+        ImGui.SameLine();
+        ImGui.PushFont(UiBuilder.IconFont);
+        if (ImGui.Button($"{FontAwesomeIcon.Plus.ToIconString()}{suffix}-add"))
+        {
+            plugin.Config.AdditionalWorlds.Add(newAdditionalWorld);
+            plugin.Config.Save();
+            plugin.MainWindow.UpdateWorld(true);
+            newAdditionalWorld = string.Empty;
+        }
+        ImGui.PopFont();
+        // ImGui.EndChild();
 
 
         ImGui.TextColored(UI.ColourSubtitle, "Data window");

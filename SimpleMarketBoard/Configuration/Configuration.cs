@@ -23,6 +23,7 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
     public VirtualKey[] SearchHotkey { get; set; } = [VirtualKey.TAB];
     public bool SearchHotkeyLoose { get; set; } = true;
     public bool SearchHotkeyCanHide { get; set; } = true;
+    public List<string> AdditionalWorlds { get; set; } = new List<string>();
 
     // data window
     public bool WindowHotkeyEnabled { get; set; } = false;

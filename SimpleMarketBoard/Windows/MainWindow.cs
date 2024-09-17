@@ -87,7 +87,7 @@ public class MainWindow : Window, IDisposable
     public int LoadingQueue = 0;
 
     private ulong playerId = 0;
-    public List<(string, string)> worldList = new List<(string, string)>();
+    public List<(string, string)> worldList = [];
 
 
 
@@ -235,10 +235,9 @@ public class MainWindow : Window, IDisposable
 
 
 
-    public void UpdateWorld()
+    public void UpdateWorld(bool isForce = false)
     {
-        Service.Log.Debug($"[Config] Update player's current world");
-        if (Service.ClientState.LocalContentId != 0 && playerId != Service.ClientState.LocalContentId)
+        if ((Service.ClientState.LocalContentId != 0 && playerId != Service.ClientState.LocalContentId) || isForce)
         {
             var localPlayer = Service.ClientState.LocalPlayer;
             if (localPlayer == null) return;
@@ -271,6 +270,10 @@ public class MainWindow : Window, IDisposable
             worldList.Add((currentRegionName, $"{(char)SeIconChar.EurekaLevel}  {currentRegionName} "));
             worldList.Add((currentDcName, $"{(char)SeIconChar.CrossWorld}  {currentDcName} "));
             worldList.Add((currentWorldName, $"{(char)SeIconChar.Hyadelyn}  {currentWorldName}"));
+            // add additional worlds
+            for (var i = 0; i < plugin.Config.AdditionalWorlds.Count; i++) {
+                worldList.Add((plugin.Config.AdditionalWorlds[i], $"{(char)SeIconChar.Collectible}  {plugin.Config.AdditionalWorlds[i]}"));
+            }
             worldList.AddRange(dcWorlds);
 
             if (plugin.Config.selectedWorld == "")
