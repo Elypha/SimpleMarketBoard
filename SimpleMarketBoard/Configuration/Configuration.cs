@@ -23,13 +23,17 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
     public VirtualKey[] SearchHotkey { get; set; } = [VirtualKey.TAB];
     public bool SearchHotkeyLoose { get; set; } = true;
     public bool SearchHotkeyCanHide { get; set; } = true;
-    public List<string> AdditionalWorlds { get; set; } = new List<string>();
 
     // data window
     public bool WindowHotkeyEnabled { get; set; } = false;
     public VirtualKey[] WindowHotkey { get; set; } = [VirtualKey.CONTROL, VirtualKey.X];
     public bool WindowHotkeyCanShow { get; set; } = true;
     public bool WindowHotkeyCanHide { get; set; } = true;
+
+    // worlds
+    public bool OverridePlayerHomeWorld { get; set; } = false;
+    public string PlayerHomeWorld { get; set; } = "";
+    public List<string> AdditionalWorlds { get; set; } = new List<string>();
 
     // notification
     public PriceChecker.PriceToPrint priceToPrint { get; set; } = PriceChecker.PriceToPrint.SoldLow;

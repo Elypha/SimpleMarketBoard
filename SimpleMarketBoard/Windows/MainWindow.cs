@@ -13,6 +13,8 @@ using System.Numerics;
 using System;
 using Dalamud.Interface.Textures;
 using Miosuke;
+using Dalamud.Interface.ImGuiNotification;
+using System.Threading.Tasks;
 
 
 namespace SimpleMarketBoard;
@@ -88,8 +90,8 @@ public class MainWindow : Window, IDisposable
 
     public int LoadingQueue = 0;
 
-    private ulong playerId = 0;
     public List<(string, string)> worldList = [];
+    public string playerHomeWorld = "";
 
 
 
@@ -232,65 +234,115 @@ public class MainWindow : Window, IDisposable
         ImGui.EndGroup();
     }
 
+    private static readonly List<string> PublicRegions = [
+        "Japan",
+        "North-America",
+        "Europe",
+        "Oceania"
+    ];
+    private static readonly List<string> PublicDataCentres = [
+        // North American Data Center
+        "Aether", "Crystal", "Dynamis", "Primal",
+        // European Data Center
+        "Chaos", "Light",
+        // Oceanian Data Center
+        "Materia",
+        // Japanese Data Center
+        "Elemental", "Gaia", "Mana", "Meteor"
+    ];
+    private static readonly List<string> PublicWorlds = Service.Data.GetExcelSheet<World>()!.Where(x => x.IsPublic).Select(x => (string)x.Name).ToList();
 
+
+    private static string getRegionStr(int region)
+    {
+        return region switch
+        {
+            1 => "Japan",
+            2 => "North-America",
+            3 => "Europe",
+            4 => "Oceania",
+            _ => string.Empty,
+        };
+    }
 
 
     public void UpdateWorld(bool isForce = false)
     {
-        if ((Service.ClientState.LocalContentId != 0 && playerId != Service.ClientState.LocalContentId) || isForce)
+        if (!isForce)
         {
-            var localPlayer = Service.ClientState.LocalPlayer;
-            if (localPlayer == null) return;
-            if (localPlayer.CurrentWorld.GameData == null) return;
-            if (localPlayer.CurrentWorld.GameData.DataCenter.Value == null) return;
-
-            var currentDc = localPlayer.CurrentWorld.GameData.DataCenter;
-            var currentDcName = currentDc.Value.Name;
-            var currentWorldName = localPlayer.CurrentWorld.GameData.Name;
-
-            var dcWorlds = Service.Data.GetExcelSheet<World>()!
-                .Where(w => w.DataCenter.Row == currentDc.Row && w.IsPublic)
-                .OrderBy(w => (string)w.Name)
-                .Where(w => localPlayer.CurrentWorld.Id != w.RowId)
-                .Select(w =>
-                {
-                    return ((string)w.Name, (string)w.Name);
-                });
-
-            var currentRegionName = localPlayer.CurrentWorld.GameData.DataCenter.Value.Region switch
-            {
-                1 => "Japan",
-                2 => "North-America",
-                3 => "Europe",
-                4 => "Oceania",
-                _ => string.Empty,
-            };
-
-            worldList.Clear();
-            worldList.Add((currentRegionName, $"{(char)SeIconChar.EurekaLevel}  {currentRegionName} "));
-            worldList.Add((currentDcName, $"{(char)SeIconChar.CrossWorld}  {currentDcName} "));
-            worldList.Add((currentWorldName, $"{(char)SeIconChar.Hyadelyn}  {currentWorldName}"));
-            // add additional worlds
-            for (var i = 0; i < plugin.Config.AdditionalWorlds.Count; i++)
-            {
-                worldList.Add((plugin.Config.AdditionalWorlds[i], $"{(char)SeIconChar.Collectible}  {plugin.Config.AdditionalWorlds[i]}"));
-            }
-            worldList.AddRange(dcWorlds);
-
-            if (plugin.Config.selectedWorld == "")
-            {
-                plugin.Config.selectedWorld = currentDcName;
-            }
-
-            if (worldList.Count > 1)
-            {
-                playerId = Service.ClientState.LocalContentId;
-            }
+            if (Service.ClientState.LocalContentId == 0) return;
         }
 
-        if (Service.ClientState.LocalContentId == 0)
+        if (plugin.Config.OverridePlayerHomeWorld)
         {
-            playerId = 0;
+            var world = Service.Data.GetExcelSheet<World>()!
+                .Where(x => string.Equals((string)x.Name, plugin.Config.PlayerHomeWorld, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+            if (world == null)
+            {
+                Service.NotificationManager.AddNotification(new Notification
+                {
+                    Content = $"World cannot be determined from world name: {plugin.Config.PlayerHomeWorld}",
+                    Type = NotificationType.Error,
+                });
+                plugin.Config.OverridePlayerHomeWorld = false;
+                plugin.Config.PlayerHomeWorld = "";
+                plugin.Config.Save();
+                Task.Run(() => UpdateWorld(true)).ConfigureAwait(false);
+                return;
+            };
+            var dataCentre = world.DataCenter;
+            var _worldsInDc = Service.Data.GetExcelSheet<World>()!
+                .Where(x => (x.DataCenter.Row == dataCentre.Row) && x.IsPublic && x.Name != world.Name)
+                .OrderBy(x => (string)x.Name)
+                .Select(x => (string)x.Name);
+            var regionStr = getRegionStr(world.Region);
+            updateWorldList(regionStr, dataCentre.Value!.Name, world.Name, _worldsInDc.ToList());
+        }
+        else
+        {
+            var localPlayer = Service.ClientState.LocalPlayer;
+            if (localPlayer == null || localPlayer.CurrentWorld.GameData == null) return;
+
+            var world = localPlayer.CurrentWorld.GameData;
+            var dataCentre = world.DataCenter;
+            var worldsInDc = Service.Data.GetExcelSheet<World>()!
+                .Where(x => (x.DataCenter.Row == dataCentre.Row) && x.IsPublic && x.Name != world.Name)
+                .OrderBy(x => (string)x.Name)
+                .Select(x => (string)x.Name);
+            var regionStr = getRegionStr(dataCentre.Value!.Region);
+            updateWorldList(regionStr, dataCentre.Value.Name, world.Name, worldsInDc.ToList());
+        }
+    }
+
+    private void updateWorldList(string region, string dataCentre, string homeWorld, List<string> worldsInDc)
+    {
+        worldList.Clear();
+        // regions
+        worldList.Add((region, $"{(char)SeIconChar.ExperienceFilled}  {region} "));
+        worldList.AddRange(plugin.Config.AdditionalWorlds
+            .Where(PublicRegions.Contains)
+            .Select(x => (x, $"{(char)SeIconChar.ExperienceFilled}  {x}*"))
+        );
+        // data centres
+        worldList.Add((dataCentre, $"{(char)SeIconChar.Experience}  {dataCentre} "));
+        worldList.AddRange(plugin.Config.AdditionalWorlds
+            .Where(PublicDataCentres.Contains)
+            .Select(x => (x, $"{(char)SeIconChar.Experience}  {x}*"))
+        );
+        // home world
+        worldList.Add((homeWorld, $"{homeWorld}"));
+        // additional worlds
+        worldList.AddRange(plugin.Config.AdditionalWorlds
+            .Where(PublicWorlds.Contains)
+            .Select(x => (x, $"{x}*"))
+        );
+        worldList.AddRange(worldsInDc.Select(x => (x, $"{x}")));
+
+        playerHomeWorld = homeWorld;
+        if (plugin.Config.selectedWorld == "")
+        {
+            plugin.Config.selectedWorld = dataCentre;
         }
     }
 
@@ -388,13 +440,14 @@ public class MainWindow : Window, IDisposable
         {
             foreach (var world in worldList)
             {
+                if (world.Item1 == playerHomeWorld) ImGui.PushStyleColor(ImGuiCol.Text, Miosuke.UI.ColourHq);
+
                 var isSelected = world.Item1 == plugin.Config.selectedWorld;
                 if (ImGui.Selectable(world.Item2, isSelected))
                 {
                     plugin.Config.selectedWorld = world.Item1;
                     plugin.Config.Save();
 
-                    Service.Log.Debug($"[UI] Selected world: {lastSelectedWorld} -> {plugin.Config.selectedWorld}");
                     if (plugin.Config.selectedWorld != lastSelectedWorld)
                     {
                         Service.Log.Info($"[UI] Fetch data of {plugin.Config.selectedWorld}");
@@ -408,6 +461,8 @@ public class MainWindow : Window, IDisposable
                 {
                     ImGui.SetItemDefaultFocus();
                 }
+
+                if (world.Item1 == playerHomeWorld) ImGui.PopStyleColor();
             }
 
             ImGui.EndCombo();

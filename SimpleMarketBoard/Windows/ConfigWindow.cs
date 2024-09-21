@@ -111,6 +111,8 @@ public class ConfigWindow : Window, IDisposable
         ImGui.TextColored(UI.ColourTitle, "General");
         ImGui.Separator();
 
+
+
         ImGui.TextColored(UI.ColourSubtitle, "Search");
 
         // ShowWindowOnSearch
@@ -183,50 +185,6 @@ public class ConfigWindow : Window, IDisposable
             "Disable: the hotkey will not be able to hide the main window."
         );
 
-        // AdditionalWorlds
-        // ImGui.BeginChild("table DrawUi Position Offset", new Vector2(table_width, table_height * 6), false);
-        ImGui.Text("Additional Worlds/DCs/Regions");
-        ImGuiComponents.HelpMarker(
-            "Use this to add extra options to the target world dropdown menu to search price in.\n" +
-            "To add a world or datacentre, use its full name in game, e.g., Hades, Mana\n" +
-            "To add a region (supported by Universalis), e.g., Japan, North-America, Europe, Oceania"
-        );
-        for (var i = 0; i < plugin.Config.AdditionalWorlds.Count; i++)
-        {
-            ImGui.PushID($"{suffix}-AdditionalWorlds-{i}");
-            var additionalWorld = plugin.Config.AdditionalWorlds[i];
-            ImGui.SetNextItemWidth(180);
-            if (ImGui.InputText($"{suffix}-AdditionalWorlds", ref additionalWorld, 32))
-            {
-                plugin.Config.AdditionalWorlds[i] = additionalWorld;
-                plugin.Config.Save();
-                plugin.MainWindow.UpdateWorld(true);
-            }
-            ImGui.SameLine();
-            ImGui.PushFont(UiBuilder.IconFont);
-            if (ImGui.Button($"{FontAwesomeIcon.Trash.ToIconString()}{suffix}-del"))
-            {
-                plugin.Config.AdditionalWorlds.RemoveAt(i--);
-                plugin.Config.Save();
-                plugin.MainWindow.UpdateWorld(true);
-            }
-            ImGui.PopFont();
-            ImGui.PopID();
-            if (i < 0) break;
-        }
-        ImGui.SetNextItemWidth(180);
-        ImGui.InputText($"{suffix}-AdditionalWorlds-new", ref newAdditionalWorld, 500);
-        ImGui.SameLine();
-        ImGui.PushFont(UiBuilder.IconFont);
-        if (ImGui.Button($"{FontAwesomeIcon.Plus.ToIconString()}{suffix}-add"))
-        {
-            plugin.Config.AdditionalWorlds.Add(newAdditionalWorld);
-            plugin.Config.Save();
-            plugin.MainWindow.UpdateWorld(true);
-            newAdditionalWorld = string.Empty;
-        }
-        ImGui.PopFont();
-        // ImGui.EndChild();
 
 
         ImGui.TextColored(UI.ColourSubtitle, "Data window");
@@ -276,6 +234,90 @@ public class ConfigWindow : Window, IDisposable
             "Enable: the hotkey will hide the main window, if it's already shown.\n" +
             "Disable: the hotkey will not be able to hide the main window."
         );
+
+
+
+        ImGui.TextColored(UI.ColourSubtitle, "Worlds");
+
+        // OverridePlayerHomeWorld
+        var OverridePlayerHomeWorld = plugin.Config.OverridePlayerHomeWorld;
+        if (ImGui.Checkbox($"Override player home world{suffix}OverridePlayerHomeWorld", ref OverridePlayerHomeWorld))
+        {
+            plugin.Config.OverridePlayerHomeWorld = OverridePlayerHomeWorld;
+        }
+        ImGuiComponents.HelpMarker(
+            "Your home world is used when populate the target world drop down menu.\n" +
+            "Enable: The plugin will use the world you set below as your home world, no matter what your actual home world is.\n" +
+            "Disable: The plugin will use the world your current character is in as your home world, and this gets updated when you login and change maps."
+        );
+
+        // PlayerHomeWorld
+        ImGui.Text("┗");
+        ImGui.SameLine();
+        ImGui.Text("... using");
+        ImGuiComponents.HelpMarker(
+            "The WORLD you want to always use as your home world. Fill its full name in game, e.g., Hades"
+        );
+        ImGui.SameLine();
+        ImGui.SetNextItemWidth(180);
+        var PlayerHomeWorld = plugin.Config.PlayerHomeWorld;
+        if (ImGui.InputText($"{suffix}-PlayerHomeWorld", ref PlayerHomeWorld, 32))
+        {
+            plugin.Config.PlayerHomeWorld = PlayerHomeWorld;
+        }
+        ImGui.SameLine();
+        if (ImGui.Button("Apply"))
+        {
+            if (plugin.Config.OverridePlayerHomeWorld && plugin.Config.PlayerHomeWorld != "")
+            {
+                plugin.Config.Save();
+                plugin.MainWindow.UpdateWorld(true);
+            }
+        }
+
+        // AdditionalWorlds
+        ImGui.Text("Additional Worlds/DCs/Regions");
+        ImGuiComponents.HelpMarker(
+            "Use this to add extra options to the target world dropdown menu to search price in.\n" +
+            "To add a world or datacentre, use its full name in game, e.g., Hades, Mana\n" +
+            "To add a region (supported by Universalis), e.g., Japan, North-America, Europe, Oceania\n" +
+            "Your manually added worlds will be denoted by a star (*) in the dropdown menu."
+        );
+        for (var i = 0; i < plugin.Config.AdditionalWorlds.Count; i++)
+        {
+            ImGui.PushID($"{suffix}-AdditionalWorlds-{i}");
+            var additionalWorld = plugin.Config.AdditionalWorlds[i];
+            ImGui.SetNextItemWidth(180);
+            if (ImGui.InputText($"{suffix}-AdditionalWorlds", ref additionalWorld, 32))
+            {
+                plugin.Config.AdditionalWorlds[i] = additionalWorld;
+                plugin.Config.Save();
+                plugin.MainWindow.UpdateWorld(true);
+            }
+            ImGui.SameLine();
+            ImGui.PushFont(UiBuilder.IconFont);
+            if (ImGui.Button($"{FontAwesomeIcon.Trash.ToIconString()}{suffix}-del"))
+            {
+                plugin.Config.AdditionalWorlds.RemoveAt(i--);
+                plugin.Config.Save();
+                plugin.MainWindow.UpdateWorld(true);
+            }
+            ImGui.PopFont();
+            ImGui.PopID();
+            if (i < 0) break;
+        }
+        ImGui.SetNextItemWidth(180);
+        ImGui.InputText($"{suffix}-AdditionalWorlds-new", ref newAdditionalWorld, 32);
+        ImGui.SameLine();
+        ImGui.PushFont(UiBuilder.IconFont);
+        if (ImGui.Button($"{FontAwesomeIcon.Plus.ToIconString()}{suffix}-add"))
+        {
+            plugin.Config.AdditionalWorlds.Add(newAdditionalWorld);
+            plugin.Config.Save();
+            plugin.MainWindow.UpdateWorld(true);
+            newAdditionalWorld = string.Empty;
+        }
+        ImGui.PopFont();
 
 
 
