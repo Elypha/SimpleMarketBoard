@@ -379,6 +379,10 @@ public class MainWindow : Window, IDisposable
 
     private void DrawWorldCombo(float width)
     {
+        if (plugin.PluginThemeEnabled)
+        {
+            plugin.NotoSansJpMedium.Pop();
+        }
         ImGui.SetNextItemWidth(width);
         if (ImGui.BeginCombo($"###{plugin.Name}selectedWorld", plugin.Config.selectedWorld))
         {
@@ -407,6 +411,10 @@ public class MainWindow : Window, IDisposable
             }
 
             ImGui.EndCombo();
+        }
+        if (plugin.PluginThemeEnabled)
+        {
+            plugin.NotoSansJpMedium.Push();
         }
     }
 
