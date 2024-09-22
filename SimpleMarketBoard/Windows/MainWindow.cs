@@ -317,27 +317,37 @@ public class MainWindow : Window, IDisposable
 
     private void updateWorldList(string region, string dataCentre, string homeWorld, List<string> worldsInDc)
     {
+        var additionalWorlds = plugin.Config.AdditionalWorlds.ToList();
         worldList.Clear();
-        // regions
-        worldList.Add((region, $"{(char)SeIconChar.ExperienceFilled}  {region} "));
-        worldList.AddRange(plugin.Config.AdditionalWorlds
-            .Where(PublicRegions.Contains)
+
+        string suffix;
+
+        // add region
+        suffix = additionalWorlds.Contains(region) ? "*" : "";
+        worldList.Add((region, $"{(char)SeIconChar.ExperienceFilled}  {region}{suffix}"));
+        worldList.AddRange(additionalWorlds
+            .Where(x => PublicRegions.Contains(x) && !string.Equals(x, region, StringComparison.OrdinalIgnoreCase))
             .Select(x => (x, $"{(char)SeIconChar.ExperienceFilled}  {x}*"))
         );
         // data centres
-        worldList.Add((dataCentre, $"{(char)SeIconChar.Experience}  {dataCentre} "));
-        worldList.AddRange(plugin.Config.AdditionalWorlds
-            .Where(PublicDataCentres.Contains)
+        suffix = additionalWorlds.Contains(dataCentre) ? "*" : "";
+        worldList.Add((dataCentre, $"{(char)SeIconChar.Experience}  {dataCentre}{suffix}"));
+        worldList.AddRange(additionalWorlds
+            .Where(x => PublicDataCentres.Contains(x) && !string.Equals(x, dataCentre, StringComparison.OrdinalIgnoreCase))
             .Select(x => (x, $"{(char)SeIconChar.Experience}  {x}*"))
         );
         // home world
-        worldList.Add((homeWorld, $"{homeWorld}"));
+        suffix = additionalWorlds.Contains(homeWorld) ? "*" : "";
+        worldList.Add((homeWorld, $"{homeWorld}{suffix}"));
         // additional worlds
-        worldList.AddRange(plugin.Config.AdditionalWorlds
-            .Where(PublicWorlds.Contains)
+        worldList.AddRange(additionalWorlds
+            .Where(x => PublicWorlds.Contains(x) && !string.Equals(x, homeWorld, StringComparison.OrdinalIgnoreCase))
             .Select(x => (x, $"{x}*"))
         );
-        worldList.AddRange(worldsInDc.Select(x => (x, $"{x}")));
+        worldList.AddRange(worldsInDc
+            .Where(x => !additionalWorlds.Contains(x))
+            .Select(x => (x, $"{x}"))
+        );
 
         playerHomeWorld = homeWorld;
         if (plugin.Config.selectedWorld == "")
