@@ -259,7 +259,7 @@ public sealed class Plugin : IDalamudPlugin
                     HoveredItem.CheckItem(HoveredItem.SavedItemId);
                 }
             }
-            else if (Config.HotkeyBackgroundSearchEnabled)
+            else if (Config.HotkeyBackgroundSearchEnabled && (HoveredItem.HoverItemId != 0))
             {
                 searchHotkeyHandled = true;
                 HoveredItem.CheckItem(HoveredItem.HoverItemId);
