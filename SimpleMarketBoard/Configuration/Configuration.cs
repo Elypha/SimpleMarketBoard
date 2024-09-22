@@ -17,12 +17,14 @@ public class SimpleMarketBoardConfig : IPluginConfiguration
 
     // -------------------------------- General --------------------------------
     // search
-    public bool ShowWindowOnSearch { get; set; } = true;
     public int HoverDelayMs { get; set; } = 0;
     public bool SearchHotkeyEnabled { get; set; } = true;
     public VirtualKey[] SearchHotkey { get; set; } = [VirtualKey.TAB];
     public bool SearchHotkeyLoose { get; set; } = true;
     public bool SearchHotkeyCanHide { get; set; } = true;
+    public bool ShowWindowOnSearch { get; set; } = true;
+    public bool HoverBackgroundSearchEnabled { get; set; } = true;
+    public bool HotkeyBackgroundSearchEnabled { get; set; } = true;
 
     // data window
     public bool WindowHotkeyEnabled { get; set; } = false;

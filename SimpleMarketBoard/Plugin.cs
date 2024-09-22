@@ -246,15 +246,23 @@ public sealed class Plugin : IDalamudPlugin
 
         if (!searchHotkeyHandled)
         {
-            if (Config.SearchHotkeyCanHide && MainWindow.IsOpen && (HoveredItem.HoverItemId == 0))
+            if (MainWindow.IsOpen)
             {
-                searchHotkeyHandled = true;
-                MainWindow.IsOpen = false;
+                if (Config.SearchHotkeyCanHide && (HoveredItem.HoverItemId == 0))
+                {
+                    searchHotkeyHandled = true;
+                    MainWindow.IsOpen = false;
+                }
+                else if (HoveredItem.SavedItemId != 0)
+                {
+                    searchHotkeyHandled = true;
+                    HoveredItem.CheckItem(HoveredItem.SavedItemId);
+                }
             }
-            else if (HoveredItem.SavedItemId != 0)
+            else if (Config.HotkeyBackgroundSearchEnabled)
             {
                 searchHotkeyHandled = true;
-                HoveredItem.CheckItem(HoveredItem.SavedItemId);
+                HoveredItem.CheckItem(HoveredItem.HoverItemId);
             }
         }
     }

@@ -115,17 +115,6 @@ public class ConfigWindow : Window, IDisposable
 
         ImGui.TextColored(UI.ColourSubtitle, "Search");
 
-        // ShowWindowOnSearch
-        var ShowWindowOnSearch = plugin.Config.ShowWindowOnSearch;
-        if (ImGui.Checkbox($"Show main window on search{suffix}ShowWindowOnSearch", ref ShowWindowOnSearch))
-        {
-            plugin.Config.ShowWindowOnSearch = ShowWindowOnSearch;
-            plugin.Config.Save();
-        }
-        ImGuiComponents.HelpMarker(
-            "Enable: The main window will show up, if it's not already shown, when you trigger a search."
-        );
-
         // HoverDelayMs
         ImGui.Text("Hover delay");
         ImGuiComponents.HelpMarker("you hover over an item > wait for this time > plugin starts to fetch the market data.");
@@ -183,6 +172,39 @@ public class ConfigWindow : Window, IDisposable
         ImGuiComponents.HelpMarker(
             "Enable: the hotkey will also hide the main window, if it's already shown and you are not hovering over an item.\n" +
             "Disable: the hotkey will not be able to hide the main window."
+        );
+
+        // ShowWindowOnSearch
+        var ShowWindowOnSearch = plugin.Config.ShowWindowOnSearch;
+        if (ImGui.Checkbox($"Show main window on search{suffix}ShowWindowOnSearch", ref ShowWindowOnSearch))
+        {
+            plugin.Config.ShowWindowOnSearch = ShowWindowOnSearch;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: The main window will show up, if it's not already shown, when you trigger a search."
+        );
+
+        // HotkeyBackgroundSearchEnabled
+        var HotkeyBackgroundSearchEnabled = plugin.Config.HotkeyBackgroundSearchEnabled;
+        if (ImGui.Checkbox($"Hotkey search can start from background{suffix}HotkeyBackgroundSearchEnabled", ref HotkeyBackgroundSearchEnabled))
+        {
+            plugin.Config.HotkeyBackgroundSearchEnabled = HotkeyBackgroundSearchEnabled;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: You can trigger a search even when the main window is not shown, by pressing the hotkey and, if configured, waiting for the hover delay."
+        );
+
+        // HoverBackgroundSearchEnabled
+        var HoverBackgroundSearchEnabled = plugin.Config.HoverBackgroundSearchEnabled;
+        if (ImGui.Checkbox($"Non-hotkey search can start from background{suffix}HoverBackgroundSearchEnabled", ref HoverBackgroundSearchEnabled))
+        {
+            plugin.Config.HoverBackgroundSearchEnabled = HoverBackgroundSearchEnabled;
+            plugin.Config.Save();
+        }
+        ImGuiComponents.HelpMarker(
+            "Enable: You can trigger a search even when the main window is not shown, by hovering over an item and waiting for the hover delay, if hotkey is not required."
         );
 
 

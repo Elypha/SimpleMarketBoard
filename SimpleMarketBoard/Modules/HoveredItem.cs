@@ -42,6 +42,7 @@ public class HoveredItem
         }
         else
         {
+            if (!plugin.Config.HoverBackgroundSearchEnabled && !plugin.MainWindow.IsOpen) return;
             Service.Log.Info($"Start Check {HoverItemId} {ItemCts?.IsCancellationRequested}");
             CheckItem(HoverItemId);
         }
