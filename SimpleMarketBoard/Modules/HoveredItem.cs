@@ -32,7 +32,7 @@ public class HoveredItem
         HoverItemId = thisItemId % 1000000;
 
         // cancel existing request
-        if (ItemCts != null && !ItemCts.IsCancellationRequested) ItemCts.Cancel();
+        if (ItemCts is not null && !ItemCts.IsCancellationRequested) ItemCts.Cancel();
         // reset if not hovering
         if (HoverItemId == 0) { SavedItemId = 0; return; }
 
@@ -43,7 +43,7 @@ public class HoveredItem
         else
         {
             if (!plugin.Config.HoverBackgroundSearchEnabled && !plugin.MainWindow.IsOpen) return;
-            Service.Log.Info($"Start Check {HoverItemId} {ItemCts?.IsCancellationRequested}");
+            Service.Log.Debug($"Check {HoverItemId} {ItemCts?.IsCancellationRequested}");
             CheckItem(HoverItemId);
         }
     }
@@ -51,7 +51,7 @@ public class HoveredItem
     public void CheckItem(ulong itemId)
     {
         // cancel existing request
-        if (ItemCts != null && !ItemCts.IsCancellationRequested) ItemCts.Cancel();
+        if (ItemCts is not null && !ItemCts.IsCancellationRequested) ItemCts.Cancel();
 
         ItemCts = new CancellationTokenSource();
         CheckItemAsync(itemId, ItemCts.Token);
@@ -66,7 +66,7 @@ public class HoveredItem
         }
         catch (TaskCanceledException)
         {
-            Service.Log.Info($"Got Cancel {itemId} {SavedItemId}");
+            Service.Log.Debug($"Cancel {itemId} {SavedItemId}");
             return;
         }
 

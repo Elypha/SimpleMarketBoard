@@ -261,7 +261,7 @@ public class MainWindow : Window, IDisposable
             2 => "North-America",
             3 => "Europe",
             4 => "Oceania",
-            _ => string.Empty,
+            _ => "",
         };
     }
 
@@ -278,7 +278,7 @@ public class MainWindow : Window, IDisposable
             var world = Service.Data.GetExcelSheet<World>()!
                 .Where(x => string.Equals((string)x.Name, plugin.Config.PlayerHomeWorld, StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
-            if (world == null)
+            if (world is null)
             {
                 Service.NotificationManager.AddNotification(new Notification
                 {
@@ -302,7 +302,7 @@ public class MainWindow : Window, IDisposable
         else
         {
             var localPlayer = Service.ClientState.LocalPlayer;
-            if (localPlayer == null || localPlayer.CurrentWorld.GameData == null) return;
+            if (localPlayer is null || localPlayer.CurrentWorld.GameData is null) return;
 
             var world = localPlayer.CurrentWorld.GameData;
             var dataCentre = world.DataCenter;
@@ -360,7 +360,8 @@ public class MainWindow : Window, IDisposable
     {
         var clipboardTextTrimmed = clipboardText.Trim();
         var inGame = plugin.ItemSheet.Single(i => i.Name == clipboardTextTrimmed);
-        if (inGame != null)
+        Service.Log.Info($"Clipboard text: {clipboardTextTrimmed}, Item ID: {inGame?.RowId}");
+        if (inGame is not null)
         {
             return inGame.RowId;
         }
@@ -460,7 +461,7 @@ public class MainWindow : Window, IDisposable
 
                     if (plugin.Config.selectedWorld != lastSelectedWorld)
                     {
-                        Service.Log.Info($"[UI] Fetch data of {plugin.Config.selectedWorld}");
+                        Service.Log.Debug($"Fetch data of {plugin.Config.selectedWorld}");
                         plugin.PriceChecker.DoCheckRefreshAsync(CurrentItem);
                     }
 
@@ -536,7 +537,7 @@ public class MainWindow : Window, IDisposable
             marketDataListings = marketDataListings.OrderBy(l => l.PricePerUnit).ToList();
         }
 
-        if (marketDataListings != null)
+        if (marketDataListings is not null)
         {
             bool isColourPushed;
             foreach (var listing in marketDataListings)
@@ -659,7 +660,7 @@ public class MainWindow : Window, IDisposable
             marketDataEntries = marketDataEntries.OrderByDescending(l => l.Timestamp).ToList();
         }
 
-        if (marketDataEntries != null)
+        if (marketDataEntries is not null)
         {
             foreach (var entry in marketDataEntries)
             {

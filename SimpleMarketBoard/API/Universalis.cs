@@ -72,7 +72,7 @@ public class Universalis
 
             // decode response
             var data = await response.Content.ReadFromJsonAsync<MarketDataCurrent>();
-            if (data == null)
+            if (data is null)
             {
                 Service.Log.Warning($"[Universalis] Parse JSON failed");
                 return new UniversalisResponse { Status = UniversalisResponseStatus.InvalidData };
@@ -86,7 +86,7 @@ public class Universalis
                 foreach (var i in worldUploadTimes ?? [])
                 {
                     var worldRow = plugin.WorldSheet.GetRow(uint.Parse(i.Key));
-                    if (worldRow == null) continue;
+                    if (worldRow is null) continue;
                     var worldName = worldRow.Name.ToString();
                     var hours = (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - i.Value) / 1000 / 3600;
                     worldUpdatedData.Add(worldName, hours);

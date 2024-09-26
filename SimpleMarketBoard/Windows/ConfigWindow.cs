@@ -21,7 +21,7 @@ public class ConfigWindow : Window, IDisposable
     private readonly Plugin plugin;
     private readonly HotkeyUi search_hotkey_helper;
     private readonly HotkeyUi window_hotkey_helper;
-    private string newAdditionalWorld = string.Empty;
+    private string newAdditionalWorld = "";
 
     public ConfigWindow(Plugin plugin) : base(
         "SimpleMarketBoard Configuration"
@@ -337,7 +337,7 @@ public class ConfigWindow : Window, IDisposable
             plugin.Config.AdditionalWorlds.Add(newAdditionalWorld);
             plugin.Config.Save();
             plugin.MainWindow.UpdateWorld(true);
-            newAdditionalWorld = string.Empty;
+            newAdditionalWorld = "";
         }
         ImGui.PopFont();
 

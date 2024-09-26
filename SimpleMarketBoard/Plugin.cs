@@ -78,7 +78,7 @@ public sealed class Plugin : IDalamudPlugin
             try
             {
                 var _PluginTheme = StyleModel.Deserialize(Config.CustomTheme);
-                if (_PluginTheme != null) PluginTheme = _PluginTheme;
+                if (_PluginTheme is not null) PluginTheme = _PluginTheme;
             }
             catch (System.Exception e)
             {
