@@ -94,10 +94,6 @@ public class MainWindow : Window, IDisposable
     public List<(string, string)> worldList = [];
     public string playerHomeWorld = "";
 
-    public static readonly Vector4 ColourHq = Ui.HslaToDecimal(45, 0.80, 0.70, 1.0);
-
-
-
 
     public override void Draw()
     {
@@ -402,7 +398,7 @@ public class MainWindow : Window, IDisposable
         {
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
-            ImGui.PushStyleColor(ImGuiCol.Text, ColourHq);
+            ImGui.PushStyleColor(ImGuiCol.Text, Ui.ColourHq);
             ImGui.Text($"{(char)FontAwesomeIcon.Spinner}");
             ImGui.PopStyleColor();
             ImGui.PopFont();
@@ -424,7 +420,7 @@ public class MainWindow : Window, IDisposable
     private void DrawHqFilterButton(float size)
     {
         var _iconColour = Ui.ColourWhite;
-        if (plugin.Config.FilterHq) _iconColour = ColourHq;
+        if (plugin.Config.FilterHq) _iconColour = Ui.ColourHq;
         if (plugin.Config.UniversalisHqOnly) _iconColour = Ui.ColourCyan;
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.PushStyleColor(ImGuiCol.Text, _iconColour);
@@ -454,7 +450,7 @@ public class MainWindow : Window, IDisposable
         {
             foreach (var world in worldList)
             {
-                if (world.Item1 == playerHomeWorld) ImGui.PushStyleColor(ImGuiCol.Text, ColourHq);
+                if (world.Item1 == playerHomeWorld) ImGui.PushStyleColor(ImGuiCol.Text, Ui.ColourHq);
 
                 var isSelected = world.Item1 == plugin.Config.selectedWorld;
                 if (ImGui.Selectable(world.Item2, isSelected))
@@ -553,7 +549,7 @@ public class MainWindow : Window, IDisposable
                 }
                 else if (listing.Hq)
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, ColourHq);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Ui.ColourHq);
                     isColourPushed = true;
                 }
 
@@ -667,7 +663,7 @@ public class MainWindow : Window, IDisposable
         {
             foreach (var entry in marketDataEntries)
             {
-                if (entry.Hq) ImGui.PushStyleColor(ImGuiCol.Text, ColourHq);
+                if (entry.Hq) ImGui.PushStyleColor(ImGuiCol.Text, Ui.ColourHq);
 
                 // Sold
                 var index = marketDataEntries.IndexOf(entry);
@@ -720,7 +716,7 @@ public class MainWindow : Window, IDisposable
     private void DrawHistoryButton()
     {
         ImGui.PushFont(UiBuilder.IconFont);
-        ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? ColourHq : Ui.ColourWhite);
+        ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? Ui.ColourHq : Ui.ColourWhite);
         if (ImGui.Button($"{(char)FontAwesomeIcon.List}", new Vector2(plugin.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
         {
             searchHistoryOpen = !searchHistoryOpen;
