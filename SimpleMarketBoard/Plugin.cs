@@ -14,6 +14,7 @@ using SimpleMarketBoard.UniversalisModels;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Game.Text.SeStringHandling;
 
 
 namespace SimpleMarketBoard;
@@ -25,6 +26,7 @@ public sealed class Plugin : IDalamudPlugin
     public string NameShort => "SMB";
     private const string CommandMain = "/smb";
     private const string CommandMainAlt = "/mb";
+    public DalamudLinkPayload? PluginPayload;
 
     // fonts and data resources
     public IFontHandle Axis20 { get; set; }
@@ -55,20 +57,23 @@ public sealed class Plugin : IDalamudPlugin
         pluginInterface.Create<Service>();
         Service.Log.Info($"[General] Plugin loading...");
 
+        // load plugin payload
+        PluginPayload = pluginInterface.AddChatLinkHandler(1, pluginPayloadHandler);
+
         // load configuration
         Config = Service.PluginInterface.GetPluginConfig() as SimpleMarketBoardConfig ?? new SimpleMarketBoardConfig();
         Config.Initialize(Service.PluginInterface);
         if (Config.Version < 1)
         {
-            Miosuke.PrintMessage.Chat(
+            Miosuke.Messages.Chat.PluginMessage(
                 XivChatType.None,
-                $"[{NameShort}] ",
-                557,
+                $"[{NameShort}]",
                 [
                     new UIForegroundPayload(39),
-                    new TextPayload($"Your current configuration version is outdated due to a refactor of this plugin. Please consider resetting your configuration to start fresh. You can do this in the plugin installer. Find this plugin, and right click > Reset plugin data and reload."),
+                    new TextPayload($" Your current configuration version is outdated due to a refactor of this plugin. Please consider resetting your configuration to start fresh. You can do this in the plugin installer. Find this plugin, and right click > Reset plugin data and reload."),
                     new UIForegroundPayload(0),
-                ]);
+                ],
+                PluginPayload);
         }
 
         // load fonts and data resources
@@ -171,6 +176,14 @@ public sealed class Plugin : IDalamudPlugin
         MiosukeHelper.Dispose();
     }
 
+    private void pluginPayloadHandler(uint id, SeString text)
+    {
+        if (text.TextValue == $"[{NameShort}]")
+        {
+            MainWindow.Toggle();
+        }
+    }
+
     public void DrawUI()
     {
         WindowSystem.Draw();
@@ -213,7 +226,7 @@ public sealed class Plugin : IDalamudPlugin
     public void OnFrameUpdateWindow(IFramework framework)
     {
         if (!Config.WindowHotkeyEnabled) return;
-        if (!Miosuke.Hotkey.IsActive(Config.WindowHotkey, true))
+        if (!Miosuke.Action.Hotkey.IsActive(Config.WindowHotkey, true))
         {
             windowHotkeyHandled = false;
             return;
@@ -238,7 +251,7 @@ public sealed class Plugin : IDalamudPlugin
     public void OnFrameUpdateSearch(IFramework framework)
     {
         if (!Config.SearchHotkeyEnabled) return;
-        if (!Miosuke.Hotkey.IsActive(Config.SearchHotkey, !Config.SearchHotkeyLoose))
+        if (!Miosuke.Action.Hotkey.IsActive(Config.SearchHotkey, !Config.SearchHotkeyLoose))
         {
             searchHotkeyHandled = false;
             return;

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Numerics;
 using System;
 using Miosuke;
+using Miosuke.UiHelper;
 using Dalamud.Interface;
 using Dalamud.Interface.Style;
 using Dalamud.Interface.ImGuiNotification;
@@ -88,6 +89,21 @@ public class ConfigWindow : Window, IDisposable
             "Check the 'Manual' section for a detailed introduction of all the features and how to use them."
         );
 
+        // Debug
+#if DEBUG
+        ImGui.TextColored(Ui.ColourRedLight, "Debug");
+        if (ImGui.Button("Do test"))
+        {
+            for (var i = 0; i < 10; i++)
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                Miosuke.Action.Hotkey.IsActive(plugin.Config.SearchHotkey, true);
+                watch.Stop();
+                Service.Log.Info($"[Hotkey] Test result: {watch.Elapsed}");
+            }
+        }
+#endif
+
         // General
         DrawGeneral(padding);
 
@@ -101,19 +117,19 @@ public class ConfigWindow : Window, IDisposable
     private void DrawGeneral(float padding)
     {
         // setup
-        // float table_width = ImGui.GetWindowSize().X;
-        // float table_height = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y * 2;
-        // float col_name_width = ImGui.CalcTextSize("　Action name translation　").X + 2 * ImGui.GetStyle().ItemSpacing.X;
-        // float col_value_width = 150.0f;
-        // float col_value_content_width = 120.0f;
+        // var table_width = ImGui.GetWindowSize().X;
+        // var table_height = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y * 2;
+        // var col_name_width = ImGui.CalcTextSize("　Action name translation　").X + 2 * ImGui.GetStyle().ItemSpacing.X;
+        // var col_value_width = 150.0f;
+        // var col_value_content_width = 120.0f;
         var suffix = $"###{plugin.Name}[General]";
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
-        ImGui.TextColored(UI.ColourTitle, "General");
+        ImGui.TextColored(Ui.ColourTitle, "General");
         ImGui.Separator();
 
 
 
-        ImGui.TextColored(UI.ColourSubtitle, "Search");
+        ImGui.TextColored(Ui.ColourSubtitle, "Search");
 
         // HoverDelayMs
         ImGui.Text("Hover delay");
@@ -209,7 +225,7 @@ public class ConfigWindow : Window, IDisposable
 
 
 
-        ImGui.TextColored(UI.ColourSubtitle, "Data window");
+        ImGui.TextColored(Ui.ColourSubtitle, "Data window");
 
         // WindowHotkeyEnabled
         var WindowHotkeyEnabled = plugin.Config.WindowHotkeyEnabled;
@@ -259,7 +275,7 @@ public class ConfigWindow : Window, IDisposable
 
 
 
-        ImGui.TextColored(UI.ColourSubtitle, "Worlds");
+        ImGui.TextColored(Ui.ColourSubtitle, "Worlds");
 
         // OverridePlayerHomeWorld
         var OverridePlayerHomeWorld = plugin.Config.OverridePlayerHomeWorld;
@@ -343,7 +359,7 @@ public class ConfigWindow : Window, IDisposable
 
 
 
-        ImGui.TextColored(UI.ColourSubtitle, "Notification");
+        ImGui.TextColored(Ui.ColourSubtitle, "Notification");
 
         // priceToPrint
         ImGui.Text("Use the price of");
@@ -421,14 +437,14 @@ public class ConfigWindow : Window, IDisposable
     private void DrawData(float padding)
     {
         // setup
-        float table_width = ImGui.GetWindowSize().X;
-        float table_height = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y * 2;
-        float col_name_width = ImGui.CalcTextSize("　Selling records numbers　").X + 2 * ImGui.GetStyle().ItemSpacing.X;
-        float col_value_width = 150.0f;
-        float col_value_content_width = 120.0f;
+        var table_width = ImGui.GetWindowSize().X;
+        var table_height = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y * 2;
+        var col_name_width = ImGui.CalcTextSize("　Selling records numbers　").X + 2 * ImGui.GetStyle().ItemSpacing.X;
+        var col_value_width = 150.0f;
+        var col_value_content_width = 120.0f;
         var suffix = $"###{plugin.Name}[Data]";
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
-        ImGui.TextColored(UI.ColourTitle, "Data");
+        ImGui.TextColored(Ui.ColourTitle, "Data");
         ImGui.Separator();
 
 
@@ -456,7 +472,7 @@ public class ConfigWindow : Window, IDisposable
             "Enable: A record will be in red if the price is higher than vendor NPC."
         );
 
-        ImGui.TextColored(UI.ColourSubtitle, "Cache");
+        ImGui.TextColored(Ui.ColourSubtitle, "Cache");
 
         // MaxCacheItems
         ImGui.Text("Cached items");
@@ -485,7 +501,7 @@ public class ConfigWindow : Window, IDisposable
             "Enable: Cache clean will also run immediately when a new item is added."
         );
 
-        ImGui.TextColored(UI.ColourSubtitle, "Universalis");
+        ImGui.TextColored(Ui.ColourSubtitle, "Universalis");
 
 
         ImGui.BeginChild("table DrawData Universalis", new Vector2(table_width, table_height * 3), false);
@@ -494,7 +510,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.SetColumnWidth(1, col_value_width);
 
         // RequestTimeout
-        ImGui.TextColored(UI.ColourText, "　Request timeout");
+        ImGui.TextColored(Ui.ColourText, "　Request timeout");
         ImGui.NextColumn();
         var RequestTimeout = plugin.Config.RequestTimeout;
         ImGui.SetNextItemWidth(col_value_content_width);
@@ -512,7 +528,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.NextColumn();
 
         // UniversalisListings
-        ImGui.TextColored(UI.ColourText, "　Selling records numbers");
+        ImGui.TextColored(Ui.ColourText, "　Selling records numbers");
         ImGui.NextColumn();
         var UniversalisListings = plugin.Config.UniversalisListings;
         ImGui.SetNextItemWidth(col_value_content_width);
@@ -529,7 +545,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.NextColumn();
 
         // UniversalisEntries
-        ImGui.TextColored(UI.ColourText, "　Sold records numbers");
+        ImGui.TextColored(Ui.ColourText, "　Sold records numbers");
         ImGui.NextColumn();
         var UniversalisEntries = plugin.Config.UniversalisEntries;
         ImGui.SetNextItemWidth(col_value_content_width);
@@ -554,14 +570,14 @@ public class ConfigWindow : Window, IDisposable
     private void DrawUi(float padding)
     {
         // setup
-        float table_width = ImGui.GetWindowSize().X;
-        float table_height = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y * 2;
-        float col_name_width = ImGui.CalcTextSize("　Selling records numbers　").X + 2 * ImGui.GetStyle().ItemSpacing.X;
-        float col_value_width = 150.0f;
-        float col_value_content_width = 120.0f;
+        var table_width = ImGui.GetWindowSize().X;
+        var table_height = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetStyle().ItemSpacing.Y * 2;
+        var col_name_width = ImGui.CalcTextSize("　Selling records numbers　").X + 2 * ImGui.GetStyle().ItemSpacing.X;
+        var col_value_width = 150.0f;
+        var col_value_content_width = 120.0f;
         var suffix = $"###{plugin.Name}[UI]";
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (padding * ImGui.GetTextLineHeight()));
-        ImGui.TextColored(UI.ColourTitle, "UI");
+        ImGui.TextColored(Ui.ColourTitle, "UI");
         ImGui.Separator();
 
 
@@ -691,7 +707,7 @@ public class ConfigWindow : Window, IDisposable
         );
 
 
-        ImGui.TextColored(UI.ColourSubtitle, "Position Offset");
+        ImGui.TextColored(Ui.ColourSubtitle, "Position Offset");
 
 
         ImGui.BeginChild("table DrawUi Position Offset", new Vector2(table_width, table_height * 8), false);

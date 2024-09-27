@@ -13,6 +13,7 @@ using System.Numerics;
 using System;
 using Dalamud.Interface.Textures;
 using Miosuke;
+using Miosuke.UiHelper;
 using Dalamud.Interface.ImGuiNotification;
 using System.Threading.Tasks;
 
@@ -92,6 +93,8 @@ public class MainWindow : Window, IDisposable
 
     public List<(string, string)> worldList = [];
     public string playerHomeWorld = "";
+
+    public static readonly Vector4 ColourHq = Ui.HslaToDecimal(45, 0.80, 0.70, 1.0);
 
 
 
@@ -374,7 +377,7 @@ public class MainWindow : Window, IDisposable
 
         if (ImGui.ImageButton(CurrentItemIcon.GetWrapOrEmpty().ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
         {
-            if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
+            if (Miosuke.Action.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
             {
                 var clipboardItemId = ParseItemId(ImGui.GetClipboardText());
                 plugin.PriceChecker.DoCheckAsync(clipboardItemId);
@@ -399,7 +402,7 @@ public class MainWindow : Window, IDisposable
         {
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
-            ImGui.PushStyleColor(ImGuiCol.Text, Miosuke.UI.ColourHq);
+            ImGui.PushStyleColor(ImGuiCol.Text, ColourHq);
             ImGui.Text($"{(char)FontAwesomeIcon.Spinner}");
             ImGui.PopStyleColor();
             ImGui.PopFont();
@@ -420,14 +423,14 @@ public class MainWindow : Window, IDisposable
 
     private void DrawHqFilterButton(float size)
     {
-        var _iconColour = Miosuke.UI.ColourWhite;
-        if (plugin.Config.FilterHq) _iconColour = Miosuke.UI.ColourHq;
-        if (plugin.Config.UniversalisHqOnly) _iconColour = Miosuke.UI.ColourCyan;
+        var _iconColour = Ui.ColourWhite;
+        if (plugin.Config.FilterHq) _iconColour = ColourHq;
+        if (plugin.Config.UniversalisHqOnly) _iconColour = Ui.ColourCyan;
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.PushStyleColor(ImGuiCol.Text, _iconColour);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Splotch}", new Vector2(size, size)))
         {
-            if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
+            if (Miosuke.Action.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
             {
                 plugin.Config.UniversalisHqOnly = !plugin.Config.UniversalisHqOnly;
             }
@@ -451,7 +454,7 @@ public class MainWindow : Window, IDisposable
         {
             foreach (var world in worldList)
             {
-                if (world.Item1 == playerHomeWorld) ImGui.PushStyleColor(ImGuiCol.Text, Miosuke.UI.ColourHq);
+                if (world.Item1 == playerHomeWorld) ImGui.PushStyleColor(ImGuiCol.Text, ColourHq);
 
                 var isSelected = world.Item1 == plugin.Config.selectedWorld;
                 if (ImGui.Selectable(world.Item2, isSelected))
@@ -499,28 +502,28 @@ public class MainWindow : Window, IDisposable
         if (plugin.Config.NumbersAlignRight)
         {
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
-            Miosuke.UI.AlignRight("Selling");
+            Ui.AlignRight("Selling");
         }
-        ImGui.TextColored(UI.ColourSubtitle, "Selling");
+        ImGui.TextColored(Ui.ColourSubtitle, "Selling");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
         if (plugin.Config.NumbersAlignRight)
         {
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
-            Miosuke.UI.AlignRight("Q");
+            Ui.AlignRight("Q");
         }
-        ImGui.TextColored(UI.ColourSubtitle, "Q");
+        ImGui.TextColored(Ui.ColourSubtitle, "Q");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
         if (plugin.Config.NumbersAlignRight)
         {
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
-            Miosuke.UI.AlignRight("Total");
+            Ui.AlignRight("Total");
         }
-        ImGui.TextColored(UI.ColourSubtitle, "Total");
+        ImGui.TextColored(Ui.ColourSubtitle, "Total");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        ImGui.TextColored(UI.ColourSubtitle, "World");
+        ImGui.TextColored(Ui.ColourSubtitle, "World");
         ImGui.NextColumn();
 
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
@@ -545,12 +548,12 @@ public class MainWindow : Window, IDisposable
                 isColourPushed = false;
                 if (plugin.Config.MarkHigherThanVendor && (CurrentItem.VendorSelling > 0) && (listing.PricePerUnit >= CurrentItem.VendorSelling))
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, Miosuke.UI.ColourRedLight);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Ui.ColourRedLight);
                     isColourPushed = true;
                 }
                 else if (listing.Hq)
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, Miosuke.UI.ColourHq);
+                    ImGui.PushStyleColor(ImGuiCol.Text, ColourHq);
                     isColourPushed = true;
                 }
 
@@ -561,7 +564,7 @@ public class MainWindow : Window, IDisposable
                 if (plugin.Config.NumbersAlignRight)
                 {
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
-                    Miosuke.UI.AlignRight(selling);
+                    Ui.AlignRight(selling);
                 }
                 if (ImGui.Selectable($"{selling}##listing{index}", selectedListing == index, ImGuiSelectableFlags.SpanAllColumns))
                 {
@@ -575,7 +578,7 @@ public class MainWindow : Window, IDisposable
                 if (plugin.Config.NumbersAlignRight)
                 {
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
-                    Miosuke.UI.AlignRight(quantity);
+                    Ui.AlignRight(quantity);
                 }
                 ImGui.Text(quantity);
                 ImGui.NextColumn();
@@ -589,7 +592,7 @@ public class MainWindow : Window, IDisposable
                 if (plugin.Config.NumbersAlignRight)
                 {
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
-                    Miosuke.UI.AlignRight(total);
+                    Ui.AlignRight(total);
                 }
                 ImGui.Text(total);
                 ImGui.NextColumn();
@@ -627,23 +630,23 @@ public class MainWindow : Window, IDisposable
         if (plugin.Config.NumbersAlignRight)
         {
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
-            Miosuke.UI.AlignRight("Sold");
+            Ui.AlignRight("Sold");
         }
-        ImGui.TextColored(UI.ColourSubtitle, "Sold");
+        ImGui.TextColored(Ui.ColourSubtitle, "Sold");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
         if (plugin.Config.NumbersAlignRight)
         {
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
-            Miosuke.UI.AlignRight("Q");
+            Ui.AlignRight("Q");
         }
-        ImGui.TextColored(UI.ColourSubtitle, "Q");
+        ImGui.TextColored(Ui.ColourSubtitle, "Q");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        ImGui.TextColored(UI.ColourSubtitle, "Date");
+        ImGui.TextColored(Ui.ColourSubtitle, "Date");
         ImGui.NextColumn();
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        ImGui.TextColored(UI.ColourSubtitle, "World");
+        ImGui.TextColored(Ui.ColourSubtitle, "World");
         ImGui.NextColumn();
 
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
@@ -664,7 +667,7 @@ public class MainWindow : Window, IDisposable
         {
             foreach (var entry in marketDataEntries)
             {
-                if (entry.Hq) ImGui.PushStyleColor(ImGuiCol.Text, Miosuke.UI.ColourHq);
+                if (entry.Hq) ImGui.PushStyleColor(ImGuiCol.Text, ColourHq);
 
                 // Sold
                 var index = marketDataEntries.IndexOf(entry);
@@ -673,7 +676,7 @@ public class MainWindow : Window, IDisposable
                 if (plugin.Config.NumbersAlignRight)
                 {
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
-                    Miosuke.UI.AlignRight(sold);
+                    Ui.AlignRight(sold);
                 }
                 if (ImGui.Selectable($"{entry.PricePerUnit}##history{index}", selectedHistory == index, ImGuiSelectableFlags.SpanAllColumns))
                 {
@@ -687,7 +690,7 @@ public class MainWindow : Window, IDisposable
                 if (plugin.Config.NumbersAlignRight)
                 {
                     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
-                    Miosuke.UI.AlignRight(quantity);
+                    Ui.AlignRight(quantity);
                 }
                 ImGui.Text(quantity);
                 ImGui.NextColumn();
@@ -717,7 +720,7 @@ public class MainWindow : Window, IDisposable
     private void DrawHistoryButton()
     {
         ImGui.PushFont(UiBuilder.IconFont);
-        ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? Miosuke.UI.ColourHq : Miosuke.UI.ColourWhite);
+        ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? ColourHq : Ui.ColourWhite);
         if (ImGui.Button($"{(char)FontAwesomeIcon.List}", new Vector2(plugin.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
         {
             searchHistoryOpen = !searchHistoryOpen;
@@ -731,7 +734,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PushFont(UiBuilder.IconFont);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Trash}", new Vector2(plugin.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
         {
-            if (Miosuke.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
+            if (Miosuke.Action.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
             {
                 plugin.PriceChecker.GameItemCacheList.Clear();
             }
@@ -768,7 +771,7 @@ public class MainWindow : Window, IDisposable
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.WorldUpdateColPaddingOffset[0]);
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.5f * spacing.Y));
 
-            Miosuke.UI.AlignRight($"{(int)i.Value}");
+            Ui.AlignRight($"{(int)i.Value}");
             ImGui.Text($"{(int)i.Value}");
             ImGui.NextColumn();
 

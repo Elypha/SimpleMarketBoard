@@ -10,6 +10,7 @@ using System;
 using Dalamud.Interface.ImGuiNotification;
 using SimpleMarketBoard.UniversalisModels;
 using Miosuke;
+using Miosuke.Messages;
 using Dalamud.Interface.Textures;
 
 
@@ -255,23 +256,25 @@ public class PriceChecker
             price = gameItem.AvgPrice;
         }
 
-        Miosuke.PrintMessage.Chat(
+        Chat.PluginMessage(
             plugin.Config.ChatLogChannel,
-            $"[{plugin.NameShort}] ",
-            557,
+            $"[{plugin.NameShort}]",
             [
-                new TextPayload($"[{gameItem.TargetRegion}]"),
+                new TextPayload($" [{gameItem.TargetRegion}]"),
                 new UIForegroundPayload(39),
                 new ItemPayload((uint)gameItem.Id),
                 new TextPayload($"{(char)SeIconChar.LinkMarker} {gameItem.InGame.Name}"),
                 RawPayload.LinkTerminator,
                 new TextPayload($": {price:N0} {(char)SeIconChar.Gil}"),
                 new UIForegroundPayload(0)
-            ]);
+            ],
+            plugin.PluginPayload);
     }
 
     public void SendToast(GameItem gameItem)
     {
-        Miosuke.PrintMessage.ToastNormal($"[{gameItem.TargetRegion}] {gameItem.InGame.Name}: {gameItem.AvgPrice:N0} {(char)SeIconChar.Gil}");
+        Toast.Normal(
+            $"[{gameItem.TargetRegion}] {gameItem.InGame.Name}: {gameItem.AvgPrice:N0} {(char)SeIconChar.Gil}",
+            Dalamud.Game.Gui.Toast.ToastPosition.Bottom);
     }
 }
