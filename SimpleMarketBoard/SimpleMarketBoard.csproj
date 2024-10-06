@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="Dalamud.Plugin.Bootstrap.targets"/>
+  <Import Project="Dalamud.Plugin.Bootstrap.targets" />
 
   <PropertyGroup>
     <Title>SimpleMarketBoard</Title>
@@ -9,7 +9,8 @@
     <Copyright>Elypha</Copyright>
     <Version>1.9.3.0</Version>
     <LangVersion>latest</LangVersion>
-    <Platforms>x64</Platforms>
+    <Platforms>x64;AnyCPU</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
     <TargetFramework>net8.0-windows</TargetFramework>
     <PackageProjectUrl>https://github.com/Elypha/SimpleMarketBoard</PackageProjectUrl>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>

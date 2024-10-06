@@ -1,69 +1,59 @@
-﻿using Dalamud.Game.ClientState.Keys;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text;
-using Dalamud.Interface.Internal;
-using Dalamud.Interface.Windowing;
-using Dalamud.Interface;
-using Dalamud.Interface.Textures.TextureWraps;
-using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Numerics;
-using System;
 using Dalamud.Interface.Textures;
-using Miosuke;
 using Miosuke.UiHelper;
 using Dalamud.Interface.ImGuiNotification;
-using System.Threading.Tasks;
+using SimpleMarketBoard.Assets;
+using Miosuke.Configuration;
+using SimpleMarketBoard.Modules;
 
 
-namespace SimpleMarketBoard;
+namespace SimpleMarketBoard.Windows;
 
 public class MainWindow : Window, IDisposable
 {
-    private readonly Plugin plugin;
 
-    public MainWindow(Plugin plugin) : base(
+    public MainWindow() : base(
         "SimpleMarketBoard",
         ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         Size = new Vector2(350, 450);
         SizeCondition = ImGuiCond.FirstUseEver;
 
-        this.plugin = plugin;
 
         CurrentItem.Id = 4691;
-        CurrentItem.InGame = plugin.ItemSheet.GetRow(4691)!;
+        CurrentItem.InGame = Data.ItemSheet.GetRow(4691)!;
         CurrentItemLabel = "(/ω＼)";
         CurrentItemIcon = Service.Texture.GetFromGameIcon(new GameIconLookup(CurrentItem.InGame.Icon));
-        if (plugin.Config.selectedWorld != "") lastSelectedWorld = plugin.Config.selectedWorld;
+        if (P.Config.selectedWorld != "") lastSelectedWorld = P.Config.selectedWorld;
 
     }
 
     public override void PreDraw()
     {
-        if (plugin.Config.EnableTheme)
+        if (P.Config.EnableTheme)
         {
-            plugin.PluginTheme.Push();
-            plugin.NotoSansJpMedium.Push();
-            plugin.PluginThemeEnabled = true;
+            P.PluginTheme.Push();
+            Data.NotoSans17.Push();
+            P.PluginThemeEnabled = true;
         }
     }
 
     public override void PostDraw()
     {
-        if (plugin.PluginThemeEnabled)
+        if (P.PluginThemeEnabled)
         {
-            plugin.PluginTheme.Pop();
-            plugin.NotoSansJpMedium.Pop();
-            plugin.PluginThemeEnabled = false;
+            P.PluginTheme.Pop();
+            Data.NotoSans17.Pop();
+            P.PluginThemeEnabled = false;
         }
     }
 
     public override void OnClose()
     {
-        plugin.PriceChecker.SearchHistoryClean();
+        P.PriceChecker.SearchHistoryClean();
     }
 
     public void Dispose()
@@ -102,7 +92,7 @@ public class MainWindow : Window, IDisposable
         var spacing = ImGui.GetStyle().ItemSpacing;
 
         // user
-        var rightColWidth = plugin.Config.rightColWidth;
+        var rightColWidth = P.Config.rightColWidth;
         var LeftColWidth = ImGui.GetWindowWidth() - rightColWidth;
 
         // -------------------------------- [  run check  ] --------------------------------
@@ -122,48 +112,48 @@ public class MainWindow : Window, IDisposable
 
         // refresh button
 
-        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + (1.1f * spacing.Y) + plugin.Config.ButtonSizeOffset[1]);
+        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + 1.1f * spacing.Y + P.Config.ButtonSizeOffset[1]);
         ImGui.SetCursorPosX(
             ImGui.GetCursorPosX()
             + ImGui.GetContentRegionAvail().X
-            - plugin.Config.WorldComboWidth
-            - 2 * (plugin.Config.ButtonSizeOffset[0] + 0.5f * spacing.X)
+            - P.Config.WorldComboWidth
+            - 2 * (P.Config.ButtonSizeOffset[0] + 0.5f * spacing.X)
         );
-        DrawRefreshButton(plugin.Config.ButtonSizeOffset[0]);
+        DrawRefreshButton(P.Config.ButtonSizeOffset[0]);
         ImGui.SameLine();
 
         // HQ filter button
-        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + (1.1f * spacing.Y) + plugin.Config.ButtonSizeOffset[1]);
+        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + 1.1f * spacing.Y + P.Config.ButtonSizeOffset[1]);
         ImGui.SetCursorPosX(
             ImGui.GetCursorPosX()
             + ImGui.GetContentRegionAvail().X
-            - plugin.Config.WorldComboWidth
-            - 1 * (plugin.Config.ButtonSizeOffset[0] + 0.5f * spacing.X)
+            - P.Config.WorldComboWidth
+            - 1 * (P.Config.ButtonSizeOffset[0] + 0.5f * spacing.X)
         );
-        DrawHqFilterButton(plugin.Config.ButtonSizeOffset[0]);
+        DrawHqFilterButton(P.Config.ButtonSizeOffset[0]);
         ImGui.SameLine();
 
         // world selection dropdown
-        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + (1 * spacing.Y) + plugin.Config.ButtonSizeOffset[1]);
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - plugin.Config.WorldComboWidth);
-        DrawWorldCombo(plugin.Config.WorldComboWidth);
+        ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + 1 * spacing.Y + P.Config.ButtonSizeOffset[1]);
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - P.Config.WorldComboWidth);
+        DrawWorldCombo(P.Config.WorldComboWidth);
 
 
         // price table
         if (CurrentItem.Id > 0)
         {
             // set the size for the tables
-            var tileToRender = plugin.Config.EnableRecentHistory ? 2 : 1;
+            var tileToRender = P.Config.EnableRecentHistory ? 2 : 1;
             var priceTableHeight = ImGui.GetContentRegionAvail().Y / tileToRender;
 
-            DrawCurrentListingTable(priceTableHeight + plugin.Config.soldTableOffset);
+            DrawCurrentListingTable(priceTableHeight + P.Config.soldTableOffset);
 
-            if (plugin.Config.EnableRecentHistory)
+            if (P.Config.EnableRecentHistory)
             {
-                if (plugin.Config.spaceBetweenTables > 0)
+                if (P.Config.spaceBetweenTables > 0)
                 {
                     ImGui.Separator();
-                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.spaceBetweenTables);
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.spaceBetweenTables);
                 }
                 // header in between
                 DrawHistoryEntryTable(priceTableHeight);
@@ -179,26 +169,26 @@ public class MainWindow : Window, IDisposable
 
 
         // -------------------------------- [  buttons  ] --------------------------------
-        var rightColTableWidth = rightColWidth - (2 * spacing.X);
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.5f * spacing.X));
-        ImGui.BeginChild("col_right buttons", new Vector2(rightColTableWidth, 24 + (2 * spacing.Y) + plugin.Config.ButtonSizeOffset[1]), true, ImGuiWindowFlags.NoScrollbar);
+        var rightColTableWidth = rightColWidth - 2 * spacing.X;
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 0.5f * spacing.X);
+        ImGui.BeginChild("col_right buttons", new Vector2(rightColTableWidth, 24 + 2 * spacing.Y + P.Config.ButtonSizeOffset[1]), true, ImGuiWindowFlags.NoScrollbar);
 
         // buttons
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.7f * spacing.Y));  // move the cursor up a bit for all buttons
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 0.7f * spacing.Y);  // move the cursor up a bit for all buttons
 
         // history button
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.3f * spacing.X));
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 0.3f * spacing.X);
         DrawHistoryButton();
         ImGui.SameLine();
 
         // bin button
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.2f * spacing.X));
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 0.2f * spacing.X);
         DrawBinButton();
         ImGui.SameLine();
 
         // config button
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - (0.2f * spacing.X));
-        DrawCOnfigButton();
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - 0.2f * spacing.X);
+        DrawConfigButton();
 
         ImGui.EndChild();
 
@@ -206,10 +196,10 @@ public class MainWindow : Window, IDisposable
         // -------------------------------- [  item lists  ] --------------------------------
         var worldOutOfDateCount = CurrentItem.WorldOutOfDate.Count;
         var dataColHeight =
-            (Math.Max(worldOutOfDateCount, 1.25f) * ImGui.GetTextLineHeight())
-            + ((worldOutOfDateCount - 1) * spacing.Y)
+            Math.Max(worldOutOfDateCount, 1.25f) * ImGui.GetTextLineHeight()
+            + (worldOutOfDateCount - 1) * spacing.Y
             + ImGui.GetTextLineHeightWithSpacing()
-            + (2f * spacing.Y);
+            + 2f * spacing.Y;
 
         ImGui.BeginChild("col_right search_history", new Vector2(rightColTableWidth - spacing.X, ImGui.GetContentRegionAvail().Y - dataColHeight), false, ImGuiWindowFlags.HorizontalScrollbar);
         DrawSearchHistory();
@@ -252,17 +242,15 @@ public class MainWindow : Window, IDisposable
     private static readonly List<string> PublicWorlds = Service.Data.GetExcelSheet<World>()!.Where(x => x.IsPublic).Select(x => (string)x.Name).ToList();
 
 
-    private static string getRegionStr(int region)
+    private static string getRegionStr(int region) => region switch
     {
-        return region switch
-        {
-            1 => "Japan",
-            2 => "North-America",
-            3 => "Europe",
-            4 => "Oceania",
-            _ => "",
-        };
-    }
+        1 => "Japan",
+        2 => "North-America",
+        3 => "Europe",
+        4 => "Oceania",
+        _ => "",
+    };
+
 
 
     public void UpdateWorld(bool isForce = false)
@@ -272,27 +260,27 @@ public class MainWindow : Window, IDisposable
             if (Service.ClientState.LocalContentId == 0) return;
         }
 
-        if (plugin.Config.OverridePlayerHomeWorld)
+        if (P.Config.OverridePlayerHomeWorld)
         {
             var world = Service.Data.GetExcelSheet<World>()!
-                .Where(x => string.Equals((string)x.Name, plugin.Config.PlayerHomeWorld, StringComparison.OrdinalIgnoreCase))
+                .Where(x => string.Equals((string)x.Name, P.Config.PlayerHomeWorld, StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
             if (world is null)
             {
                 Service.NotificationManager.AddNotification(new Notification
                 {
-                    Content = $"World cannot be determined from world name: {plugin.Config.PlayerHomeWorld}",
+                    Content = $"World cannot be determined from world name: {P.Config.PlayerHomeWorld}",
                     Type = NotificationType.Error,
                 });
-                plugin.Config.OverridePlayerHomeWorld = false;
-                plugin.Config.PlayerHomeWorld = "";
-                plugin.Config.Save();
+                P.Config.OverridePlayerHomeWorld = false;
+                P.Config.PlayerHomeWorld = "";
+                P.Config.Save();
                 Task.Run(() => UpdateWorld(true)).ConfigureAwait(false);
                 return;
             };
             var dataCentre = world.DataCenter;
             var _worldsInDc = Service.Data.GetExcelSheet<World>()!
-                .Where(x => (x.DataCenter.Row == dataCentre.Row) && x.IsPublic && x.Name != world.Name)
+                .Where(x => x.DataCenter.Row == dataCentre.Row && x.IsPublic && x.Name != world.Name)
                 .OrderBy(x => (string)x.Name)
                 .Select(x => (string)x.Name);
             var regionStr = getRegionStr(world.Region);
@@ -306,7 +294,7 @@ public class MainWindow : Window, IDisposable
             var world = localPlayer.CurrentWorld.GameData;
             var dataCentre = world.DataCenter;
             var worldsInDc = Service.Data.GetExcelSheet<World>()!
-                .Where(x => (x.DataCenter.Row == dataCentre.Row) && x.IsPublic && x.Name != world.Name)
+                .Where(x => x.DataCenter.Row == dataCentre.Row && x.IsPublic && x.Name != world.Name)
                 .OrderBy(x => (string)x.Name)
                 .Select(x => (string)x.Name);
             var regionStr = getRegionStr(dataCentre.Value!.Region);
@@ -316,7 +304,7 @@ public class MainWindow : Window, IDisposable
 
     private void updateWorldList(string region, string dataCentre, string homeWorld, List<string> worldsInDc)
     {
-        var additionalWorlds = plugin.Config.AdditionalWorlds.ToList();
+        var additionalWorlds = P.Config.AdditionalWorlds.ToList();
         worldList.Clear();
 
         string suffix;
@@ -349,16 +337,16 @@ public class MainWindow : Window, IDisposable
         );
 
         playerHomeWorld = homeWorld;
-        if (plugin.Config.selectedWorld == "")
+        if (P.Config.selectedWorld == "")
         {
-            plugin.Config.selectedWorld = dataCentre;
+            P.Config.selectedWorld = dataCentre;
         }
     }
 
-    public ulong ParseItemId(string clipboardText)
+    public static ulong ParseItemId(string clipboardText)
     {
         var clipboardTextTrimmed = clipboardText.Trim();
-        var inGame = plugin.ItemSheet.Single(i => i.Name == clipboardTextTrimmed);
+        var inGame = Data.ItemSheet.Single(i => i.Name == clipboardTextTrimmed);
         Service.Log.Info($"Clipboard text: {clipboardTextTrimmed}, Item ID: {inGame?.RowId}");
         if (inGame is not null)
         {
@@ -373,10 +361,10 @@ public class MainWindow : Window, IDisposable
 
         if (ImGui.ImageButton(CurrentItemIcon.GetWrapOrEmpty().ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
         {
-            if (Miosuke.Action.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
+            if (Miosuke.Action.Hotkey.IsActive([VirtualKey.CONTROL], !P.Config.SearchHotkeyLoose))
             {
                 var clipboardItemId = ParseItemId(ImGui.GetClipboardText());
-                plugin.PriceChecker.DoCheckAsync(clipboardItemId);
+                P.PriceChecker.DoCheckAsync(clipboardItemId);
             }
             else
             {
@@ -385,13 +373,30 @@ public class MainWindow : Window, IDisposable
                 ImGui.LogFinish();
             }
         }
+        if (ImGui.BeginPopupContextItem($"testiconcontextmenu##{CurrentItem.Id}"))
+        {
+            if (ImGui.Selectable("Copy Name (LClick)"))
+            {
+                ImGui.SetClipboardText(CurrentItem.Name);
+            }
+            if (ImGui.Selectable("Copy ID"))
+            {
+                ImGui.SetClipboardText(CurrentItem.Id.ToString());
+            }
+            if (ImGui.Selectable("New search from clipboard (Ctrl+LClick)"))
+            {
+                var clipboardItemId = ParseItemId(ImGui.GetClipboardText());
+                P.PriceChecker.DoCheckAsync(clipboardItemId);
+            }
+            ImGui.EndPopup();
+        }
     }
 
     private void DrawItemName()
     {
         ImGui.SetCursorPosY(ImGui.GetCursorPosY());
 
-        plugin.Axis20.Push();
+        Data.Axis20.Push();
 
         ImGui.Text(CurrentItemLabel);
         if (LoadingQueue > 0)
@@ -404,7 +409,7 @@ public class MainWindow : Window, IDisposable
             ImGui.PopFont();
         }
 
-        plugin.Axis20.Pop();
+        Data.Axis20.Pop();
     }
 
     private void DrawRefreshButton(float size)
@@ -412,7 +417,7 @@ public class MainWindow : Window, IDisposable
         ImGui.PushFont(UiBuilder.IconFont);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Repeat}", new Vector2(size, size)))
         {
-            plugin.PriceChecker.DoCheckRefreshAsync(CurrentItem);
+            P.PriceChecker.DoCheckRefreshAsync(CurrentItem);
         }
         ImGui.PopFont();
     }
@@ -420,19 +425,19 @@ public class MainWindow : Window, IDisposable
     private void DrawHqFilterButton(float size)
     {
         var _iconColour = Ui.ColourWhite;
-        if (plugin.Config.FilterHq) _iconColour = Ui.ColourHq;
-        if (plugin.Config.UniversalisHqOnly) _iconColour = Ui.ColourCyan;
+        if (P.Config.FilterHq) _iconColour = Ui.ColourHq;
+        if (P.Config.UniversalisHqOnly) _iconColour = Ui.ColourBlue;
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.PushStyleColor(ImGuiCol.Text, _iconColour);
         if (ImGui.Button($"{(char)FontAwesomeIcon.Splotch}", new Vector2(size, size)))
         {
-            if (Miosuke.Action.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
+            if (Miosuke.Action.Hotkey.IsActive([VirtualKey.CONTROL], !P.Config.SearchHotkeyLoose))
             {
-                plugin.Config.UniversalisHqOnly = !plugin.Config.UniversalisHqOnly;
+                P.Config.UniversalisHqOnly = !P.Config.UniversalisHqOnly;
             }
             else
             {
-                plugin.Config.FilterHq = !plugin.Config.FilterHq;
+                P.Config.FilterHq = !P.Config.FilterHq;
             }
         }
         ImGui.PopStyleColor();
@@ -441,30 +446,30 @@ public class MainWindow : Window, IDisposable
 
     private void DrawWorldCombo(float width)
     {
-        if (plugin.PluginThemeEnabled)
+        if (P.PluginThemeEnabled)
         {
-            plugin.NotoSansJpMedium.Pop();
+            Data.NotoSans17.Pop();
         }
         ImGui.SetNextItemWidth(width);
-        if (ImGui.BeginCombo($"###{plugin.Name}selectedWorld", plugin.Config.selectedWorld))
+        if (ImGui.BeginCombo($"###{Name}selectedWorld", P.Config.selectedWorld))
         {
             foreach (var world in worldList)
             {
                 if (world.Item1 == playerHomeWorld) ImGui.PushStyleColor(ImGuiCol.Text, Ui.ColourHq);
 
-                var isSelected = world.Item1 == plugin.Config.selectedWorld;
+                var isSelected = world.Item1 == P.Config.selectedWorld;
                 if (ImGui.Selectable(world.Item2, isSelected))
                 {
-                    plugin.Config.selectedWorld = world.Item1;
-                    plugin.Config.Save();
+                    P.Config.selectedWorld = world.Item1;
+                    P.Config.Save();
 
-                    if (plugin.Config.selectedWorld != lastSelectedWorld)
+                    if (P.Config.selectedWorld != lastSelectedWorld)
                     {
-                        Service.Log.Debug($"Fetch data of {plugin.Config.selectedWorld}");
-                        plugin.PriceChecker.DoCheckRefreshAsync(CurrentItem);
+                        Service.Log.Debug($"Fetch data of {P.Config.selectedWorld}");
+                        P.PriceChecker.DoCheckRefreshAsync(CurrentItem);
                     }
 
-                    lastSelectedWorld = plugin.Config.selectedWorld;
+                    lastSelectedWorld = P.Config.selectedWorld;
                 }
 
                 if (isSelected)
@@ -477,9 +482,9 @@ public class MainWindow : Window, IDisposable
 
             ImGui.EndCombo();
         }
-        if (plugin.PluginThemeEnabled)
+        if (P.PluginThemeEnabled)
         {
-            plugin.NotoSansJpMedium.Push();
+            Data.NotoSans17.Push();
         }
     }
 
@@ -488,46 +493,46 @@ public class MainWindow : Window, IDisposable
         ImGui.BeginChild("col_left current_listings", new Vector2(0, height));
 
         ImGui.Columns(4, "col_left current_listings table");
-        ImGui.SetColumnWidth(0, 70.0f + plugin.Config.sellingColWidthOffset[0]);
-        ImGui.SetColumnWidth(1, 40.0f + plugin.Config.sellingColWidthOffset[1]);
-        ImGui.SetColumnWidth(2, 80.0f + plugin.Config.sellingColWidthOffset[2]);
-        ImGui.SetColumnWidth(3, 80.0f + plugin.Config.sellingColWidthOffset[3]);
+        ImGui.SetColumnWidth(0, 70.0f + P.Config.sellingColWidthOffset[0]);
+        ImGui.SetColumnWidth(1, 40.0f + P.Config.sellingColWidthOffset[1]);
+        ImGui.SetColumnWidth(2, 80.0f + P.Config.sellingColWidthOffset[2]);
+        ImGui.SetColumnWidth(3, 80.0f + P.Config.sellingColWidthOffset[3]);
 
         ImGui.Separator();
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        if (plugin.Config.NumbersAlignRight)
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+        if (P.Config.NumbersAlignRight)
         {
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.NumbersAlignRightOffset);
             Ui.AlignRight("Selling");
         }
-        ImGui.TextColored(Ui.ColourSubtitle, "Selling");
+        ImGui.TextColored(Ui.ColourCyan, "Selling");
         ImGui.NextColumn();
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        if (plugin.Config.NumbersAlignRight)
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+        if (P.Config.NumbersAlignRight)
         {
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.NumbersAlignRightOffset);
             Ui.AlignRight("Q");
         }
-        ImGui.TextColored(Ui.ColourSubtitle, "Q");
+        ImGui.TextColored(Ui.ColourCyan, "Q");
         ImGui.NextColumn();
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        if (plugin.Config.NumbersAlignRight)
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+        if (P.Config.NumbersAlignRight)
         {
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.NumbersAlignRightOffset);
             Ui.AlignRight("Total");
         }
-        ImGui.TextColored(Ui.ColourSubtitle, "Total");
+        ImGui.TextColored(Ui.ColourCyan, "Total");
         ImGui.NextColumn();
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        ImGui.TextColored(Ui.ColourSubtitle, "World");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+        ImGui.TextColored(Ui.ColourCyan, "World");
         ImGui.NextColumn();
 
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
         ImGui.Separator();
 
         // prepare the data
         var marketDataListings = CurrentItem.UniversalisResponse.Listings;
-        if (plugin.Config.FilterHq)
+        if (P.Config.FilterHq)
         {
             marketDataListings = marketDataListings.Where(l => l.Hq == true).OrderBy(l => l.PricePerUnit).ToList();
         }
@@ -542,9 +547,9 @@ public class MainWindow : Window, IDisposable
             foreach (var listing in marketDataListings)
             {
                 isColourPushed = false;
-                if (plugin.Config.MarkHigherThanVendor && (CurrentItem.VendorSelling > 0) && (listing.PricePerUnit >= CurrentItem.VendorSelling))
+                if (P.Config.MarkHigherThanVendor && CurrentItem.VendorSelling > 0 && listing.PricePerUnit >= CurrentItem.VendorSelling)
                 {
-                    ImGui.PushStyleColor(ImGuiCol.Text, Ui.ColourRedLight);
+                    ImGui.PushStyleColor(ImGuiCol.Text, Ui.ColourCrimson);
                     isColourPushed = true;
                 }
                 else if (listing.Hq)
@@ -556,10 +561,10 @@ public class MainWindow : Window, IDisposable
                 // Selling
                 var index = marketDataListings.IndexOf(listing);
                 var selling = $"{listing.PricePerUnit}";
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                if (plugin.Config.NumbersAlignRight)
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+                if (P.Config.NumbersAlignRight)
                 {
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.NumbersAlignRightOffset);
                     Ui.AlignRight(selling);
                 }
                 if (ImGui.Selectable($"{selling}##listing{index}", selectedListing == index, ImGuiSelectableFlags.SpanAllColumns))
@@ -570,24 +575,24 @@ public class MainWindow : Window, IDisposable
 
                 // Q
                 var quantity = $"{listing.Quantity:##,###}";
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                if (plugin.Config.NumbersAlignRight)
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+                if (P.Config.NumbersAlignRight)
                 {
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.NumbersAlignRightOffset);
                     Ui.AlignRight(quantity);
                 }
                 ImGui.Text(quantity);
                 ImGui.NextColumn();
 
                 // Total
-                double totalPrice = plugin.Config.TotalIncludeTax
-                  ? (listing.PricePerUnit * listing.Quantity) + listing.Tax
+                double totalPrice = P.Config.TotalIncludeTax
+                  ? listing.PricePerUnit * listing.Quantity + listing.Tax
                   : listing.PricePerUnit * listing.Quantity;
                 var total = totalPrice.ToString("N0", CultureInfo.CurrentCulture);
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                if (plugin.Config.NumbersAlignRight)
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+                if (P.Config.NumbersAlignRight)
                 {
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.NumbersAlignRightOffset);
                     Ui.AlignRight(total);
                 }
                 ImGui.Text(total);
@@ -596,12 +601,12 @@ public class MainWindow : Window, IDisposable
                 if (isColourPushed) ImGui.PopStyleColor();
 
                 // World
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? listing.WorldName : plugin.Config.selectedWorld)}");
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+                ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? listing.WorldName : P.Config.selectedWorld)}");
                 ImGui.NextColumn();
 
                 // Finish
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
                 ImGui.Separator();
             }
         }
@@ -616,41 +621,41 @@ public class MainWindow : Window, IDisposable
         ImGui.BeginChild("col_left history_entries", new Vector2(0, height));
 
         ImGui.Columns(4, "col_left history_entries table");
-        ImGui.SetColumnWidth(0, 70.0f + plugin.Config.soldColWidthOffset[0]);
-        ImGui.SetColumnWidth(1, 40.0f + plugin.Config.soldColWidthOffset[1]);
-        ImGui.SetColumnWidth(2, 80.0f + plugin.Config.soldColWidthOffset[2]);
-        ImGui.SetColumnWidth(3, 80.0f + plugin.Config.soldColWidthOffset[3]);
+        ImGui.SetColumnWidth(0, 70.0f + P.Config.soldColWidthOffset[0]);
+        ImGui.SetColumnWidth(1, 40.0f + P.Config.soldColWidthOffset[1]);
+        ImGui.SetColumnWidth(2, 80.0f + P.Config.soldColWidthOffset[2]);
+        ImGui.SetColumnWidth(3, 80.0f + P.Config.soldColWidthOffset[3]);
 
         ImGui.Separator();
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        if (plugin.Config.NumbersAlignRight)
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+        if (P.Config.NumbersAlignRight)
         {
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.NumbersAlignRightOffset);
             Ui.AlignRight("Sold");
         }
-        ImGui.TextColored(Ui.ColourSubtitle, "Sold");
+        ImGui.TextColored(Ui.ColourCyan, "Sold");
         ImGui.NextColumn();
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        if (plugin.Config.NumbersAlignRight)
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+        if (P.Config.NumbersAlignRight)
         {
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.NumbersAlignRightOffset);
             Ui.AlignRight("Q");
         }
-        ImGui.TextColored(Ui.ColourSubtitle, "Q");
+        ImGui.TextColored(Ui.ColourCyan, "Q");
         ImGui.NextColumn();
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        ImGui.TextColored(Ui.ColourSubtitle, "Date");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+        ImGui.TextColored(Ui.ColourCyan, "Date");
         ImGui.NextColumn();
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-        ImGui.TextColored(Ui.ColourSubtitle, "World");
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+        ImGui.TextColored(Ui.ColourCyan, "World");
         ImGui.NextColumn();
 
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
         ImGui.Separator();
 
         // prepare the data
         var marketDataEntries = CurrentItem.UniversalisResponse.Entries;
-        if (plugin.Config.FilterHq)
+        if (P.Config.FilterHq)
         {
             marketDataEntries = marketDataEntries.Where(l => l.Hq == true).OrderByDescending(l => l.Timestamp).ToList();
         }
@@ -668,10 +673,10 @@ public class MainWindow : Window, IDisposable
                 // Sold
                 var index = marketDataEntries.IndexOf(entry);
                 var sold = $"{entry.PricePerUnit}";
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                if (plugin.Config.NumbersAlignRight)
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+                if (P.Config.NumbersAlignRight)
                 {
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.NumbersAlignRightOffset);
                     Ui.AlignRight(sold);
                 }
                 if (ImGui.Selectable($"{entry.PricePerUnit}##history{index}", selectedHistory == index, ImGuiSelectableFlags.SpanAllColumns))
@@ -682,27 +687,27 @@ public class MainWindow : Window, IDisposable
 
                 // Q
                 var quantity = $"{entry.Quantity:##,###}";
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                if (plugin.Config.NumbersAlignRight)
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+                if (P.Config.NumbersAlignRight)
                 {
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.NumbersAlignRightOffset);
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.NumbersAlignRightOffset);
                     Ui.AlignRight(quantity);
                 }
                 ImGui.Text(quantity);
                 ImGui.NextColumn();
 
                 // Date
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
                 ImGui.Text($"{DateTimeOffset.FromUnixTimeSeconds(entry.Timestamp).LocalDateTime:MM-dd HH:mm}");
                 ImGui.NextColumn();
 
                 // World
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
-                ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? entry.WorldName : plugin.Config.selectedWorld)}");
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
+                ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? entry.WorldName : P.Config.selectedWorld)}");
                 ImGui.NextColumn();
 
                 // Finish
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + plugin.Config.tableRowHeightOffset);
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
                 ImGui.Separator();
 
                 if (entry.Hq) ImGui.PopStyleColor();
@@ -717,7 +722,7 @@ public class MainWindow : Window, IDisposable
     {
         ImGui.PushFont(UiBuilder.IconFont);
         ImGui.PushStyleColor(ImGuiCol.Text, searchHistoryOpen ? Ui.ColourHq : Ui.ColourWhite);
-        if (ImGui.Button($"{(char)FontAwesomeIcon.List}", new Vector2(plugin.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
+        if (ImGui.Button($"{(char)FontAwesomeIcon.List}", new Vector2(P.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
         {
             searchHistoryOpen = !searchHistoryOpen;
         }
@@ -728,26 +733,26 @@ public class MainWindow : Window, IDisposable
     private void DrawBinButton()
     {
         ImGui.PushFont(UiBuilder.IconFont);
-        if (ImGui.Button($"{(char)FontAwesomeIcon.Trash}", new Vector2(plugin.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
+        if (ImGui.Button($"{(char)FontAwesomeIcon.Trash}", new Vector2(P.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
         {
-            if (Miosuke.Action.Hotkey.IsActive([VirtualKey.CONTROL], !plugin.Config.SearchHotkeyLoose))
+            if (Miosuke.Action.Hotkey.IsActive([VirtualKey.CONTROL], !P.Config.SearchHotkeyLoose))
             {
-                plugin.PriceChecker.GameItemCacheList.Clear();
+                P.PriceChecker.GameItemCacheList.Clear();
             }
             else
             {
-                plugin.PriceChecker.GameItemCacheList.RemoveAll(i => i.Id == CurrentItem.Id);
+                P.PriceChecker.GameItemCacheList.RemoveAll(i => i.Id == CurrentItem.Id);
             }
         }
         ImGui.PopFont();
     }
 
-    private void DrawCOnfigButton()
+    private static void DrawConfigButton()
     {
         ImGui.PushFont(UiBuilder.IconFont);
-        if (ImGui.Button($"{(char)FontAwesomeIcon.Cog}", new Vector2(plugin.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
+        if (ImGui.Button($"{(char)FontAwesomeIcon.Cog}", new Vector2(P.Config.ButtonSizeOffset[0], ImGui.GetItemRectSize().Y)))
         {
-            plugin.DrawConfigUI();
+            P.DrawConfigUI();
         }
         ImGui.PopFont();
     }
@@ -758,22 +763,22 @@ public class MainWindow : Window, IDisposable
 
         // ImGui.SetColumnWidth(0, rightColTableWidth - ImGui.CalcTextSize("0000").X - (2 * spacing.X) + plugin.Config.WorldUpdateColWidthOffset[0]);
         // ImGui.SetColumnWidth(1, ImGui.CalcTextSize("0000").X + plugin.Config.WorldUpdateColWidthOffset[1]);
-        ImGui.SetColumnWidth(0, ImGui.CalcTextSize("0000").X + plugin.Config.WorldUpdateColWidthOffset[0]);
-        ImGui.SetColumnWidth(1, rightColTableWidth - ImGui.CalcTextSize("0000").X + plugin.Config.WorldUpdateColWidthOffset[1]);
+        ImGui.SetColumnWidth(0, ImGui.CalcTextSize("0000").X + P.Config.WorldUpdateColWidthOffset[0]);
+        ImGui.SetColumnWidth(1, rightColTableWidth - ImGui.CalcTextSize("0000").X + P.Config.WorldUpdateColWidthOffset[1]);
 
         var worldOutOfDateIndex = 0;
         foreach (var i in CurrentItem.WorldOutOfDate)
         {
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.WorldUpdateColPaddingOffset[0]);
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.5f * spacing.Y));
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.WorldUpdateColPaddingOffset[0]);
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 0.5f * spacing.Y);
 
             Ui.AlignRight($"{(int)i.Value}");
             ImGui.Text($"{(int)i.Value}");
             ImGui.NextColumn();
 
 
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + plugin.Config.WorldUpdateColPaddingOffset[1]);
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.5f * spacing.Y));
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + P.Config.WorldUpdateColPaddingOffset[1]);
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 0.5f * spacing.Y);
 
             ImGui.Text($"{i.Key}");
             ImGui.NextColumn();
@@ -781,7 +786,7 @@ public class MainWindow : Window, IDisposable
             worldOutOfDateIndex += 1;
             if (worldOutOfDateIndex < worldOutOfDateCount)
             {
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() - (0.5f * spacing.Y));
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 0.5f * spacing.Y);
                 ImGui.Separator();
             }
         }
@@ -797,11 +802,11 @@ public class MainWindow : Window, IDisposable
     {
         if (searchHistoryOpen)
         {
-            foreach (var item in plugin.PriceChecker.GameItemCacheList)
+            foreach (var item in P.PriceChecker.GameItemCacheList)
             {
                 if (ImGui.Selectable($"{item.Name}", (uint)CurrentItem.Id == item.Id))
                 {
-                    plugin.PriceChecker.DoCheckAsync(item.Id);
+                    P.PriceChecker.DoCheckAsync(item.Id);
                 }
             }
         }

@@ -3,7 +3,7 @@
 using System.Text.Json.Serialization;
 
 
-namespace SimpleMarketBoard.UniversalisModels;
+namespace SimpleMarketBoard.API;
 
 /// <summary>
 /// A model representing a market data recent history from Universalis.

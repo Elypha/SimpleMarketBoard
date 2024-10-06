@@ -1,17 +1,12 @@
-using System;
 using System.Threading;
-using System.Threading.Tasks;
-using Miosuke;
 
-namespace SimpleMarketBoard;
+namespace SimpleMarketBoard.Modules;
 
 public class HoveredItem
 {
-    private readonly Plugin plugin;
 
-    public HoveredItem(Plugin plugin)
+    public HoveredItem()
     {
-        this.plugin = plugin;
         Service.GameGui.HoveredItemChanged += OnHoveredItemChanged;
     }
 
@@ -36,13 +31,13 @@ public class HoveredItem
         // reset if not hovering
         if (HoverItemId == 0) { SavedItemId = 0; return; }
 
-        if (plugin.Config.SearchHotkeyEnabled)
+        if (P.Config.SearchHotkeyEnabled)
         {
             SavedItemId = HoverItemId;
         }
         else
         {
-            if (!plugin.Config.HoverBackgroundSearchEnabled && !plugin.MainWindow.IsOpen) return;
+            if (!P.Config.HoverBackgroundSearchEnabled && !P.MainWindow.IsOpen) return;
             Service.Log.Debug($"Check {HoverItemId} {ItemCts?.IsCancellationRequested}");
             CheckItem(HoverItemId);
         }
@@ -62,7 +57,7 @@ public class HoveredItem
         // wait for hover delay, raise TaskCanceledException if cancelled
         try
         {
-            await Task.Delay(plugin.Config.HoverDelayMs, token).ConfigureAwait(false);
+            await Task.Delay(P.Config.HoverDelayMs, token).ConfigureAwait(false);
         }
         catch (TaskCanceledException)
         {
@@ -71,13 +66,13 @@ public class HoveredItem
         }
 
         // show window if needed before search
-        if (plugin.Config.ShowWindowOnSearch && !plugin.MainWindow.IsOpen)
+        if (P.Config.ShowWindowOnSearch && !P.MainWindow.IsOpen)
         {
-            plugin.MainWindow.IsOpen = true;
+            P.MainWindow.IsOpen = true;
         }
 
         // check new item
-        plugin.PriceChecker.DoCheckAsync(itemId);
+        P.PriceChecker.DoCheckAsync(itemId);
 
         // clean up
         SavedItemId = 0;

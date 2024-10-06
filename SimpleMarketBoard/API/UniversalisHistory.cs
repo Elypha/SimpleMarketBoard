@@ -1,11 +1,10 @@
 #pragma warning disable CS8618
 
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 
-namespace SimpleMarketBoard.UniversalisModels;
+namespace SimpleMarketBoard.API;
 
 /// <summary>
 /// A model representing a market data recent history from Universalis.

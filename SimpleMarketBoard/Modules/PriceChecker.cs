@@ -1,28 +1,20 @@
 using Dalamud.Game.Text.SeStringHandling.Payloads;
-using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text;
 using Lumina.Excel.GeneratedSheets;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 using Dalamud.Interface.ImGuiNotification;
-using SimpleMarketBoard.UniversalisModels;
-using Miosuke;
 using Miosuke.Messages;
 using Dalamud.Interface.Textures;
+using SimpleMarketBoard.Assets;
+using SimpleMarketBoard.API;
 
 
-namespace SimpleMarketBoard;
+namespace SimpleMarketBoard.Modules;
 
 public class PriceChecker
 {
-    private readonly Plugin plugin;
 
-    public PriceChecker(Plugin plugin)
+    public PriceChecker()
     {
-        this.plugin = plugin;
     }
 
     public void Dispose()
@@ -57,12 +49,17 @@ public class PriceChecker
         {
             try
             {
+                P.MainWindow.LoadingQueue += 1;
                 DoCheck(itemId);
             }
             catch (Exception ex)
             {
                 Service.Log.Error($"[PriceChecker] CheckNewAsync failed, {ex.Message}");
-                plugin.MainWindow.CurrentItemLabel = "Error";
+                P.MainWindow.CurrentItemLabel = "Error";
+            }
+            finally
+            {
+                P.MainWindow.LoadingQueue -= 1;
             }
         });
     }
@@ -75,7 +72,7 @@ public class PriceChecker
         {
             Service.Log.Debug($"[PriceChecker] {itemId} found in cache.");
             var cached_gameItem = GameItemCacheList.Single(i => i.Id == itemId);
-            plugin.MainWindow.CurrentItemUpdate(cached_gameItem);
+            P.MainWindow.CurrentItemUpdate(cached_gameItem);
             return;
         }
 
@@ -83,7 +80,7 @@ public class PriceChecker
         var gameItem = new GameItem()
         {
             Id = itemId,
-            InGame = plugin.ItemSheet.Single(i => i.RowId == (uint)itemId),
+            InGame = Data.ItemSheet.Single(i => i.RowId == (uint)itemId),
             VendorSelling = 0,
         };
         gameItem.Name = gameItem.InGame.Name.ToString();
@@ -129,12 +126,17 @@ public class PriceChecker
         {
             try
             {
+                P.MainWindow.LoadingQueue += 1;
                 CheckGameItem(gameItem);
             }
             catch (Exception ex)
             {
                 Service.Log.Error($"[PriceChecker] CheckRefreshAsync failed, {ex.Message}");
-                plugin.MainWindow.CurrentItemLabel = "Error";
+                P.MainWindow.CurrentItemLabel = "Error";
+            }
+            finally
+            {
+                P.MainWindow.LoadingQueue -= 1;
             }
         });
     }
@@ -143,12 +145,11 @@ public class PriceChecker
     private void CheckGameItem(GameItem gameItem)
     {
         // lookup market data
-        plugin.MainWindow.LoadingQueue += 1;
-        plugin.MainWindow.CurrentItemLabel = gameItem.Name;
-        plugin.MainWindow.CurrentItemIcon = Service.Texture.GetFromGameIcon(new GameIconLookup(gameItem.InGame.Icon))!;
-        gameItem.TargetRegion = plugin.Config.selectedWorld;
+        P.MainWindow.CurrentItemLabel = gameItem.Name;
+        P.MainWindow.CurrentItemIcon = Service.Texture.GetFromGameIcon(new GameIconLookup(gameItem.InGame.Icon))!;
+        gameItem.TargetRegion = P.Config.selectedWorld;
         gameItem.FetchTimestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        var UniversalisResponse = plugin.Universalis.GetDataAsync(gameItem).Result;
+        var UniversalisResponse = P.Universalis.GetDataAsync(gameItem).Result;
 
         // validate
         if (UniversalisResponse.Status == UniversalisResponseStatus.ServerError)
@@ -192,17 +193,17 @@ public class PriceChecker
             // it's not perfect but I'll take it for now
             gameItem.AvgPrice = gameItem.UniversalisResponse.AveragePrice;
 
-            if (plugin.Config.EnableChatLog) SendChatMessage(gameItem);
-            if (plugin.Config.EnableToastLog) SendToast(gameItem);
+            if (P.Config.EnableChatLog) SendChatMessage(gameItem);
+            if (P.Config.EnableToastLog) SendToast(gameItem);
         }
 
         // update the main window
-        plugin.MainWindow.CurrentItemUpdate(gameItem);
+        P.MainWindow.CurrentItemUpdate(gameItem);
 
         // inset into search history
         SearchHistoryUpdate(gameItem);
 
-        plugin.MainWindow.LoadingQueue -= 1;
+        P.MainWindow.LoadingQueue -= 1;
     }
 
 
@@ -218,13 +219,13 @@ public class PriceChecker
     {
         Service.Log.Debug($"[Cache] Items in cache {GameItemCacheList.Count}");
 
-        if (GameItemCacheList.Count < plugin.Config.MaxCacheItems) return;
+        if (GameItemCacheList.Count < P.Config.MaxCacheItems) return;
 
-        if (plugin.Config.CleanCacheASAP || (!plugin.Config.CleanCacheASAP && !plugin.MainWindow.IsOpen))
+        if (P.Config.CleanCacheASAP || !P.Config.CleanCacheASAP && !P.MainWindow.IsOpen)
         {
             GameItemCacheList.RemoveRange(
-                plugin.Config.MaxCacheItems - 1,
-                GameItemCacheList.Count - plugin.Config.MaxCacheItems + 1
+                P.Config.MaxCacheItems - 1,
+                GameItemCacheList.Count - P.Config.MaxCacheItems + 1
             );
             Service.Log.Debug($"[Cache] Cache cleaned. Current items in cache {GameItemCacheList.Count}");
         }
@@ -243,11 +244,11 @@ public class PriceChecker
     public void SendChatMessage(GameItem gameItem)
     {
         double price;
-        if (plugin.Config.priceToPrint == PriceToPrint.SellingLow)
+        if (P.Config.priceToPrint == PriceToPrint.SellingLow)
         {
             price = gameItem.UniversalisResponse.Listings[0].PricePerUnit;
         }
-        else if (plugin.Config.priceToPrint == PriceToPrint.SoldLow)
+        else if (P.Config.priceToPrint == PriceToPrint.SoldLow)
         {
             price = gameItem.UniversalisResponse.Entries.OrderBy(entry => entry.PricePerUnit).First().PricePerUnit;
         }
@@ -257,8 +258,8 @@ public class PriceChecker
         }
 
         Chat.PluginMessage(
-            plugin.Config.ChatLogChannel,
-            $"[{plugin.NameShort}]",
+            P.Config.ChatLogChannel,
+            $"[{NameShort}]",
             [
                 new TextPayload($" [{gameItem.TargetRegion}]"),
                 new UIForegroundPayload(39),
@@ -268,7 +269,7 @@ public class PriceChecker
                 new TextPayload($": {price:N0} {(char)SeIconChar.Gil}"),
                 new UIForegroundPayload(0)
             ],
-            plugin.PluginPayload);
+            P.PluginPayload);
     }
 
     public void SendToast(GameItem gameItem)

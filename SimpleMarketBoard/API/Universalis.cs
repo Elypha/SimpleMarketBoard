@@ -1,30 +1,21 @@
-#pragma warning disable CS8603
-
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
 using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System;
-using Miosuke;
-
-using SimpleMarketBoard.UniversalisModels;
+using SimpleMarketBoard.Assets;
+using SimpleMarketBoard.Modules;
 
 
-namespace SimpleMarketBoard;
+namespace SimpleMarketBoard.API;
 
 public class Universalis
 {
-    private readonly Plugin plugin;
 
-    public Universalis(Plugin plugin)
+    public Universalis()
     {
         httpClient = new HttpClient
         {
-            Timeout = TimeSpan.FromSeconds(plugin.Config.RequestTimeout),
+            Timeout = TimeSpan.FromSeconds(P.Config.RequestTimeout),
         };
-        this.plugin = plugin;
     }
 
     public void Dispose()
@@ -41,7 +32,7 @@ public class Universalis
     {
         httpClient = new HttpClient
         {
-            Timeout = TimeSpan.FromSeconds(plugin.Config.RequestTimeout),
+            Timeout = TimeSpan.FromSeconds(P.Config.RequestTimeout),
         };
         httpClient.DefaultRequestHeaders.Add("User-Agent", "SimpleMarketBoard/1.0 (Dalamud; FFXIV)");
     }
@@ -58,8 +49,8 @@ public class Universalis
         try
         {
             // build url
-            var _hq = plugin.Config.UniversalisHqOnly ? "&hq=1" : "";
-            var API_URL = new UriBuilder($"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings={plugin.Config.UniversalisListings}&entries={plugin.Config.UniversalisEntries}{_hq}").Uri.ToString();
+            var _hq = P.Config.UniversalisHqOnly ? "&hq=1" : "";
+            var API_URL = new UriBuilder($"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings={P.Config.UniversalisListings}&entries={P.Config.UniversalisEntries}{_hq}").Uri.ToString();
 
             // get response
             Service.Log.Info($"[Universalis] Fetch: {API_URL}");
@@ -85,7 +76,7 @@ public class Universalis
                 var worldUploadTimes = data.WorldUploadTimes.OrderByDescending(w => w.Value).ToList();
                 foreach (var i in worldUploadTimes ?? [])
                 {
-                    var worldRow = plugin.WorldSheet.GetRow(uint.Parse(i.Key));
+                    var worldRow = Data.WorldSheet.GetRow(uint.Parse(i.Key));
                     if (worldRow is null) continue;
                     var worldName = worldRow.Name.ToString();
                     var hours = (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - i.Value) / 1000 / 3600;
