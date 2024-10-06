@@ -1,16 +1,14 @@
 author: Elypha
 name: SimpleMarketBoard
 repo_url: https://github.com/Elypha/SimpleMarketBoard
-punchline: A simple, compact but ultimate market board plugin.
+punchline: A simple and compact market board plugin for power users.
 description: |
-  It delivers some useful bonus info and a structured presentation. Might be useful for power users, perhaps?
+  A niche plugin designed to be user-friendly and multi-functional with rich customisation options, for power users.
 
   Highlights:
-    - Compact UI design
-    - Cached search history
-    - Flexible configuration
-    - Live data filters
-    - Colour highlights
+    - Compact UI and user theme
+    - Customisable search options
+    - Rich ways for plugin interaction
 
   Check out the 'Introduction' on Config Window for documentation.
 tags:
