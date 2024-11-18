@@ -7,7 +7,7 @@
     <Description>A simple and compact market board plugin for power users.</Description>
     <Authors>Elypha</Authors>
     <Copyright>Elypha</Copyright>
-    <Version>1.9.4.0</Version>
+    <Version>1.9.5.0</Version>
     <LangVersion>latest</LangVersion>
     <Platforms>x64;AnyCPU</Platforms>
     <PlatformTarget>x64</PlatformTarget>
