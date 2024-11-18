@@ -77,7 +77,7 @@ public class Universalis
                 foreach (var i in worldUploadTimes ?? [])
                 {
                     var worldRow = Data.WorldSheet.GetRow(uint.Parse(i.Key));
-                    if (worldRow is null) continue;
+                    // debug: if (worldRow is null) continue;
                     var worldName = worldRow.Name.ToString();
                     var hours = (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - i.Value) / 1000 / 3600;
                     worldUpdatedData.Add(worldName, hours);

@@ -1,6 +1,6 @@
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Game.Text;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using Dalamud.Interface.ImGuiNotification;
 using Miosuke.Messages;
 using Dalamud.Interface.Textures;
@@ -32,7 +32,7 @@ public class PriceChecker
         public string TargetRegion { get; set; } = "";
         public ulong PlayerWorldId { get; set; }
         public uint VendorSelling { get; set; }
-        public Item InGame { get; set; } = null!;
+        public Item InGame { get; set; }
         public ulong FetchTimestamp { get; set; }
         public UniversalisResponse UniversalisResponse { get; set; } = new UniversalisResponse();
         public Dictionary<string, long> WorldOutOfDate { get; set; } = [];
@@ -86,7 +86,7 @@ public class PriceChecker
         gameItem.Name = gameItem.InGame.Name.ToString();
 
         // if marketable
-        if (gameItem.InGame.ItemSearchCategory.Row == 0)
+        if (gameItem.InGame.ItemSearchCategory.RowId == 0)
         {
             Service.NotificationManager.AddNotification(new Notification
             {
@@ -97,7 +97,7 @@ public class PriceChecker
         }
 
         // if player in game
-        gameItem.PlayerWorldId = Service.ClientState.LocalPlayer?.HomeWorld.Id ?? 0;
+        gameItem.PlayerWorldId = Service.ClientState.LocalPlayer?.HomeWorld.RowId ?? 0;
         if (gameItem.PlayerWorldId == 0)
         {
             Service.NotificationManager.AddNotification(new Notification
@@ -109,7 +109,7 @@ public class PriceChecker
         }
 
         // if vendor sells cheaper
-        var valid_vendors = Service.Data.Excel.GetSheet<GilShopItem>()?.Where(i => i.Item.Row == (uint)gameItem.Id).ToList();
+        var valid_vendors = Service.Data.GetSubrowExcelSheet<GilShopItem>().Flatten().Where(i => i.Item.RowId == (uint)gameItem.Id).ToList();
         if (valid_vendors is { Count: > 0 })
         {
             gameItem.VendorSelling = gameItem.InGame.PriceMid;

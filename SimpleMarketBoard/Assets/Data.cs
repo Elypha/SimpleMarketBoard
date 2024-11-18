@@ -1,8 +1,9 @@
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using Lumina.Excel;
 using System.IO;
 using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Interface.GameFonts;
+using Dalamud.Interface.Utility;
 using Dalamud.Interface.Style;
 
 namespace SimpleMarketBoard.Assets;
@@ -30,19 +31,35 @@ public static partial class Data
         )
     );
     // Noto Sans
-    public static readonly IFontHandle NotoSans17 = Service.PluginInterface.UiBuilder.FontAtlas.NewDelegateFontHandle(toolkit =>
+    public static readonly IFontHandle NotoSans17 = Service.PluginInterface.UiBuilder.FontAtlas.NewDelegateFontHandle(
+        toolkit =>
         {
-            toolkit.OnPreBuild(preBuild =>
-            {
-                preBuild.AddFontFromFile(
-                    Path.Combine(Service.PluginInterface.AssemblyLocation.Directory?.FullName!, "Assets", "SourceHanSans-Regular.otf"),
-                    new()
-                    {
-                        SizePx = 17f
-                    }
-                );
-            });
-        });
+            toolkit.OnPreBuild(
+                preBuild =>
+                {
+                    preBuild.AddFontFromFile(
+                        Path.Combine(Service.PluginInterface.DalamudAssetDirectory.FullName, "UIRes", "NotoSansCJKjp-Medium.otf"),
+                        new() { SizePx = 17f }
+                    );
+                }
+            );
+        }
+    );
+    // public static readonly IFontHandle NotoSans17 = Service.PluginInterface.UiBuilder.FontAtlas.NewDelegateFontHandle(
+    //     toolkit =>
+    //     {
+    //         toolkit.OnPreBuild(preBuild =>
+    //         {
+    //             preBuild.AddFontFromFile(
+    //                 Path.Combine(Service.PluginInterface.AssemblyLocation.Directory?.FullName!, "Assets", "SourceHanSans-Regular.otf"),
+    //                 new()
+    //                 {
+    //                     SizePx = 17f
+    //                 }
+    //             );
+    //         });
+    //     }
+    // );
 
     // ImGui theme
 

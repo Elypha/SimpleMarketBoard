@@ -1,6 +1,6 @@
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using System.Globalization;
 using Dalamud.Interface.Textures;
 using Miosuke.UiHelper;
@@ -8,6 +8,7 @@ using Dalamud.Interface.ImGuiNotification;
 using SimpleMarketBoard.Assets;
 using Miosuke.Configuration;
 using SimpleMarketBoard.Modules;
+using Lumina.Extensions;
 
 
 namespace SimpleMarketBoard.Windows;
@@ -239,7 +240,7 @@ public class MainWindow : Window, IDisposable
         // Japanese Data Center
         "Elemental", "Gaia", "Mana", "Meteor"
     ];
-    private static readonly List<string> PublicWorlds = Service.Data.GetExcelSheet<World>()!.Where(x => x.IsPublic).Select(x => (string)x.Name).ToList();
+    private static readonly List<string> PublicWorlds = Service.Data.GetExcelSheet<World>().Where(x => x.IsPublic).Select(x => x.Name.ToString()).ToList();
 
 
     private static string getRegionStr(int region) => region switch
@@ -262,9 +263,9 @@ public class MainWindow : Window, IDisposable
 
         if (P.Config.OverridePlayerHomeWorld)
         {
-            var world = Service.Data.GetExcelSheet<World>()!
-                .Where(x => string.Equals((string)x.Name, P.Config.PlayerHomeWorld, StringComparison.OrdinalIgnoreCase))
-                .FirstOrDefault();
+            var world = Service.Data.GetExcelSheet<World>()
+                .Where(x => string.Equals(x.Name.ToString(), P.Config.PlayerHomeWorld, StringComparison.OrdinalIgnoreCase))
+                .FirstOrNull();
             if (world is null)
             {
                 Service.NotificationManager.AddNotification(new Notification
@@ -278,27 +279,28 @@ public class MainWindow : Window, IDisposable
                 Task.Run(() => UpdateWorld(true)).ConfigureAwait(false);
                 return;
             };
-            var dataCentre = world.DataCenter;
+            var dataCentre = world.Value.DataCenter;
             var _worldsInDc = Service.Data.GetExcelSheet<World>()!
-                .Where(x => x.DataCenter.Row == dataCentre.Row && x.IsPublic && x.Name != world.Name)
-                .OrderBy(x => (string)x.Name)
-                .Select(x => (string)x.Name);
-            var regionStr = getRegionStr(world.Region);
-            updateWorldList(regionStr, dataCentre.Value!.Name, world.Name, _worldsInDc.ToList());
+                .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Value.Name)
+                .OrderBy(x => x.Name.ToString())
+                .Select(x => x.Name.ToString());
+            var regionStr = getRegionStr(world.Value.Region);
+            updateWorldList(regionStr, dataCentre.Value!.Name.ToString(), world.Value.Name.ToString(), _worldsInDc.ToList());
         }
         else
         {
             var localPlayer = Service.ClientState.LocalPlayer;
-            if (localPlayer is null || localPlayer.CurrentWorld.GameData is null) return;
+            // debug: if (localPlayer is null || localPlayer.CurrentWorld.Value is null) return;
+            if (localPlayer is null) return;
 
-            var world = localPlayer.CurrentWorld.GameData;
-            var dataCentre = world.DataCenter;
+            var world = localPlayer.CurrentWorld;
+            var dataCentre = world.Value.DataCenter;
             var worldsInDc = Service.Data.GetExcelSheet<World>()!
-                .Where(x => x.DataCenter.Row == dataCentre.Row && x.IsPublic && x.Name != world.Name)
-                .OrderBy(x => (string)x.Name)
-                .Select(x => (string)x.Name);
+                .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Value.Name)
+                .OrderBy(x => x.Name.ToString())
+                .Select(x => x.Name.ToString());
             var regionStr = getRegionStr(dataCentre.Value!.Region);
-            updateWorldList(regionStr, dataCentre.Value.Name, world.Name, worldsInDc.ToList());
+            updateWorldList(regionStr, dataCentre.Value.Name.ToString(), world.Value.Name.ToString(), worldsInDc.ToList());
         }
     }
 
@@ -347,12 +349,14 @@ public class MainWindow : Window, IDisposable
     {
         var clipboardTextTrimmed = clipboardText.Trim();
         var inGame = Data.ItemSheet.Single(i => i.Name == clipboardTextTrimmed);
-        Service.Log.Info($"Clipboard text: {clipboardTextTrimmed}, Item ID: {inGame?.RowId}");
-        if (inGame is not null)
-        {
-            return inGame.RowId;
-        }
-        return 0;
+        Service.Log.Info($"Clipboard text: {clipboardTextTrimmed}, Item ID: {inGame.RowId}");
+        return inGame.RowId;
+        // debug
+        // if (inGame is not null)
+        // {
+        //     return inGame.RowId;
+        // }
+        // return 0;
     }
 
     private void DrawItemIcon()
