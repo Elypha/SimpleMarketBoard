@@ -276,16 +276,15 @@ public class MainWindow : Window, IDisposable
         }
         else
         {
-            if (P.LocalPlayer is null) return;
+            if (P.LocalPlayerCurrentWorld is null) return;
 
-            var world = P.LocalPlayer.CurrentWorld.Value;
-            var dataCentre = world.DataCenter;
+            var dataCentre = P.LocalPlayerCurrentWorld.Value.DataCenter;
             var otherWorldsInDc = Service.Data.GetExcelSheet<World>()!
-                .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Name)
+                .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != P.LocalPlayerCurrentWorld.Value.Name)
                 .OrderBy(x => x.Name.ToString())
                 .Select(x => x.Name.ToString());
             var regionStr = getRegionStr(dataCentre.Value!.Region);
-            updateWorldList(regionStr, dataCentre.Value.Name.ToString(), world.Name.ToString(), [.. otherWorldsInDc]);
+            updateWorldList(regionStr, dataCentre.Value.Name.ToString(), P.LocalPlayerCurrentWorld.Value.Name.ToString(), [.. otherWorldsInDc]);
         }
     }
 

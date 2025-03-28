@@ -271,15 +271,17 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
 
     public bool IsLoggedIn = false;
     public ulong LocalContentId = 0;
-    public Dalamud.Game.ClientState.Objects.SubKinds.IPlayerCharacter? LocalPlayer = null;
-    public bool IsInGame => IsLoggedIn && (LocalContentId != 0) && (LocalPlayer is not null);
+    public Lumina.Excel.Sheets.World? LocalPlayerHomeWorld = null;
+    public Lumina.Excel.Sheets.World? LocalPlayerCurrentWorld = null;
+    public bool IsInGame => IsLoggedIn && (LocalContentId != 0) && (LocalPlayerHomeWorld is not null);
     public void OnFrameUpdateLocalContent(IFramework framework)
     {
         if (LocalContentId != Service.ClientState.LocalContentId)
         {
             IsLoggedIn = Service.ClientState.IsLoggedIn;
             LocalContentId = Service.ClientState.LocalContentId;
-            LocalPlayer = Service.ClientState.LocalPlayer;
+            LocalPlayerHomeWorld = Service.ClientState.LocalPlayer?.HomeWorld.Value ?? null;
+            LocalPlayerCurrentWorld = Service.ClientState.LocalPlayer?.CurrentWorld.Value ?? null;
         }
     }
 }

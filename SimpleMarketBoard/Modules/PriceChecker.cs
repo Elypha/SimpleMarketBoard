@@ -30,7 +30,6 @@ public class PriceChecker
         public ulong Id { get; set; }
         public string Name { get; set; } = "";
         public string TargetRegion { get; set; } = "";
-        public ulong PlayerWorldId { get; set; }
         public uint VendorSelling { get; set; }
         public Item InGame { get; set; }
         public ulong FetchTimestamp { get; set; }
@@ -97,12 +96,11 @@ public class PriceChecker
         }
 
         // if player in game
-        gameItem.PlayerWorldId = P.LocalPlayer?.HomeWorld.RowId ?? 0;
-        if (gameItem.PlayerWorldId == 0)
+        if (P.LocalPlayerHomeWorld is null)
         {
             Service.NotificationManager.AddNotification(new Notification
             {
-                Content = $"Player World ID is unknown.",
+                Content = $"Player home World is unknown.",
                 Type = NotificationType.Warning,
             });
             return;
