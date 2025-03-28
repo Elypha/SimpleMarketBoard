@@ -6,6 +6,8 @@ using Miosuke.UiHelper;
 using Dalamud.Interface.Style;
 using Dalamud.Interface.ImGuiNotification;
 using Miosuke.Configuration;
+using Lumina.Excel.Sheets;
+using Lumina.Extensions;
 using SimpleMarketBoard.Modules;
 
 
@@ -300,8 +302,25 @@ public class ConfigWindow : Window, IDisposable
         {
             if (P.Config.OverridePlayerHomeWorld && P.Config.PlayerHomeWorld != "")
             {
+                var world = Service.Data.GetExcelSheet<World>()
+                    .FirstOrDefault(x => string.Equals(x.Name.ToString(), P.Config.PlayerHomeWorld, StringComparison.OrdinalIgnoreCase));
+
+                if (world.Equals(default(World)))
+                {
+                    Service.NotificationManager.AddNotification(new Notification
+                    {
+                        Content = $"World cannot be determined from world name: {P.Config.PlayerHomeWorld}",
+                        Type = NotificationType.Error,
+                    });
+                    P.Config.OverridePlayerHomeWorld = false;
+                    P.Config.PlayerHomeWorld = "";
+                }
+                else
+                {
+                    P.Config.PlayerHomeWorld = world.Name.ToString();
+                }
                 P.Config.Save();
-                P.MainWindow.UpdateWorld(true);
+                P.MainWindow.UpdateWorld();
             }
         }
 
@@ -322,7 +341,7 @@ public class ConfigWindow : Window, IDisposable
             {
                 P.Config.AdditionalWorlds[i] = additionalWorld;
                 P.Config.Save();
-                P.MainWindow.UpdateWorld(true);
+                P.MainWindow.UpdateWorld();
             }
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
@@ -330,7 +349,7 @@ public class ConfigWindow : Window, IDisposable
             {
                 P.Config.AdditionalWorlds.RemoveAt(i--);
                 P.Config.Save();
-                P.MainWindow.UpdateWorld(true);
+                P.MainWindow.UpdateWorld();
             }
             ImGui.PopFont();
             ImGui.PopID();
@@ -344,7 +363,7 @@ public class ConfigWindow : Window, IDisposable
         {
             P.Config.AdditionalWorlds.Add(newAdditionalWorld);
             P.Config.Save();
-            P.MainWindow.UpdateWorld(true);
+            P.MainWindow.UpdateWorld();
             newAdditionalWorld = "";
         }
         ImGui.PopFont();

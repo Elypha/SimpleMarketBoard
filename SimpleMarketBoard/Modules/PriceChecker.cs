@@ -97,7 +97,7 @@ public class PriceChecker
         }
 
         // if player in game
-        gameItem.PlayerWorldId = Service.ClientState.LocalPlayer?.HomeWorld.RowId ?? 0;
+        gameItem.PlayerWorldId = P.LocalPlayer?.HomeWorld.RowId ?? 0;
         if (gameItem.PlayerWorldId == 0)
         {
             Service.NotificationManager.AddNotification(new Notification

@@ -109,8 +109,7 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
         Service.Framework.Update += OnFrameUpdateWindow;
         Service.Framework.Update += OnFrameUpdateSearch;
-
-        MainWindow.UpdateWorld();
+        Service.Framework.Update += OnFrameUpdateLocalContent;
     }
 
     public void Dispose()
@@ -137,6 +136,7 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
         Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
         Service.Framework.Update -= OnFrameUpdateWindow;
         Service.Framework.Update -= OnFrameUpdateSearch;
+        Service.Framework.Update -= OnFrameUpdateLocalContent;
     }
 
     private void pluginPayloadHandler(uint id, SeString text)
@@ -265,6 +265,21 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
                 searchHotkeyHandled = true;
                 HoveredItem.CheckItem(HoveredItem.HoverItemId);
             }
+        }
+    }
+
+
+    public bool IsLoggedIn = false;
+    public ulong LocalContentId = 0;
+    public Dalamud.Game.ClientState.Objects.SubKinds.IPlayerCharacter? LocalPlayer = null;
+    public bool IsInGame => IsLoggedIn && (LocalContentId != 0) && (LocalPlayer is not null);
+    public void OnFrameUpdateLocalContent(IFramework framework)
+    {
+        if (LocalContentId != Service.ClientState.LocalContentId)
+        {
+            IsLoggedIn = Service.ClientState.IsLoggedIn;
+            LocalContentId = Service.ClientState.LocalContentId;
+            LocalPlayer = Service.ClientState.LocalPlayer;
         }
     }
 }

@@ -1,14 +1,15 @@
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text;
-using Lumina.Excel.Sheets;
-using System.Globalization;
-using Dalamud.Interface.Textures;
-using Miosuke.UiHelper;
 using Dalamud.Interface.ImGuiNotification;
-using SimpleMarketBoard.Assets;
-using Miosuke.Configuration;
-using SimpleMarketBoard.Modules;
+using Dalamud.Interface.Textures;
+using Lumina.Excel.Sheets;
 using Lumina.Extensions;
+using Miosuke.Configuration;
+using Miosuke.UiHelper;
+using SimpleMarketBoard.Assets;
+using SimpleMarketBoard.Modules;
+using System.Globalization;
+using System.Threading.Tasks;
 
 
 namespace SimpleMarketBoard.Windows;
@@ -29,7 +30,6 @@ public class MainWindow : Window, IDisposable
         CurrentItemLabel = "(/ω＼)";
         CurrentItemIcon = Service.Texture.GetFromGameIcon(new GameIconLookup(CurrentItem.InGame.Icon));
         if (P.Config.selectedWorld != "") lastSelectedWorld = P.Config.selectedWorld;
-
     }
 
     public override void PreDraw()
@@ -50,6 +50,11 @@ public class MainWindow : Window, IDisposable
             Data.NotoSans17.Pop();
             P.PluginThemeEnabled = false;
         }
+    }
+
+    public override void OnOpen()
+    {
+        UpdateWorld();
     }
 
     public override void OnClose()
@@ -254,53 +259,33 @@ public class MainWindow : Window, IDisposable
 
 
 
-    public void UpdateWorld(bool isForce = false)
+    public void UpdateWorld()
     {
-        if (!isForce)
-        {
-            if (Service.ClientState.LocalContentId == 0) return;
-        }
+        if (!P.IsInGame) return;
 
         if (P.Config.OverridePlayerHomeWorld)
         {
-            var world = Service.Data.GetExcelSheet<World>()
-                .Where(x => string.Equals(x.Name.ToString(), P.Config.PlayerHomeWorld, StringComparison.OrdinalIgnoreCase))
-                .FirstOrNull();
-            if (world is null)
-            {
-                Service.NotificationManager.AddNotification(new Notification
-                {
-                    Content = $"World cannot be determined from world name: {P.Config.PlayerHomeWorld}",
-                    Type = NotificationType.Error,
-                });
-                P.Config.OverridePlayerHomeWorld = false;
-                P.Config.PlayerHomeWorld = "";
-                P.Config.Save();
-                Task.Run(() => UpdateWorld(true)).ConfigureAwait(false);
-                return;
-            };
-            var dataCentre = world.Value.DataCenter;
-            var _worldsInDc = Service.Data.GetExcelSheet<World>()!
-                .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Value.Name)
+            var world = Service.Data.GetExcelSheet<World>().First(x => x.Name.ToString() == P.Config.PlayerHomeWorld);
+            var dataCentre = world.DataCenter;
+            var otherWorldsInDc = Service.Data.GetExcelSheet<World>()!
+                .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Name)
                 .OrderBy(x => x.Name.ToString())
                 .Select(x => x.Name.ToString());
-            var regionStr = getRegionStr(world.Value.Region);
-            updateWorldList(regionStr, dataCentre.Value!.Name.ToString(), world.Value.Name.ToString(), _worldsInDc.ToList());
+            var regionStr = getRegionStr(world.Region);
+            updateWorldList(regionStr, dataCentre.Value!.Name.ToString(), world.Name.ToString(), [.. otherWorldsInDc]);
         }
         else
         {
-            var localPlayer = Service.ClientState.LocalPlayer;
-            // debug: if (localPlayer is null || localPlayer.CurrentWorld.Value is null) return;
-            if (localPlayer is null) return;
+            if (P.LocalPlayer is null) return;
 
-            var world = localPlayer.CurrentWorld;
-            var dataCentre = world.Value.DataCenter;
-            var worldsInDc = Service.Data.GetExcelSheet<World>()!
-                .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Value.Name)
+            var world = P.LocalPlayer.CurrentWorld.Value;
+            var dataCentre = world.DataCenter;
+            var otherWorldsInDc = Service.Data.GetExcelSheet<World>()!
+                .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Name)
                 .OrderBy(x => x.Name.ToString())
                 .Select(x => x.Name.ToString());
             var regionStr = getRegionStr(dataCentre.Value!.Region);
-            updateWorldList(regionStr, dataCentre.Value.Name.ToString(), world.Value.Name.ToString(), worldsInDc.ToList());
+            updateWorldList(regionStr, dataCentre.Value.Name.ToString(), world.Name.ToString(), [.. otherWorldsInDc]);
         }
     }
 
