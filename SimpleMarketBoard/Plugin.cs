@@ -272,7 +272,7 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
     public ulong LocalContentId = 0;
     public Lumina.Excel.Sheets.World? LocalPlayerHomeWorld = null;
     public Lumina.Excel.Sheets.World? LocalPlayerCurrentWorld = null;
-    public bool IsInGame => (LocalContentId != 0) && (LocalPlayerHomeWorld is not null);
+    public bool IsInGame => (LocalContentId != 0) && (LocalPlayerHomeWorld is not null) && (LocalPlayerCurrentWorld is not null);
     public void OnFrameUpdateLocalContent(IFramework framework)
     {
         if (LocalContentId != Service.ClientState.LocalContentId)
@@ -282,8 +282,16 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
     }
     public void UpdateLocalContentCache()
     {
-        LocalContentId = Service.ClientState.LocalContentId;
         LocalPlayerHomeWorld = Service.ClientState.LocalPlayer?.HomeWorld.Value ?? null;
         LocalPlayerCurrentWorld = Service.ClientState.LocalPlayer?.CurrentWorld.Value ?? null;
+        if (LocalPlayerHomeWorld is null || LocalPlayerCurrentWorld is null)
+        {
+            Service.Log.Debug($"[UpdateLocalContentCache] Reset LocalContentId to 0 because player is not in game.");
+            LocalContentId = 0;
+            return;
+        }
+
+        LocalContentId = Service.ClientState.LocalContentId;
+        Service.Log.Debug($"[UpdateLocalContentCache] {LocalContentId}, {LocalPlayerHomeWorld.Value.Name}, {LocalPlayerCurrentWorld.Value.Name}");
     }
 }
