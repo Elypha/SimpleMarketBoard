@@ -273,25 +273,13 @@ public class ConfigWindow : Window, IDisposable
 
         // OverridePlayerHomeWorld
         var OverridePlayerHomeWorld = P.Config.OverridePlayerHomeWorld;
-        if (ImGui.Checkbox($"Override player home world{suffix}OverridePlayerHomeWorld", ref OverridePlayerHomeWorld))
+        if (ImGui.Checkbox($"Override player home world to {suffix}OverridePlayerHomeWorld", ref OverridePlayerHomeWorld))
         {
             P.Config.OverridePlayerHomeWorld = OverridePlayerHomeWorld;
+            P.MainWindow.UpdateWorld();
         }
-        ImGuiComponents.HelpMarker(
-            "Your home world is used when populate the target world drop down menu.\n" +
-            "Enable: The plugin will use the world you set below as your home world, no matter what your actual home world is.\n" +
-            "Disable: The plugin will use the world your current character is in as your home world, and this gets updated when you login and change maps."
-        );
-
-        // PlayerHomeWorld
-        ImGui.Text("┗");
         ImGui.SameLine();
-        ImGui.Text("... using");
-        ImGuiComponents.HelpMarker(
-            "The WORLD you want to always use as your home world. Fill its full name in game, e.g., Hades"
-        );
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(180);
+                ImGui.SetNextItemWidth(100);
         var PlayerHomeWorld = P.Config.PlayerHomeWorld;
         if (ImGui.InputText($"{suffix}-PlayerHomeWorld", ref PlayerHomeWorld, 32))
         {
@@ -323,13 +311,21 @@ public class ConfigWindow : Window, IDisposable
                 P.MainWindow.UpdateWorld();
             }
         }
+        ImGui.SameLine();
+        ImGuiComponents.HelpMarker(
+            "Your home world is used when populate the target world drop down menu.\n" +
+            "Enable: The plugin will use the world you set below as your home world, no matter what your actual home world is.\n" +
+            "Disable: The plugin will use the world your current character is in as your home world, and this gets updated when you login and change maps.\n" +
+            "Fill the WORLD you want to always use as your home world. Use its full name in game, e.g., Hades, then click 'Apply'."
+        );
+
 
         // AdditionalWorlds
         ImGui.Text("Additional Worlds/DCs/Regions");
         ImGuiComponents.HelpMarker(
             "Use this to add extra options to the target world dropdown menu to search price in.\n" +
-            "To add a world or datacentre, use its full name in game, e.g., Hades, Mana\n" +
-            "To add a region (supported by Universalis), e.g., Japan, North-America, Europe, Oceania\n" +
+            "To add a world or datacentre: fill its full name in game, e.g., Hades, Mana\n" +
+            "To add a region: fill a name supported by Universalis, at the time of writing there are: Japan, North-America, Europe, Oceania\n" +
             "Your manually added worlds will be denoted by a star (*) in the dropdown menu."
         );
         for (var i = 0; i < P.Config.AdditionalWorlds.Count; i++)
