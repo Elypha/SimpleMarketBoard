@@ -138,6 +138,8 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
         Service.Framework.Update -= OnFrameUpdateWindow;
         Service.Framework.Update -= OnFrameUpdateSearch;
         Service.Framework.Update -= OnFrameUpdateLocalContent;
+
+        MiosukeHelper.Dispose();
     }
 
     private void pluginPayloadHandler(uint id, SeString text)
