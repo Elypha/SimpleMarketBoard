@@ -48,10 +48,11 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
     {
         // PLUGIN
 
-        // plugin payload
-        PluginPayload = pluginInterface.AddChatLinkHandler(1, pluginPayloadHandler);
         // dalamud service
         Service.Init(pluginInterface);
+        // plugin payload
+        PluginPayload = Service.Chat.AddChatLinkHandler(1, pluginPayloadHandler);
+        // lib
         MiosukeHelper.Init(
             pluginInterface,
             this,

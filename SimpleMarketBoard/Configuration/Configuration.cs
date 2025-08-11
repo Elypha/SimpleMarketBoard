@@ -66,11 +66,11 @@ public class SimpleMarketBoardConfig : IMioConfig
     // position offset
     public float WorldComboWidth = 130.0f;
     public float tableRowHeightOffset = -2.0f;
-    public int[] sellingColWidthOffset = [0, 0, 0, 0];
-    public int[] soldColWidthOffset = [0, 0, 0, 0];
+    public float[] sellingColWidthOffset = [0.0f, 0.0f, 0.0f, 0.0f];
+    public float[] soldColWidthOffset = [0.0f, 0.0f, 0.0f, 0.0f];
     public int rightColWidth = 102;
-    public int[] WorldUpdateColWidthOffset = [4, 0];
-    public int[] WorldUpdateColPaddingOffset = [-2, -2];
+    public float[] WorldUpdateColWidthOffset = [4.0f, 0.0f];
+    public float[] WorldUpdateColPaddingOffset = [-2.0f, -2.0f];
     public float[] ButtonSizeOffset = [24.0f, 0.0f];
 
 

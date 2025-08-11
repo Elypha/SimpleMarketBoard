@@ -347,7 +347,7 @@ public class MainWindow : Window, IDisposable
     {
         ImGui.SetCursorPosY(0);
 
-        if (ImGui.ImageButton(CurrentItemIcon.GetWrapOrEmpty().ImGuiHandle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
+        if (ImGui.ImageButton(CurrentItemIcon.GetWrapOrEmpty().Handle, new Vector2(40, 40), Vector2.Zero, Vector2.One, 2))
         {
             if (Miosuke.Action.Hotkey.IsActive([VirtualKey.CONTROL], !P.Config.SearchHotkeyLoose))
             {

@@ -8,7 +8,9 @@ using Dalamud.Interface.ImGuiNotification;
 using Miosuke.Configuration;
 using Lumina.Excel.Sheets;
 using Lumina.Extensions;
+using Dalamud.Bindings.ImGui;
 using SimpleMarketBoard.Modules;
+using Miosuke.Extensions;
 
 
 namespace SimpleMarketBoard.Windows;
@@ -728,7 +730,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.NextColumn();
         var WorldComboWidth = P.Config.WorldComboWidth;
         ImGui.SetNextItemWidth(col_value_content_width);
-        if (ImGui.InputFloat($"{suffix}WorldComboWidth", ref WorldComboWidth))
+        if (ImGui.InputFloat($"{suffix}WorldComboWidth", ref WorldComboWidth, 0.0f, 0.0f, "%.0f"))
         {
             P.Config.WorldComboWidth = WorldComboWidth;
             P.Config.Save();
@@ -742,7 +744,7 @@ public class ConfigWindow : Window, IDisposable
         ImGui.NextColumn();
         var tableRowHeightOffset = P.Config.tableRowHeightOffset;
         ImGui.SetNextItemWidth(col_value_content_width);
-        if (ImGui.InputFloat($"{suffix}tableRowHeightOffset", ref tableRowHeightOffset))
+        if (ImGui.InputFloat($"{suffix}tableRowHeightOffset", ref tableRowHeightOffset, 0.0f, 0.0f, "%.0f"))
         {
             P.Config.tableRowHeightOffset = tableRowHeightOffset;
             P.Config.Save();
@@ -754,11 +756,11 @@ public class ConfigWindow : Window, IDisposable
         // sellingColWidthOffset
         ImGui.Text("Selling column width");
         ImGui.NextColumn();
-        var sellingColWidthOffset = P.Config.sellingColWidthOffset;
+        var sellingColWidthOffset = P.Config.sellingColWidthOffset.ToVector4();
         ImGui.SetNextItemWidth(col_value_content_width);
-        if (ImGui.InputInt4($"{suffix}sellingColWidthOffset", ref sellingColWidthOffset[0]))
+        if (ImGui.InputFloat4($"{suffix}sellingColWidthOffset", ref sellingColWidthOffset, 0.0f, 0.0f, "%.0f"))
         {
-            P.Config.sellingColWidthOffset = sellingColWidthOffset;
+            P.Config.sellingColWidthOffset = sellingColWidthOffset.ToArray();
             P.Config.Save();
         }
         ImGuiComponents.HelpMarker("Offset the width of each column in the table. New width W' = W + offset.");
@@ -768,11 +770,11 @@ public class ConfigWindow : Window, IDisposable
         // soldColWidthOffset
         ImGui.Text("Sold column width");
         ImGui.NextColumn();
-        var soldColWidthOffset = P.Config.soldColWidthOffset;
+        var soldColWidthOffset = P.Config.soldColWidthOffset.ToVector4();
         ImGui.SetNextItemWidth(col_value_content_width);
-        if (ImGui.InputInt4($"{suffix}soldColWidthOffset", ref soldColWidthOffset[0]))
+        if (ImGui.InputFloat4($"{suffix}soldColWidthOffset", ref soldColWidthOffset, 0.0f, 0.0f, "%.0f"))
         {
-            P.Config.soldColWidthOffset = soldColWidthOffset;
+            P.Config.soldColWidthOffset = soldColWidthOffset.ToArray();
             P.Config.Save();
         }
         ImGuiComponents.HelpMarker("Offset the width of each column in the table. New width W' = W + offset.");
@@ -796,11 +798,11 @@ public class ConfigWindow : Window, IDisposable
         // WorldUpdateColWidthOffset
         ImGui.Text("World Updated width");
         ImGui.NextColumn();
-        var WorldUpdateColWidthOffset = P.Config.WorldUpdateColWidthOffset;
+        var WorldUpdateColWidthOffset = P.Config.WorldUpdateColWidthOffset.ToVector2();
         ImGui.SetNextItemWidth(col_value_content_width);
-        if (ImGui.InputInt2($"{suffix}WorldUpdateColWidthOffset", ref WorldUpdateColWidthOffset[0]))
+        if (ImGui.InputFloat2($"{suffix}WorldUpdateColWidthOffset", ref WorldUpdateColWidthOffset, 0.0f, 0.0f, "%.0f"))
         {
-            P.Config.WorldUpdateColWidthOffset = WorldUpdateColWidthOffset;
+            P.Config.WorldUpdateColWidthOffset = WorldUpdateColWidthOffset.ToArray();
             P.Config.Save();
         }
         ImGuiComponents.HelpMarker("The width of the columns of the last updated time for each world on the right bottom. Try changing the values to see what it does.");
@@ -810,11 +812,11 @@ public class ConfigWindow : Window, IDisposable
         // WorldUpdateColPaddingOffset
         ImGui.Text("World Updated padding");
         ImGui.NextColumn();
-        var WorldUpdateColPaddingOffset = P.Config.WorldUpdateColPaddingOffset;
+        var WorldUpdateColPaddingOffset = P.Config.WorldUpdateColPaddingOffset.ToVector2();
         ImGui.SetNextItemWidth(col_value_content_width);
-        if (ImGui.InputInt2($"{suffix}WorldUpdateColPaddingOffset", ref WorldUpdateColPaddingOffset[0]))
+        if (ImGui.InputFloat2($"{suffix}WorldUpdateColPaddingOffset", ref WorldUpdateColPaddingOffset, 0.0f, 0.0f, "%.0f"))
         {
-            P.Config.WorldUpdateColPaddingOffset = WorldUpdateColPaddingOffset;
+            P.Config.WorldUpdateColPaddingOffset = WorldUpdateColPaddingOffset.ToArray();
             P.Config.Save();
         }
         ImGuiComponents.HelpMarker("The padding of the columns of the last updated time for each world on the right bottom. Try changing the values to see what it does.");
@@ -823,11 +825,11 @@ public class ConfigWindow : Window, IDisposable
         // ButtonSizeOffset
         ImGui.Text("Button size");
         ImGui.NextColumn();
-        var ButtonSizeOffset = new Vector2(P.Config.ButtonSizeOffset[0], P.Config.ButtonSizeOffset[1]);
+        var ButtonSizeOffset = P.Config.ButtonSizeOffset.ToVector2();
         ImGui.SetNextItemWidth(col_value_content_width);
-        if (ImGui.InputFloat2($"{suffix}ButtonSizeOffset", ref ButtonSizeOffset))
+        if (ImGui.InputFloat2($"{suffix}ButtonSizeOffset", ref ButtonSizeOffset, 0.0f, 0.0f, "%.0f"))
         {
-            P.Config.ButtonSizeOffset = [ButtonSizeOffset.X, ButtonSizeOffset.Y];
+            P.Config.ButtonSizeOffset = ButtonSizeOffset.ToArray();
             P.Config.Save();
         }
         ImGuiComponents.HelpMarker("The size of the buttons in the main window. Try changing the values to see what it does.");
