@@ -72,33 +72,46 @@ public class ConfigWindow : Window, IDisposable
     {
         var padding = 0.8f;
 
-        if (ImGui.Button("Open Manual in browser"))
+        if (ImGui.CollapsingHeader("Help and Support"))
         {
-            var url = $"https://github.com/Elypha/SimpleMarketBoard#manual";
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url)
-            {
-                UseShellExecute = true,
-            });
-        }
-        ImGuiComponents.HelpMarker(
-            "Click to open in your browser.\n" +
-            "Check the 'Manual' section for a detailed introduction of all the features and how to use them."
-        );
+            var github_issues_url = "https://github.com/Elypha/SimpleMarketBoard/issues";
 
-        // Debug
-#if DEBUG
-        ImGui.TextColored(Ui.ColourCrimson, "Debug");
-        if (ImGui.Button("Do test"))
-        {
-            for (var i = 0; i < 10; i++)
-            {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
-                Miosuke.Action.Hotkey.IsActive(P.Config.SearchHotkey, true);
-                watch.Stop();
-                Service.Log.Info($"[Hotkey] Test result: {watch.Elapsed}");
-            }
+            ImGui.Text("Thanks for being interested in testing this niche plugin!");
+            ImGui.Text("Please let me know if you have any question or suggestion via:");
+
+            ImGui.Text("- Discord");
+            ImGui.Indent();
+            ImGui.Text("1) Official Dalamud Server:");
+            ImGui.SameLine();
+            Ui.TextUrlWithLabelButton("https://discord.com/invite/holdshift");
+            ImGui.Indent();
+            ImGui.Text("Goto: plugin-help-forum > Simple Market Board");
+            ImGui.Unindent();
+            ImGui.Text("2) PM @elypha");
+            ImGui.Unindent();
+
+            ImGui.Text("- GitHub Issues (if you want to keep track of the progress)");
+            ImGui.Indent();
+            Ui.TextUrlWithLabelButton(github_issues_url);
+            ImGui.Text("A more detailed guide is available there as well.");
+            ImGui.Unindent();
         }
-#endif
+
+
+//         // Debug
+// #if DEBUG
+//         ImGui.TextColored(Ui.ColourCrimson, "Debug");
+//         if (ImGui.Button("Do test"))
+//         {
+//             for (var i = 0; i < 10; i++)
+//             {
+//                 var watch = System.Diagnostics.Stopwatch.StartNew();
+//                 Miosuke.Action.Hotkey.IsActive(P.Config.SearchHotkey, true);
+//                 watch.Stop();
+//                 Service.Log.Info($"[Hotkey] Test result: {watch.Elapsed}");
+//             }
+//         }
+// #endif
 
         // General
         DrawGeneral(padding);
