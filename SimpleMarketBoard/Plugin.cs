@@ -110,7 +110,6 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
         Service.Framework.Update += OnFrameUpdateWindow;
         Service.Framework.Update += OnFrameUpdateSearch;
-        Service.Framework.Update += OnFrameUpdateLocalContent;
     }
 
     public void Dispose()
@@ -137,7 +136,6 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
         Service.ClientState.TerritoryChanged -= OnTerritoryChanged;
         Service.Framework.Update -= OnFrameUpdateWindow;
         Service.Framework.Update -= OnFrameUpdateSearch;
-        Service.Framework.Update -= OnFrameUpdateLocalContent;
 
         MiosukeHelper.Dispose();
     }
@@ -273,28 +271,28 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
 
 
     public ulong LocalContentId = 0;
-    public Lumina.Excel.Sheets.World? LocalPlayerHomeWorld = null;
-    public Lumina.Excel.Sheets.World? LocalPlayerCurrentWorld = null;
-    public bool IsInGame => (LocalContentId != 0) && (LocalPlayerHomeWorld is not null) && (LocalPlayerCurrentWorld is not null);
-    public void OnFrameUpdateLocalContent(IFramework framework)
-    {
-        if (LocalContentId != Service.ClientState.LocalContentId)
-        {
-            UpdateLocalContentCache();
-        }
-    }
-    public void UpdateLocalContentCache()
-    {
-        LocalPlayerHomeWorld = Service.ClientState.LocalPlayer?.HomeWorld.Value ?? null;
-        LocalPlayerCurrentWorld = Service.ClientState.LocalPlayer?.CurrentWorld.Value ?? null;
-        if (LocalPlayerHomeWorld is null || LocalPlayerCurrentWorld is null)
-        {
-            Service.Log.Debug($"[UpdateLocalContentCache] Reset LocalContentId to 0 because player is not in game.");
-            LocalContentId = 0;
-            return;
-        }
+    public Lumina.Excel.Sheets.World LocalPlayerHomeWorld;
+    public Lumina.Excel.Sheets.World LocalPlayerCurrentWorld;
+    public bool IsInGame => (LocalContentId != 0) && Service.ClientState.IsLoggedIn && Service.PlayerState.IsLoaded;
+    // public void OnFrameUpdateLocalContent(IFramework framework)
+    // {
+    //     if (LocalContentId != Service.PlayerState.ContentId)
+    //     {
+    //         UpdateLocalContentCache();
+    //     }
+    // }
+    // public void UpdateLocalContentCache()
+    // {
+    //     LocalPlayerHomeWorld = Service.PlayerState.HomeWorld.Value;
+    //     LocalPlayerCurrentWorld = Service.PlayerState.CurrentWorld.Value;
+    //     // if (LocalPlayerHomeWorld is null || LocalPlayerCurrentWorld is null)
+    //     // {
+    //     //     Service.Log.Debug($"[UpdateLocalContentCache] Reset LocalContentId to 0 because player is not in game.");
+    //     //     LocalContentId = 0;
+    //     //     return;
+    //     // }
 
-        LocalContentId = Service.ClientState.LocalContentId;
-        Service.Log.Debug($"[UpdateLocalContentCache] {LocalContentId}, {LocalPlayerHomeWorld.Value.Name}, {LocalPlayerCurrentWorld.Value.Name}");
-    }
+    //     LocalContentId = Service.PlayerState.ContentId;
+    //     Service.Log.Debug($"[UpdateLocalContentCache] {LocalContentId}, {LocalPlayerHomeWorld}, {LocalPlayerCurrentWorld}");
+    // }
 }

@@ -96,15 +96,15 @@ public class PriceChecker
         }
 
         // if player in game
-        if (P.LocalPlayerHomeWorld is null)
-        {
-            Service.NotificationManager.AddNotification(new Notification
-            {
-                Content = $"Player home World is unknown.",
-                Type = NotificationType.Warning,
-            });
-            return;
-        }
+        // if (P.LocalPlayerHomeWorld is null)
+        // {
+        //     Service.NotificationManager.AddNotification(new Notification
+        //     {
+        //         Content = $"Player home World is unknown.",
+        //         Type = NotificationType.Warning,
+        //     });
+        //     return;
+        // }
 
         // if vendor sells cheaper
         var valid_vendors = Service.Data.GetSubrowExcelSheet<GilShopItem>().Flatten().Where(i => i.Item.RowId == (uint)gameItem.Id).ToList();
