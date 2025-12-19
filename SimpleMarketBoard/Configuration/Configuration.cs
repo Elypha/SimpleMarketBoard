@@ -36,7 +36,7 @@ public class SimpleMarketBoardConfig : IMioConfig
     // notification
     public PriceChecker.PriceToPrint priceToPrint = PriceChecker.PriceToPrint.SoldLow;
     public bool EnableChatLog = true;
-    public XivChatType ChatLogChannel = XivChatType.None;
+    public XivChatType ChatLogChannel = XivChatType.Debug;
     public bool EnableToastLog = false;
 
 
