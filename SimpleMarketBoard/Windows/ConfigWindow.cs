@@ -294,7 +294,6 @@ public class ConfigWindow : Window, IDisposable
             {
                 var world = Service.Data.GetExcelSheet<World>()
                     .FirstOrDefault(x => string.Equals(x.Name.ToString(), P.Config.PlayerHomeWorld, StringComparison.OrdinalIgnoreCase));
-
                 if (world.Equals(default(World)))
                 {
                     Service.NotificationManager.AddNotification(new Notification
