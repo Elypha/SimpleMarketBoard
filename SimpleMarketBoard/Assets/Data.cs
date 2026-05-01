@@ -1,10 +1,10 @@
-using Lumina.Excel.Sheets;
-using Lumina.Excel;
 using System.IO;
-using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Interface.GameFonts;
-using Dalamud.Interface.Utility;
+using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Interface.Style;
+using Dalamud.Interface.Utility;
+using Lumina.Excel;
+using Lumina.Excel.Sheets;
 
 namespace SimpleMarketBoard.Assets;
 
@@ -37,10 +37,13 @@ public static partial class Data
             toolkit.OnPreBuild(
                 preBuild =>
                 {
-                    preBuild.AddFontFromFile(
-                        Path.Combine(Service.PluginInterface.DalamudAssetDirectory.FullName, "UIRes", "NotoSansCJKjp-Medium.otf"),
-                        new() { SizePx = 17f }
-                    );
+                    // check if jp exists, if so, load that one, if not, check sch, if not, load regular
+                    var fontJpPath = Path.Combine(Service.PluginInterface.DalamudAssetDirectory.FullName, "UIRes", "NotoSansCJKjp-Medium.otf");
+                    var fontScPath = Path.Combine(Service.PluginInterface.DalamudAssetDirectory.FullName, "UIRes", "NotoSansCJKsc-Medium.otf");
+                    var fontPath = File.Exists(fontJpPath) ? fontJpPath :
+                                   File.Exists(fontScPath) ? fontScPath :
+                                   Path.Combine(Service.PluginInterface.DalamudAssetDirectory.FullName, "UIRes", "NotoSans-Medium.otf");
+                    preBuild.AddFontFromFile(fontPath, new() { SizePx = 17f });
                 }
             );
         }
