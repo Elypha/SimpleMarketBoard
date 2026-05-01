@@ -206,7 +206,7 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
         MainWindow.UpdateWorld();
     }
 
-    public void OnTerritoryChanged(ushort territoryId)
+    public void OnTerritoryChanged(uint territoryId)
     {
         MainWindow.UpdateWorld();
     }

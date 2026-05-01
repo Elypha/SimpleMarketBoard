@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Threading.Tasks;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text;
 using Dalamud.Interface.ImGuiNotification;
@@ -8,8 +10,6 @@ using Miosuke.Configuration;
 using Miosuke.UiHelper;
 using SimpleMarketBoard.Assets;
 using SimpleMarketBoard.Modules;
-using System.Globalization;
-using System.Threading.Tasks;
 
 
 namespace SimpleMarketBoard.Windows;
@@ -248,6 +248,7 @@ public class MainWindow : Window, IDisposable
     private static readonly List<string> PublicWorlds = Service.Data.GetExcelSheet<World>().Where(x => x.IsPublic).Select(x => x.Name.ToString()).ToList();
 
 
+    // NOTE: potential dead code
     private static string getRegionStr(int region) => region switch
     {
         1 => "Japan",
@@ -271,8 +272,12 @@ public class MainWindow : Window, IDisposable
                 .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Name)
                 .OrderBy(x => x.Name.ToString())
                 .Select(x => x.Name.ToString());
-            var regionStr = getRegionStr(world.Region);
-            updateWorldList(regionStr, dataCentre.Value!.Name.ToString(), world.Name.ToString(), [.. otherWorldsInDc]);
+            updateWorldList(
+                dataCentre.Value.Region.Value.Name.ToString(),
+                dataCentre.Value!.Name.ToString(),
+                world.Name.ToString(),
+                [.. otherWorldsInDc]
+            );
         }
         else
         {
@@ -282,8 +287,12 @@ public class MainWindow : Window, IDisposable
                 .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Name)
                 .OrderBy(x => x.Name.ToString())
                 .Select(x => x.Name.ToString());
-            var regionStr = getRegionStr(dataCentre.Value!.Region);
-            updateWorldList(regionStr, dataCentre.Value.Name.ToString(), world.Name.ToString(), [.. otherWorldsInDc]);
+            updateWorldList(
+                dataCentre.Value.Region.Value.Name.ToString(),
+                dataCentre.Value.Name.ToString(),
+                world.Name.ToString(),
+                [.. otherWorldsInDc]
+            );
         }
     }
 
