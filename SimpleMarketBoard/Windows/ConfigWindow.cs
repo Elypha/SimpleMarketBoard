@@ -99,21 +99,17 @@ public class ConfigWindow : Window, IDisposable
             ImGui.Unindent();
         }
 
-
-//         // Debug
-// #if DEBUG
-//         ImGui.TextColored(Ui.ColourCrimson, "Debug");
-//         if (ImGui.Button("Do test"))
-//         {
-//             for (var i = 0; i < 10; i++)
-//             {
-//                 var watch = System.Diagnostics.Stopwatch.StartNew();
-//                 Miosuke.Action.Hotkey.IsActive(P.Config.SearchHotkey, true);
-//                 watch.Stop();
-//                 Service.Log.Info($"[Hotkey] Test result: {watch.Elapsed}");
-//             }
-//         }
-// #endif
+#if DEBUG
+        ImGui.TextColored(Ui.ColourCrimson, "Debug");
+        if (ImGui.Button("Open config folder"))
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = MioConfig.ConfigDirectory,
+                UseShellExecute = true,
+            });
+        }
+#endif
 
         // General
         DrawGeneral(padding);
