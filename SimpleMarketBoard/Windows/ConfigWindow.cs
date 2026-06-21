@@ -19,6 +19,7 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly HotkeyUi search_hotkey_helper;
     private readonly HotkeyUi window_hotkey_helper;
+    private string playerHomeWorldInput = "";
     private string newAdditionalTarget = "";
 
     public ConfigWindow() : base(
@@ -54,6 +55,7 @@ public class ConfigWindow : Window, IDisposable
 
     public override void OnOpen()
     {
+        playerHomeWorldInput = P.Config.PlayerHomeWorld;
     }
 
     public override void OnClose()
@@ -290,40 +292,15 @@ public class ConfigWindow : Window, IDisposable
         var OverridePlayerHomeWorld = P.Config.OverridePlayerHomeWorld;
         if (ImGui.Checkbox($"Override player home world to {suffix}OverridePlayerHomeWorld", ref OverridePlayerHomeWorld))
         {
-            P.Config.OverridePlayerHomeWorld = OverridePlayerHomeWorld;
-            P.MainWindow.UpdateWorld();
+            SetPlayerHomeWorldOverride(OverridePlayerHomeWorld);
         }
         ImGui.SameLine();
                 ImGui.SetNextItemWidth(100);
-        var PlayerHomeWorld = P.Config.PlayerHomeWorld;
-        if (ImGui.InputText($"{suffix}-PlayerHomeWorld", ref PlayerHomeWorld, 32))
-        {
-            P.Config.PlayerHomeWorld = PlayerHomeWorld;
-        }
+        ImGui.InputText($"{suffix}-PlayerHomeWorld", ref playerHomeWorldInput, 32);
         ImGui.SameLine();
         if (ImGui.Button("Apply"))
         {
-            if (P.Config.OverridePlayerHomeWorld && P.Config.PlayerHomeWorld != "")
-            {
-                var world = Service.Data.GetExcelSheet<World>()
-                    .FirstOrDefault(x => string.Equals(x.Name.ToString(), P.Config.PlayerHomeWorld, StringComparison.OrdinalIgnoreCase));
-                if (world.Equals(default(World)))
-                {
-                    Service.NotificationManager.AddNotification(new Notification
-                    {
-                        Content = $"World cannot be determined from world name: {P.Config.PlayerHomeWorld}",
-                        Type = NotificationType.Error,
-                    });
-                    P.Config.OverridePlayerHomeWorld = false;
-                    P.Config.PlayerHomeWorld = "";
-                }
-                else
-                {
-                    P.Config.PlayerHomeWorld = world.Name.ToString();
-                }
-                P.Config.Save();
-                P.MainWindow.UpdateWorld();
-            }
+            SetPlayerHomeWorldOverride(P.Config.OverridePlayerHomeWorld);
         }
         ImGui.SameLine();
         ImGuiComponents.HelpMarker(
@@ -346,13 +323,7 @@ public class ConfigWindow : Window, IDisposable
         {
             ImGui.PushID($"{suffix}-AdditionalTargets-{i}");
             var additionalTarget = P.Config.AdditionalTargets[i];
-            ImGui.SetNextItemWidth(180);
-            if (ImGui.InputText($"{suffix}-AdditionalTargets", ref additionalTarget, 32))
-            {
-                P.Config.AdditionalTargets[i] = MarketTargets.Resolve(additionalTarget) ?? additionalTarget;
-                P.Config.Save();
-                P.MainWindow.UpdateWorld();
-            }
+            ImGui.Text(additionalTarget);
             ImGui.SameLine();
             ImGui.PushFont(UiBuilder.IconFont);
             if (ImGui.Button($"{FontAwesomeIcon.Trash.ToIconString()}{suffix}-del"))
@@ -374,7 +345,10 @@ public class ConfigWindow : Window, IDisposable
             var additionalTarget = MarketTargets.Resolve(newAdditionalTarget, NotificationType.Error);
             if (additionalTarget is not null)
             {
-                P.Config.AdditionalTargets.Add(additionalTarget);
+                if (P.Config.AdditionalTargets.All(x => !MarketTargets.Same(x, additionalTarget)))
+                {
+                    P.Config.AdditionalTargets.Add(additionalTarget);
+                }
                 P.Config.Save();
                 P.MainWindow.UpdateWorld();
                 newAdditionalTarget = "";
@@ -456,6 +430,36 @@ public class ConfigWindow : Window, IDisposable
             "Enable: The result will print in common toast."
         );
 
+    }
+
+
+    private void SetPlayerHomeWorldOverride(bool enabled)
+    {
+        if (!enabled)
+        {
+            P.Config.OverridePlayerHomeWorld = false;
+            P.Config.Save();
+            P.MainWindow.UpdateWorld();
+            return;
+        }
+
+        var world = Service.Data.GetExcelSheet<World>()
+            .FirstOrDefault(x => string.Equals(x.Name.ToString(), playerHomeWorldInput, StringComparison.OrdinalIgnoreCase));
+        if (world.Equals(default(World)))
+        {
+            Service.NotificationManager.AddNotification(new Notification
+            {
+                Content = $"World cannot be determined from world name: {playerHomeWorldInput}",
+                Type = NotificationType.Error,
+            });
+            return;
+        }
+
+        P.Config.OverridePlayerHomeWorld = true;
+        P.Config.PlayerHomeWorld = world.Name.ToString();
+        playerHomeWorldInput = P.Config.PlayerHomeWorld;
+        P.Config.Save();
+        P.MainWindow.UpdateWorld();
     }
 
 
