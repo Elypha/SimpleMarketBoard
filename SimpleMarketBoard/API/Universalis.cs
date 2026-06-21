@@ -50,7 +50,8 @@ public class Universalis
         {
             // build url
             var _hq = P.Config.UniversalisHqOnly ? "&hq=1" : "";
-            var API_URL = new UriBuilder($"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings={P.Config.UniversalisListings}&entries={P.Config.UniversalisEntries}{_hq}").Uri.ToString();
+            var targetRegion = gameItem.TargetRegion == "North America" ? "North-America" : gameItem.TargetRegion;
+            var API_URL = new UriBuilder($"{Host}/api/v2/{targetRegion}/{gameItem.Id}?listings={P.Config.UniversalisListings}&entries={P.Config.UniversalisEntries}{_hq}").Uri.ToString();
 
             // get response
             Service.Log.Info($"[Universalis] Fetch: {API_URL}");
