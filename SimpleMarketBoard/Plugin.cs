@@ -7,6 +7,9 @@ using Dalamud.Interface.Style;
 using Dalamud.Plugin.Services;
 using Miosuke.Configuration;
 using Miosuke.Messages;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using SimpleMarketBoard.API;
 using SimpleMarketBoard.Assets;
 using SimpleMarketBoard.Configuration;
@@ -67,7 +70,7 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
         P = this;
         // config init
         MioConfig.Setup(MainConfigFileName: "main.json");
-        if (Service.PluginInterface.ConfigFile.Exists) MioConfig.Migrate<SimpleMarketBoardConfig>(Service.PluginInterface.ConfigFile.FullName);
+        MigrateConfig(MioConfig.MainConfigFile);
         Config = MioConfig.Init<SimpleMarketBoardConfig>();
 
         // theme
@@ -111,6 +114,59 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
         Service.ClientState.TerritoryChanged += OnTerritoryChanged;
         Service.Framework.Update += OnFrameUpdateWindow;
         Service.Framework.Update += OnFrameUpdateSearch;
+    }
+
+    private static void MigrateConfig(string path)
+    {
+        if (!File.Exists(path)) return;
+
+        try
+        {
+            if (JsonNode.Parse(File.ReadAllText(path)) is not JsonObject config) return;
+            var version = config["Version"]?.GetValue<int>() ?? 1;
+            var originalVersion = version;
+
+            if (version == 1)
+            {
+                static string FixTarget(JsonNode? node)
+                {
+                    var value = node?.GetValue<string>().Trim() ?? "";
+                    return string.Equals(value, "North America", StringComparison.OrdinalIgnoreCase)
+                        ? "North-America"
+                        : value;
+                }
+
+                // v1 -> v2: selectedWorld -> SelectedTarget
+                if (config.Remove("selectedWorld", out var oldSelectedTarget))
+                {
+                    if (string.IsNullOrWhiteSpace(config["SelectedTarget"]?.GetValue<string>()))
+                    {
+                        config["SelectedTarget"] = FixTarget(oldSelectedTarget);
+                    }
+                }
+
+                // v1 -> v2: AdditionalWorlds -> AdditionalTargets
+                if (config.Remove("AdditionalWorlds", out var oldAdditionalTargets) &&
+                    oldAdditionalTargets is JsonArray oldArray)
+                {
+                    config["AdditionalTargets"] = new JsonArray(oldArray
+                        .Select(x => JsonValue.Create(FixTarget(x)))
+                        .ToArray<JsonNode?>());
+                }
+
+                version = 2;
+                config["Version"] = version;
+            }
+
+            if (version == originalVersion) return;
+
+            File.WriteAllText(path, config.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+            Service.Log.Info($"Migrated config from v{originalVersion} to v{version} in {path}");
+        }
+        catch (Exception ex)
+        {
+            Service.Log.Warning($"Failed to migrate config in {path}: {ex.Message}");
+        }
     }
 
     public void Dispose()

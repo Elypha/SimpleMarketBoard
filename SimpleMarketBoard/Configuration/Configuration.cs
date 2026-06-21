@@ -8,7 +8,7 @@ namespace SimpleMarketBoard.Configuration;
 
 public class SimpleMarketBoardConfig : IMioConfig
 {
-    public int Version = 1;
+    public int Version = 2;
 
 
     // -------------------------------- General --------------------------------
