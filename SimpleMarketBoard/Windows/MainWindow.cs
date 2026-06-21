@@ -4,8 +4,6 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Textures;
-using Lumina.Excel.Sheets;
-using Lumina.Extensions;
 using Miosuke.Configuration;
 using Miosuke.UiHelper;
 using SimpleMarketBoard.Assets;
@@ -29,7 +27,7 @@ public class MainWindow : Window, IDisposable
         CurrentItem.InGame = Data.ItemSheet.GetRow(4691)!;
         CurrentItemLabel = "(/ω＼)";
         CurrentItemIcon = Service.Texture.GetFromGameIcon(new GameIconLookup(CurrentItem.InGame.Icon));
-        if (P.Config.selectedWorld != "") lastSelectedWorld = P.Config.selectedWorld;
+        if (P.Config.SelectedTarget != "") lastSelectedTarget = P.Config.SelectedTarget;
     }
 
     public override void PreDraw()
@@ -79,7 +77,7 @@ public class MainWindow : Window, IDisposable
         CurrentItemLabel = CurrentItem.Name;
     }
 
-    public string lastSelectedWorld = "";
+    private string lastSelectedTarget = "";
     private bool searchHistoryOpen = true;
 
     private int selectedListing = -1;
@@ -87,8 +85,8 @@ public class MainWindow : Window, IDisposable
 
     public int LoadingQueue = 0;
 
-    public List<(string, string)> worldList = [];
-    public string playerHomeWorld = "";
+    private readonly List<(string Target, string MenuLabel)> targetList = [];
+    private string playerHomeWorld = "";
 
 
     public override void Draw()
@@ -139,10 +137,10 @@ public class MainWindow : Window, IDisposable
         DrawHqFilterButton(P.Config.ButtonSizeOffset[0]);
         ImGui.SameLine();
 
-        // world selection dropdown
+        // target selection dropdown
         ImGui.SetCursorPosY(ImGui.GetTextLineHeightWithSpacing() + 1 * spacing.Y + P.Config.ButtonSizeOffset[1]);
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvail().X - P.Config.WorldComboWidth);
-        DrawWorldCombo(P.Config.WorldComboWidth);
+        DrawTargetCombo(P.Config.WorldComboWidth);
 
 
         // price table
@@ -229,111 +227,67 @@ public class MainWindow : Window, IDisposable
         ImGui.EndGroup();
     }
 
-    private static readonly List<string> PublicRegions = [
-        "Japan",
-        "North-America",
-        "Europe",
-        "Oceania"
-    ];
-    private static readonly List<string> PublicDataCentres = [
-        // North American Data Center
-        "Aether", "Crystal", "Dynamis", "Primal",
-        // European Data Center
-        "Chaos", "Light",
-        // Oceanian Data Center
-        "Materia",
-        // Japanese Data Center
-        "Elemental", "Gaia", "Mana", "Meteor"
-    ];
-    private static readonly List<string> PublicWorlds = Service.Data.GetExcelSheet<World>().Where(x => x.IsPublic).Select(x => x.Name.ToString()).ToList();
-
-
-    // NOTE: potential dead code
-    private static string getRegionStr(int region) => region switch
-    {
-        1 => "Japan",
-        2 => "North-America",
-        3 => "Europe",
-        4 => "Oceania",
-        _ => "",
-    };
-
-
-
     public void UpdateWorld()
     {
         if (!P.IsInGame) return;
 
-        if (P.Config.OverridePlayerHomeWorld)
-        {
-            var world = Service.Data.GetExcelSheet<World>().First(x => x.Name.ToString() == P.Config.PlayerHomeWorld);
-            var dataCentre = world.DataCenter;
-            var otherWorldsInDc = Service.Data.GetExcelSheet<World>()!
-                .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Name)
-                .OrderBy(x => x.Name.ToString())
-                .Select(x => x.Name.ToString());
-            updateWorldList(
-                dataCentre.Value.Region.Value.Name.ToString(),
-                dataCentre.Value!.Name.ToString(),
-                world.Name.ToString(),
-                [.. otherWorldsInDc]
-            );
-        }
-        else
-        {
-            var world = Service.PlayerState.CurrentWorld.Value;
-            var dataCentre = world.DataCenter;
-            var otherWorldsInDc = Service.Data.GetExcelSheet<World>()!
-                .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Name)
-                .OrderBy(x => x.Name.ToString())
-                .Select(x => x.Name.ToString());
-            updateWorldList(
-                dataCentre.Value.Region.Value.Name.ToString(),
-                dataCentre.Value.Name.ToString(),
-                world.Name.ToString(),
-                [.. otherWorldsInDc]
-            );
-        }
+        var world = P.Config.OverridePlayerHomeWorld
+            ? Data.WorldSheet.First(x => x.Name.ToString() == P.Config.PlayerHomeWorld)
+            : Service.PlayerState.CurrentWorld.Value;
+        var dataCentre = world.DataCenter;
+        var otherWorldsInDc = Data.WorldSheet
+            .Where(x => x.DataCenter.RowId == dataCentre.RowId && x.IsPublic && x.Name != world.Name)
+            .OrderBy(x => x.Name.ToString())
+            .Select(MarketTargets.FromWorld);
+        UpdateTargetList(
+            MarketTargets.FromRegion(world),
+            MarketTargets.FromDataCenter(world),
+            MarketTargets.FromWorld(world),
+            [.. otherWorldsInDc]
+        );
     }
 
-    private void updateWorldList(string region, string dataCentre, string homeWorld, List<string> worldsInDc)
+    private void UpdateTargetList(string region, string dataCentre, string homeWorld, List<string> worldsInDc)
     {
-        var additionalWorlds = P.Config.AdditionalWorlds.ToList();
-        worldList.Clear();
+        var additionalTargets = P.Config.AdditionalTargets
+            .ToList();
+        bool IsIn(IReadOnlyList<string> targets, string target) => targets.Any(x => MarketTargets.Same(x, target));
+        bool IsAdditional(string target) => IsIn(additionalTargets, target);
 
-        string suffix;
+        targetList.Clear();
 
         // add region
-        suffix = additionalWorlds.Contains(region) ? "*" : "";
-        worldList.Add((region, $"{(char)SeIconChar.ExperienceFilled}  {region}{suffix}"));
-        worldList.AddRange(additionalWorlds
-            .Where(x => PublicRegions.Contains(x) && !string.Equals(x, region, StringComparison.OrdinalIgnoreCase))
+        var suffix = IsAdditional(region) ? "*" : "";
+        targetList.Add((region, $"{(char)SeIconChar.ExperienceFilled}  {region}{suffix}"));
+        targetList.AddRange(additionalTargets
+            .Where(x => IsIn(MarketTargets.Regions, x) && !MarketTargets.Same(x, region))
             .Select(x => (x, $"{(char)SeIconChar.ExperienceFilled}  {x}*"))
         );
         // data centres
-        suffix = additionalWorlds.Contains(dataCentre) ? "*" : "";
-        worldList.Add((dataCentre, $"{(char)SeIconChar.Experience}  {dataCentre}{suffix}"));
-        worldList.AddRange(additionalWorlds
-            .Where(x => PublicDataCentres.Contains(x) && !string.Equals(x, dataCentre, StringComparison.OrdinalIgnoreCase))
+        suffix = IsAdditional(dataCentre) ? "*" : "";
+        targetList.Add((dataCentre, $"{(char)SeIconChar.Experience}  {dataCentre}{suffix}"));
+        targetList.AddRange(additionalTargets
+            .Where(x => IsIn(MarketTargets.DataCenters, x) && !MarketTargets.Same(x, dataCentre))
             .Select(x => (x, $"{(char)SeIconChar.Experience}  {x}*"))
         );
         // home world
-        suffix = additionalWorlds.Contains(homeWorld) ? "*" : "";
-        worldList.Add((homeWorld, $"{homeWorld}{suffix}"));
+        suffix = IsAdditional(homeWorld) ? "*" : "";
+        targetList.Add((homeWorld, $"{homeWorld}{suffix}"));
         // additional worlds
-        worldList.AddRange(additionalWorlds
-            .Where(x => PublicWorlds.Contains(x) && !string.Equals(x, homeWorld, StringComparison.OrdinalIgnoreCase))
+        targetList.AddRange(additionalTargets
+            .Where(x => IsIn(MarketTargets.Worlds, x) && !MarketTargets.Same(x, homeWorld))
             .Select(x => (x, $"{x}*"))
         );
-        worldList.AddRange(worldsInDc
-            .Where(x => !additionalWorlds.Contains(x))
+        targetList.AddRange(worldsInDc
+            .Where(x => !IsAdditional(x))
             .Select(x => (x, $"{x}"))
         );
 
         playerHomeWorld = homeWorld;
-        if (P.Config.selectedWorld == "")
+        if (P.Config.SelectedTarget == "" || targetList.All(x => !MarketTargets.Same(x.Target, P.Config.SelectedTarget)))
         {
-            P.Config.selectedWorld = dataCentre;
+            P.Config.SelectedTarget = dataCentre;
+            P.Config.Save();
         }
     }
 
@@ -440,32 +394,36 @@ public class MainWindow : Window, IDisposable
         ImGui.PopFont();
     }
 
-    private void DrawWorldCombo(float width)
+    private void DrawTargetCombo(float width)
     {
         if (P.PluginThemeEnabled)
         {
             Data.NotoSans17.Pop();
         }
         ImGui.SetNextItemWidth(width);
-        if (ImGui.BeginCombo($"###{Name}selectedWorld", P.Config.selectedWorld))
+        if (ImGui.BeginCombo($"###{Name}SelectedTarget", P.Config.SelectedTarget))
         {
-            foreach (var world in worldList)
+            foreach (var target in targetList)
             {
-                if (world.Item1 == playerHomeWorld) ImGui.PushStyleColor(ImGuiCol.Text, Ui.ColourHq);
-
-                var isSelected = world.Item1 == P.Config.selectedWorld;
-                if (ImGui.Selectable(world.Item2, isSelected))
+                var isHomeWorld = MarketTargets.Same(target.Target, playerHomeWorld);
+                if (isHomeWorld)
                 {
-                    P.Config.selectedWorld = world.Item1;
+                    ImGui.PushStyleColor(ImGuiCol.Text, Ui.ColourHq);
+                }
+
+                var isSelected = MarketTargets.Same(target.Target, P.Config.SelectedTarget);
+                if (ImGui.Selectable(target.MenuLabel, isSelected))
+                {
+                    P.Config.SelectedTarget = target.Target;
                     P.Config.Save();
 
-                    if (P.Config.selectedWorld != lastSelectedWorld)
+                    if (P.Config.SelectedTarget != lastSelectedTarget)
                     {
-                        Service.Log.Debug($"Fetch data of {P.Config.selectedWorld}");
+                        Service.Log.Debug($"Fetch data of {P.Config.SelectedTarget}");
                         P.PriceChecker.DoCheckRefreshAsync(CurrentItem);
                     }
 
-                    lastSelectedWorld = P.Config.selectedWorld;
+                    lastSelectedTarget = P.Config.SelectedTarget;
                 }
 
                 if (isSelected)
@@ -473,7 +431,10 @@ public class MainWindow : Window, IDisposable
                     ImGui.SetItemDefaultFocus();
                 }
 
-                if (world.Item1 == playerHomeWorld) ImGui.PopStyleColor();
+                if (isHomeWorld)
+                {
+                    ImGui.PopStyleColor();
+                }
             }
 
             ImGui.EndCombo();
@@ -598,7 +559,7 @@ public class MainWindow : Window, IDisposable
 
                 // World
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
-                ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? listing.WorldName : P.Config.selectedWorld)}");
+                ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? listing.WorldName : CurrentItem.Target)}");
                 ImGui.NextColumn();
 
                 // Finish
@@ -699,7 +660,7 @@ public class MainWindow : Window, IDisposable
 
                 // World
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() + P.Config.tableRowHeightOffset);
-                ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? entry.WorldName : P.Config.selectedWorld)}");
+                ImGui.Text($"{(CurrentItem.UniversalisResponse.IsCrossWorld ? entry.WorldName : CurrentItem.Target)}");
                 ImGui.NextColumn();
 
                 // Finish

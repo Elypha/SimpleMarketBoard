@@ -19,7 +19,7 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly HotkeyUi search_hotkey_helper;
     private readonly HotkeyUi window_hotkey_helper;
-    private string newAdditionalWorld = "";
+    private string newAdditionalTarget = "";
 
     public ConfigWindow() : base(
         "SimpleMarketBoard Configuration"
@@ -334,22 +334,22 @@ public class ConfigWindow : Window, IDisposable
         );
 
 
-        // AdditionalWorlds
+        // AdditionalTargets
         ImGui.Text("Additional Worlds/DCs/Regions");
         ImGuiComponents.HelpMarker(
             "Use this to add extra options to the target world dropdown menu to search price in.\n" +
             "To add a world or datacentre: fill its full name in game, e.g., Hades, Mana\n" +
-            "To add a region: fill a name supported by Universalis, at the time of writing there are: Japan, North-America, Europe, Oceania\n" +
+            $"To add a region: fill a name supported by Universalis, at the time of writing there are: {string.Join(", ", MarketTargets.Regions)}\n" +
             "Your manually added worlds will be denoted by a star (*) in the dropdown menu."
         );
-        for (var i = 0; i < P.Config.AdditionalWorlds.Count; i++)
+        for (var i = 0; i < P.Config.AdditionalTargets.Count; i++)
         {
-            ImGui.PushID($"{suffix}-AdditionalWorlds-{i}");
-            var additionalWorld = P.Config.AdditionalWorlds[i];
+            ImGui.PushID($"{suffix}-AdditionalTargets-{i}");
+            var additionalTarget = P.Config.AdditionalTargets[i];
             ImGui.SetNextItemWidth(180);
-            if (ImGui.InputText($"{suffix}-AdditionalWorlds", ref additionalWorld, 32))
+            if (ImGui.InputText($"{suffix}-AdditionalTargets", ref additionalTarget, 32))
             {
-                P.Config.AdditionalWorlds[i] = additionalWorld;
+                P.Config.AdditionalTargets[i] = MarketTargets.Resolve(additionalTarget) ?? additionalTarget;
                 P.Config.Save();
                 P.MainWindow.UpdateWorld();
             }
@@ -357,7 +357,7 @@ public class ConfigWindow : Window, IDisposable
             ImGui.PushFont(UiBuilder.IconFont);
             if (ImGui.Button($"{FontAwesomeIcon.Trash.ToIconString()}{suffix}-del"))
             {
-                P.Config.AdditionalWorlds.RemoveAt(i--);
+                P.Config.AdditionalTargets.RemoveAt(i--);
                 P.Config.Save();
                 P.MainWindow.UpdateWorld();
             }
@@ -366,15 +366,19 @@ public class ConfigWindow : Window, IDisposable
             if (i < 0) break;
         }
         ImGui.SetNextItemWidth(180);
-        ImGui.InputText($"{suffix}-AdditionalWorlds-new", ref newAdditionalWorld, 32);
+        ImGui.InputText($"{suffix}-AdditionalTargets-new", ref newAdditionalTarget, 32);
         ImGui.SameLine();
         ImGui.PushFont(UiBuilder.IconFont);
         if (ImGui.Button($"{FontAwesomeIcon.Plus.ToIconString()}{suffix}-add"))
         {
-            P.Config.AdditionalWorlds.Add(newAdditionalWorld);
-            P.Config.Save();
-            P.MainWindow.UpdateWorld();
-            newAdditionalWorld = "";
+            var additionalTarget = MarketTargets.Resolve(newAdditionalTarget, NotificationType.Error);
+            if (additionalTarget is not null)
+            {
+                P.Config.AdditionalTargets.Add(additionalTarget);
+                P.Config.Save();
+                P.MainWindow.UpdateWorld();
+                newAdditionalTarget = "";
+            }
         }
         ImGui.PopFont();
 

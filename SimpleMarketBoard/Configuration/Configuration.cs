@@ -31,7 +31,7 @@ public class SimpleMarketBoardConfig : IMioConfig
     // worlds
     public bool OverridePlayerHomeWorld = false;
     public string PlayerHomeWorld = "";
-    public List<string> AdditionalWorlds = new List<string>();
+    public List<string> AdditionalTargets = new List<string>();
 
     // notification
     public PriceChecker.PriceToPrint priceToPrint = PriceChecker.PriceToPrint.SoldLow;
@@ -79,6 +79,6 @@ public class SimpleMarketBoardConfig : IMioConfig
     public bool FilterHq = false;
     public bool UniversalisHqOnly = false;
     // world
-    public string selectedWorld = "";
+    public string SelectedTarget = "";
 
 }

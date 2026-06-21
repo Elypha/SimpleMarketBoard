@@ -29,7 +29,7 @@ public class PriceChecker
     {
         public ulong Id { get; set; }
         public string Name { get; set; } = "";
-        public string TargetRegion { get; set; } = "";
+        public string Target { get; set; } = "";
         public uint VendorSelling { get; set; }
         public Item InGame { get; set; }
         public ulong FetchTimestamp { get; set; }
@@ -70,8 +70,8 @@ public class PriceChecker
         if (_cacheIds.Contains(itemId))
         {
             Service.Log.Debug($"[PriceChecker] {itemId} found in cache.");
-            var cached_gameItem = GameItemCacheList.Single(i => i.Id == itemId);
-            P.MainWindow.CurrentItemUpdate(cached_gameItem);
+            var cachedGameItem = GameItemCacheList.Single(i => i.Id == itemId);
+            P.MainWindow.CurrentItemUpdate(cachedGameItem);
             return;
         }
 
@@ -145,7 +145,7 @@ public class PriceChecker
         // lookup market data
         P.MainWindow.CurrentItemLabel = gameItem.Name;
         P.MainWindow.CurrentItemIcon = Service.Texture.GetFromGameIcon(new GameIconLookup(gameItem.InGame.Icon))!;
-        gameItem.TargetRegion = P.Config.selectedWorld;
+        gameItem.Target = P.Config.SelectedTarget;
         gameItem.FetchTimestamp = (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var UniversalisResponse = P.Universalis.GetDataAsync(gameItem).Result;
 
@@ -259,7 +259,7 @@ public class PriceChecker
             P.Config.ChatLogChannel,
             $"[{NameShort}]",
             [
-                new TextPayload($" [{gameItem.TargetRegion}]"),
+                new TextPayload($" [{gameItem.Target}]"),
                 new UIForegroundPayload(39),
                 new ItemPayload((uint)gameItem.Id),
                 new TextPayload($"{(char)SeIconChar.LinkMarker} {gameItem.InGame.Name}"),
@@ -273,7 +273,7 @@ public class PriceChecker
     public void SendToast(GameItem gameItem)
     {
         Toast.Normal(
-            $"[{gameItem.TargetRegion}] {gameItem.InGame.Name}: {gameItem.AvgPrice:N0} {(char)SeIconChar.Gil}",
+            $"[{gameItem.Target}] {gameItem.InGame.Name}: {gameItem.AvgPrice:N0} {(char)SeIconChar.Gil}",
             Dalamud.Game.Gui.Toast.ToastPosition.Bottom);
     }
 }

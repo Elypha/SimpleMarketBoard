@@ -50,7 +50,7 @@ public class Universalis
         {
             // build url
             var _hq = P.Config.UniversalisHqOnly ? "&hq=1" : "";
-            var API_URL = new UriBuilder($"{Host}/api/v2/{gameItem.TargetRegion}/{gameItem.Id}?listings={P.Config.UniversalisListings}&entries={P.Config.UniversalisEntries}{_hq}").Uri.ToString();
+            var API_URL = new UriBuilder($"{Host}/api/v2/{gameItem.Target}/{gameItem.Id}?listings={P.Config.UniversalisListings}&entries={P.Config.UniversalisEntries}{_hq}").Uri.ToString();
 
             // get response
             Service.Log.Info($"[Universalis] Fetch: {API_URL}");
@@ -85,7 +85,7 @@ public class Universalis
             }
             else
             {
-                worldUpdatedData.Add(gameItem.TargetRegion, (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - data.LastUploadTime) / 1000 / 3600);
+                worldUpdatedData.Add(gameItem.Target, (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - data.LastUploadTime) / 1000 / 3600);
             }
 
             var universalisResponse = new UniversalisResponse

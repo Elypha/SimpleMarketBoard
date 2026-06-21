@@ -99,6 +99,7 @@ public sealed class SimpleMarketBoardPlugin : IDalamudPlugin
         MainWindow = new MainWindow();
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
+        MainWindow.UpdateWorld();
 
 
         // HANDLERS
